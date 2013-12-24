@@ -1,0 +1,19 @@
+<resources>
+
+    <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
+    </style>
+
+    <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:actionBarStyle">@style/actionBarStyle</item>
+    </style>
+
+    <style name="DetailTheme" parent="android:Theme.Holo.Light">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+    </style>
+
+    <style name="actionBarStyle" parent="android:Widget.Holo.Light.ActionBar">
+        <item name="android:background">@drawable/ab_solid_light_holo</item>
+    </style>
+
+</resources>
