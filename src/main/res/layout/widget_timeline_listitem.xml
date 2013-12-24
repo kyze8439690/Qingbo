@@ -90,7 +90,7 @@
         android:visibility="gone"
         />
 
-    <com.yugy.qingbo.widget.SelectorImageView
+    <com.yugy.qingbo.ui.view.SelectorImageView
         android:id="@+id/timeline_listitem_pic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -103,7 +103,7 @@
         android:visibility="gone"
         />
     
-    <com.yugy.qingbo.widget.NoScrollGridView
+    <com.yugy.qingbo.ui.view.NoScrollGridView
         android:id="@+id/timeline_listitem_picgrid"
         android:layout_height="wrap_content"
         android:layout_width="246dp"

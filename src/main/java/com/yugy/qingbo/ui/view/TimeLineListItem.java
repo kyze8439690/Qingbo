@@ -1,4 +1,4 @@
-package com.yugy.qingbo.widget;
+package com.yugy.qingbo.ui.view;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,9 +17,9 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.activity.DetailActivity;
-import com.yugy.qingbo.func.FuncInt;
-import com.yugy.qingbo.func.FuncNet;
+import com.yugy.qingbo.Utils.NetworkUtil;
+import com.yugy.qingbo.Utils.ScreenUtil;
+import com.yugy.qingbo.ui.DetailActivity;
 import com.yugy.qingbo.model.TimeLineModel;
 
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
             commentCount.setLayoutParams(lp);
             if(data.hasPic || data.hasRepostPic){
                 pic.setVisibility(VISIBLE);
-                if(FuncNet.isWifi()){
+                if(NetworkUtil.isWifi(getContext())){
                     ImageLoader.getInstance().displayImage(data.pics.get(0).replace("thumbnail", "bmiddle"), pic);
                 }else{
                     ImageLoader.getInstance().displayImage(data.pics.get(0), pic);
@@ -136,7 +136,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
                 .showImageForEmptyUri(R.drawable.default_head)
                 .cacheInMemory(true)
                 .cacheOnDisc(true)
-                .displayer(new RoundedBitmapDisplayer(FuncInt.dp(25)))
+                .displayer(new RoundedBitmapDisplayer(ScreenUtil.dp(getContext(), 25)))
                 .build());
     }
 
@@ -152,7 +152,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
     private class PicsAdapter extends BaseAdapter{
 
         private ArrayList<String> data;
-        private int imageWidth = FuncInt.dp(80);
+        private int imageWidth = ScreenUtil.dp(getContext(), 80);
 
         public PicsAdapter(ArrayList<String> model){
             data = model;

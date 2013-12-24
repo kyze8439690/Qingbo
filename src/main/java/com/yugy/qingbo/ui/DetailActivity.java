@@ -1,4 +1,4 @@
-package com.yugy.qingbo.activity;
+package com.yugy.qingbo.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -28,10 +28,10 @@ import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.func.FuncInt;
+import com.yugy.qingbo.Utils.ScreenUtil;
 import com.yugy.qingbo.model.TimeLineModel;
-import com.yugy.qingbo.widget.HackyViewPager;
-import com.yugy.qingbo.widget.SlidingUpPanelLayout;
+import com.yugy.qingbo.ui.view.HackyViewPager;
+import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
 
 import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
@@ -107,7 +107,7 @@ public class DetailActivity extends Activity implements View.OnClickListener{
                 .showImageForEmptyUri(R.drawable.default_head)
                 .cacheInMemory(true)
                 .cacheOnDisc(true)
-                .displayer(new RoundedBitmapDisplayer(FuncInt.dp(40)))
+                .displayer(new RoundedBitmapDisplayer(ScreenUtil.dp(this, 40)))
                 .build());
         name.setText(data.name);
         text.setText(data.text);
@@ -133,7 +133,7 @@ public class DetailActivity extends Activity implements View.OnClickListener{
         slidingLayout.setPanelOverlayable(true);
         slidingLayout.setPanelTransparent(true);
         slidingLayout.setCoveredFadeColor(Color.TRANSPARENT);
-        slidingLayout.setPanelHeight(FuncInt.dp(82 + 48));
+        slidingLayout.setPanelHeight(ScreenUtil.dp(this, 82 + 48));
         slidingLayout.setEnableDragViewTouchEvents(true);
         slidingLayout.setPanelSlideListener(new SlidingUpPanelLayout.SimplePanelSlideListener() {
             @Override
@@ -177,7 +177,7 @@ public class DetailActivity extends Activity implements View.OnClickListener{
             public void onPanelCollapsed(View panel) {
                 headLayout.setBackgroundResource(R.drawable.black_gradient);
                 text.setSingleLine(true);
-                if(slidingLayout.getPanelHeight() == FuncInt.dp(48)){
+                if(slidingLayout.getPanelHeight() == ScreenUtil.dp(DetailActivity.this, 48)){
                     actionBar.hide();
                 }
             }
@@ -242,10 +242,10 @@ public class DetailActivity extends Activity implements View.OnClickListener{
                     public void onViewTap(View view, float v, float v2) {
                         if (actionBar.isShowing()) {
                             actionBar.hide();
-                            slidingLayout.setPanelHeight(FuncInt.dp(48));
+                            slidingLayout.setPanelHeight(ScreenUtil.dp(DetailActivity.this, 48));
                         } else {
                             actionBar.show();
-                            slidingLayout.setPanelHeight(FuncInt.dp(82 + 48));
+                            slidingLayout.setPanelHeight(ScreenUtil.dp(DetailActivity.this, 82 + 48));
                         }
                     }
                 });

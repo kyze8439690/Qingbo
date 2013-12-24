@@ -6,11 +6,11 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.yugy.qingbo.func.Func;
+import com.yugy.qingbo.Utils.MessageUtil;
 import com.yugy.qingbo.sql.Account;
 import com.yugy.qingbo.sql.AccountsDataSource;
 import com.yugy.qingbo.sql.UsersDataSource;
-import com.yugy.qingbo.storage.Conf;
+import com.yugy.qingbo.Conf;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,7 +44,7 @@ public class Weibo {
         mClient.post(context, WeiboApiUrl.OAUTH2_ACCESS_TOKEN, params, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONObject response) {
-                Func.log("授权成功: " + response.toString());
+                MessageUtil.log("授权成功: " + response.toString());
                 try {
                     dataSource.open();
                     dataSource.createAccount(response);
@@ -59,7 +59,7 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                Func.log("授权失败: " + errorResponse.toString());
+                MessageUtil.log("授权失败: " + errorResponse.toString());
                 responseHandler.onFailure(e, "授权失败");
                 super.onFailure(e, errorResponse);
             }
@@ -86,7 +86,7 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                Func.log("获取用户信息失败: " + errorResponse.toString());
+                MessageUtil.log("获取用户信息失败: " + errorResponse.toString());
 
                 responseHandler.onFailure(e, "获取用户信息失败");
                 super.onFailure(e, errorResponse);
@@ -102,7 +102,7 @@ public class Weibo {
         mClient.get(context, WeiboApiUrl.STATUS_HOME_TIMELINE, params, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONObject response) {
-                Func.log(response.toString());
+                MessageUtil.log(response.toString());
                 try {
                     responseHandler.onSuccess(response.getJSONArray("statuses"));
                 } catch (JSONException e) {
@@ -114,7 +114,7 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                Func.log(errorResponse.toString());
+                MessageUtil.log(errorResponse.toString());
                 super.onFailure(e, errorResponse);
             }
         });
@@ -127,7 +127,7 @@ public class Weibo {
         mClient.get(context, WeiboApiUrl.STATUS_HOME_TIMELINE, params, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONObject response) {
-                Func.log(response.toString());
+                MessageUtil.log(response.toString());
                 try {
                     responseHandler.onSuccess(response.getJSONArray("statuses"));
                 } catch (JSONException e) {
@@ -139,7 +139,7 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                Func.log(errorResponse.toString());
+                MessageUtil.log(errorResponse.toString());
                 super.onFailure(e, errorResponse);
             }
         });

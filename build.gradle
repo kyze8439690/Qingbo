@@ -26,5 +26,6 @@ dependencies {
     compile 'com.android.support:support-v4:18.0.+'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.8'
     compile 'com.github.chrisbanes.photoview:library:1.2.2'
+    compile 'com.nhaarman.listviewanimations:library:2.5.2'
     compile fileTree(dir: 'libs' , include: '*.jar')
 }

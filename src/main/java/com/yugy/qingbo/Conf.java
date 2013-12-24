@@ -1,4 +1,4 @@
-package com.yugy.qingbo.storage;
+package com.yugy.qingbo;
 
 /**
  * Created by yugy on 13-9-9.

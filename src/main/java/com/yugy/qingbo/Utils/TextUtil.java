@@ -1,5 +1,6 @@
-package com.yugy.qingbo.func;
+package com.yugy.qingbo.Utils;
 
+import android.content.Context;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * Created by yugy on 13-10-4.
  */
-public class FuncStr {
+public class TextUtil {
 
     /*
     time sample: Fri Oct 04 18:20:31 +0800 2013
@@ -45,7 +46,7 @@ public class FuncStr {
             parseString.setSpan(new ClickableSpan() {
                 @Override
                 public void onClick(View widget) {
-                    Func.toast(name);
+//                    MessageUtil.toast(context, name);
                 }
             }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             parseString.setSpan(new UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

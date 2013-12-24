@@ -1,11 +1,11 @@
-package com.yugy.qingbo.storage;
+package com.yugy.qingbo.Utils;
 
 import android.graphics.Color;
 
 /**
  * Created by yugy on 13-11-7.
  */
-public class ColorList {
+public class ColorUtil {
 
     private static final int[] colorList = new int[]{
             Color.parseColor("#5c3292"),

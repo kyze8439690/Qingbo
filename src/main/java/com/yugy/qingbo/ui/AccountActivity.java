@@ -1,4 +1,4 @@
-package com.yugy.qingbo.activity;
+package com.yugy.qingbo.ui;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -17,7 +17,7 @@ import com.yugy.qingbo.sql.Account;
 import com.yugy.qingbo.sql.AccountsDataSource;
 import com.yugy.qingbo.sql.User;
 import com.yugy.qingbo.sql.UsersDataSource;
-import com.yugy.qingbo.widget.AccountItem;
+import com.yugy.qingbo.ui.view.AccountItem;
 
 import java.util.ArrayList;
 import java.util.List;

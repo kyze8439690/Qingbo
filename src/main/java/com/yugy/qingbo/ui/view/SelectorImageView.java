@@ -1,4 +1,4 @@
-package com.yugy.qingbo.widget;
+package com.yugy.qingbo.ui.view;
 
 import android.content.Context;
 import android.graphics.Color;

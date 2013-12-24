@@ -1,4 +1,4 @@
-package com.yugy.qingbo.activity;
+package com.yugy.qingbo.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -13,8 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewPropertyAnimator;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -23,21 +21,22 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.haarman.listviewanimations.swinginadapters.AnimationAdapter;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.update.UmengUpdateAgent;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.func.Func;
-import com.yugy.qingbo.func.FuncInt;
-import com.yugy.qingbo.func.FuncNet;
+import com.yugy.qingbo.Utils.MessageUtil;
+import com.yugy.qingbo.Utils.ScreenUtil;
+import com.yugy.qingbo.Utils.ColorUtil;
 import com.yugy.qingbo.helper.SpeedScrollListener;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.sql.AccountsDataSource;
-import com.yugy.qingbo.storage.ColorList;
-import com.yugy.qingbo.widget.TimeLineListItem;
+import com.yugy.qingbo.ui.adapter.CardsAnimationAdapter;
+import com.yugy.qingbo.ui.view.TimeLineListItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,13 +62,13 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 
     private PullToRefreshAttacher mPullToRefreshAttacher;
     private PullToRefreshLayout mPullToRefreshLayout;
-    private DefaultHeaderTransformer headerTransformer;
-    private AccountsDataSource accountsDataSource;
-    private String[] drawerListViewString;
-    private ArrayList<TimeLineModel> timeLineData;
-    private BaseAdapter timeLineListAdapter;
+    private DefaultHeaderTransformer mHeaderTransformer;
+    private AccountsDataSource mAccountsDataSource;
+    private String[] mDrawerListViewString;
+    private ArrayList<TimeLineModel> mTimeLineModels;
+    private TimeLineListAdapter mTimeLineListAdapter;
     private AnimationDrawable mJingleDrawable;
-    private SpeedScrollListener speedScrollListener;
+    private SpeedScrollListener mSpeedScrollListener;
 
     private long firstStatusId = 0;
     private long lastStatusId = 0;
@@ -81,7 +80,6 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         MobclickAgent.setDebugMode(true);
         MobclickAgent.onError(this);
         UmengUpdateAgent.update(this);
-        appInit();
         initViews();
         initComponents();
         if(hasAccount()){
@@ -106,16 +104,10 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         MobclickAgent.onPause(this);
     }
 
-    private void appInit(){
-        Func.setContext(getApplicationContext());
-        FuncNet.setContext(getApplicationContext());
-        FuncInt.setContext(getApplicationContext());
-    }
-
     private boolean hasAccount(){
-        accountsDataSource = new AccountsDataSource(this);
-        accountsDataSource.open();
-        return accountsDataSource.hasAccount();
+        mAccountsDataSource = new AccountsDataSource(this);
+        mAccountsDataSource.open();
+        return mAccountsDataSource.hasAccount();
     }
 
     private void initViews(){
@@ -132,130 +124,57 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         mEmptyView = (TextView) findViewById(R.id.main_right_drawer_emptyview);
         mJingleDrawable = (AnimationDrawable) getResources().getDrawable(R.drawable.jingles);
         mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, mJingleDrawable, null, null);
-        mEmptyView.setCompoundDrawablePadding(FuncInt.dp(10));
+        mEmptyView.setCompoundDrawablePadding(ScreenUtil.dp(this, 10));
         mDrawerRightList.setEmptyView(mEmptyView);
         mTimeLineList = (ListView) findViewById(R.id.main_timeline_list);
         ProgressBar progressBar = new ProgressBar(this);
         progressBar.setIndeterminate(true);
         mTimeLineList.addFooterView(progressBar);
-        speedScrollListener = new SpeedScrollListener();
-        PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, speedScrollListener);
+        mSpeedScrollListener = new SpeedScrollListener();
+        PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, mSpeedScrollListener);
         mTimeLineList.setOnScrollListener(pauseOnScrollListener);
         mPullToRefreshLayout = (PullToRefreshLayout) findViewById(R.id.main_refreshlayout);
 
-        drawerListViewString = new String[]{
+        mDrawerListViewString = new String[]{
             "账号",
             "设置"
         };
         mDrawerLeftList.setAdapter(new ArrayAdapter<String>(
                 this,
                 R.layout.widget_drawer_menu_item,
-                drawerListViewString
+                mDrawerListViewString
         ));
         mDrawerLeftList.setOnItemClickListener(this);
         mDrawerRightList.setOnItemClickListener(this);
         mTimeLineList.setOnItemClickListener(this);
 
-        mDrawerToggle = new ActionBarDrawerToggle(
+        mDrawerToggle = new TwoDrawerToggle(
                 this,
                 mDrawerLayout,
                 R.drawable.ic_drawer_toggle,
                 R.string.app_name,
-                R.string.app_name){
-
-                @Override
-                public void onDrawerOpened(View drawerView) {
-                    if(drawerView.equals(mDrawerRightLayout)){
-                        if(mJingleDrawable.isVisible()){
-                            if(mJingleDrawable.isRunning()){
-                                mJingleDrawable.stop();
-                            }
-                            mJingleDrawable.start();
-                        }
-                    }else{
-                        super.onDrawerOpened(drawerView);
-                    }
-                    if(mDrawerLayout.isDrawerOpen(Gravity.END) && drawerView.equals(mDrawerLeftLayout)){
-                        mDrawerLayout.closeDrawer(Gravity.END);
-                    }else if(mDrawerLayout.isDrawerOpen(Gravity.START) && drawerView.equals(mDrawerRightLayout)){
-                        mDrawerLayout.closeDrawer(Gravity.START);
-                    }
-                }
-
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-                if(drawerView == mDrawerLeftLayout){
-                    super.onDrawerSlide(drawerView, slideOffset);
-                }
-            }
-        };
+                R.string.app_name
+        );
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
     private void initComponents(){
-        timeLineData = new ArrayList<TimeLineModel>();
-        timeLineListAdapter = new BaseAdapter() {
-            @Override
-            public int getCount() {
-                return timeLineData.size();
-            }
-
-            @Override
-            public Object getItem(int position) {
-                TimeLineListItem item = new TimeLineListItem(MainActivity.this);
-                item.parse(timeLineData.get(position));
-                return item;
-            }
-
-            private int adapterLastPosition = -1;
-            private static final int DEFAULT_ANIM_SPEED = 800;
-
-            @Override
-            public long getItemId(int position) {
-                return position;
-            }
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                TimeLineListItem item;
-                if(convertView != null){
-                    item = (TimeLineListItem) convertView;
-                }else{
-                    item = new TimeLineListItem(MainActivity.this);
-                }
-                item.parse(timeLineData.get(position));
-                if (position > adapterLastPosition) {
-                    double speed = speedScrollListener.getSpeed();
-                    long animDuration = ((int) speed == 0) ? DEFAULT_ANIM_SPEED : (long) ( 1 / speed * 15000);
-                    animDuration = animDuration > DEFAULT_ANIM_SPEED ? DEFAULT_ANIM_SPEED : animDuration;
-                    item.setRotationX(45.0f);
-                    item.setTranslationY(200);
-                    item.setScaleX(0.7f);
-                    item.setScaleY(0.55f);
-                    ViewPropertyAnimator localViewPropertyAnimator = item.animate().rotationX(0.0f)
-                            .translationY(0).setDuration(animDuration)
-                            .scaleX(1.0f).scaleY(1.0f).setInterpolator(new DecelerateInterpolator());
-                    localViewPropertyAnimator.setStartDelay(0).start();
-                    adapterLastPosition = position;
-                }
-                if(position == getCount() - 1){
-                    getOldData();
-                }
-                return item;
-            }
-        };
-        mTimeLineList.setAdapter(timeLineListAdapter);
+        mTimeLineModels = new ArrayList<TimeLineModel>();
+        mTimeLineListAdapter = new TimeLineListAdapter();
+        AnimationAdapter animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
+        animationAdapter.setAbsListView(mTimeLineList);
+        mTimeLineList.setAdapter(animationAdapter);
         mPullToRefreshAttacher = PullToRefreshAttacher.get(this);
-        headerTransformer = (DefaultHeaderTransformer) mPullToRefreshAttacher.getHeaderTransformer();
-        headerTransformer.setProgressBarColor(ColorList.getColor());
-        headerTransformer.setPullText("向下滑动即可刷新");
-        headerTransformer.setRefreshingText("正在刷新...");
+        mHeaderTransformer = (DefaultHeaderTransformer) mPullToRefreshAttacher.getHeaderTransformer();
+        mHeaderTransformer.setProgressBarColor(ColorUtil.getColor());
+        mHeaderTransformer.setPullText("向下滑动即可刷新");
+        mHeaderTransformer.setRefreshingText("正在刷新...");
         mPullToRefreshAttacher.setHeaderViewListener(new PullToRefreshAttacher.HeaderViewListener() {
             @Override
             public void onStateChanged(View view, int i) {
                 if(i == PullToRefreshAttacher.HeaderViewListener.STATE_VISIBLE){
-                    headerTransformer.setProgressBarColor(ColorList.getColor());
+                    mHeaderTransformer.setProgressBarColor(ColorUtil.getColor());
                 }
             }
         });
@@ -309,7 +228,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
             }
         }else if(parent.equals(mTimeLineList)){
             Intent intent = new Intent(this, DetailActivity.class);
-            intent.putExtra(DetailActivity.DATA, timeLineData.get(position));
+            intent.putExtra(DetailActivity.DATA, mTimeLineModels.get(position));
             intent.putExtra(DetailActivity.VIEW_TYPE, DetailActivity.VIEW_TYPE_CONTENT);
             startActivity(intent);
         }
@@ -329,16 +248,16 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                             lastStatusId = response.getJSONObject(i).getLong("id");
                         }
                         data.parse(response.getJSONObject(i));
-                        timeLineData.add(data);
+                        mTimeLineModels.add(data);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
                 }
-                Func.myToast("更新了" + response.length() + "条新微薄");
+                MessageUtil.myToast(MainActivity.this, "更新了" + response.length() + "条新微薄");
                 mPullToRefreshAttacher.setRefreshing(false);
-                timeLineListAdapter.notifyDataSetChanged();
+                mTimeLineListAdapter.notifyDataSetChanged();
                 super.onSuccess(response);
             }
         });
@@ -356,15 +275,15 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                             lastStatusId = response.getJSONObject(i).getLong("id");
                         }
                         data.parse(response.getJSONObject(i));
-                        timeLineData.add(timeLineData.size(), data);
+                        mTimeLineModels.add(mTimeLineModels.size(), data);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
                 }
-                Func.myToast("加载了" + (response.length() - 1) + "条微薄");
-                timeLineListAdapter.notifyDataSetChanged();
+                MessageUtil.myToast(MainActivity.this, "加载了" + (response.length() - 1) + "条微薄");
+                mTimeLineListAdapter.notifyDataSetChanged();
                 mPullToRefreshAttacher.setRefreshComplete();
                 super.onSuccess(response);
             }
@@ -376,9 +295,9 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         Weibo.getNewTimeline(this, firstStatusId + "", new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray response) {
-                for (int i = 0; i < timeLineData.size(); i++) {
+                for (int i = 0; i < mTimeLineModels.size(); i++) {
                     try {
-                        timeLineData.get(i).reParseTime();
+                        mTimeLineModels.get(i).reParseTime();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -390,22 +309,90 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                             firstStatusId = response.getJSONObject(i).getLong("id");
                         }
                         data.parse(response.getJSONObject(i));
-                        timeLineData.add(0, data);
+                        mTimeLineModels.add(0, data);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
                 }
-                timeLineListAdapter.notifyDataSetChanged();
+                mTimeLineListAdapter.notifyDataSetChanged();
                 if (response.length() == 0) {
-                    Func.myToast("没有新微博");
+                    MessageUtil.myToast(MainActivity.this, "没有新微博");
                 } else {
-                    Func.myToast("更新了" + response.length() + "条新微薄");
+                    MessageUtil.myToast(MainActivity.this, "更新了" + response.length() + "条新微薄");
                 }
                 mPullToRefreshAttacher.setRefreshComplete();
                 super.onSuccess(response);
             }
         });
     }
+
+    private class TwoDrawerToggle extends ActionBarDrawerToggle{
+        public TwoDrawerToggle(Activity activity, DrawerLayout drawerLayout, int drawerImageRes, int openDrawerContentDescRes, int closeDrawerContentDescRes) {
+            super(activity, drawerLayout, drawerImageRes, openDrawerContentDescRes, closeDrawerContentDescRes);
+        }
+
+        @Override
+        public void onDrawerOpened(View drawerView) {
+            if(drawerView.equals(mDrawerRightLayout)){
+                if(mJingleDrawable.isVisible()){
+                    if(mJingleDrawable.isRunning()){
+                        mJingleDrawable.stop();
+                    }
+                    mJingleDrawable.start();
+                }
+            }else{
+                super.onDrawerOpened(drawerView);
+            }
+            if(mDrawerLayout.isDrawerOpen(Gravity.END) && drawerView.equals(mDrawerLeftLayout)){
+                mDrawerLayout.closeDrawer(Gravity.END);
+            }else if(mDrawerLayout.isDrawerOpen(Gravity.START) && drawerView.equals(mDrawerRightLayout)){
+                mDrawerLayout.closeDrawer(Gravity.START);
+            }
+        }
+
+        @Override
+        public void onDrawerSlide(View drawerView, float slideOffset) {
+            if(drawerView == mDrawerLeftLayout){
+                super.onDrawerSlide(drawerView, slideOffset);
+            }
+        }
+    }
+
+    private class TimeLineListAdapter extends BaseAdapter{
+
+        @Override
+        public int getCount() {
+            return mTimeLineModels.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            TimeLineListItem item = new TimeLineListItem(MainActivity.this);
+            item.parse(mTimeLineModels.get(position));
+            return item;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TimeLineListItem item;
+            if(convertView != null){
+                item = (TimeLineListItem) convertView;
+            }else{
+                item = new TimeLineListItem(MainActivity.this);
+            }
+            item.parse(mTimeLineModels.get(position));
+            if(position == getCount() - 1){
+                getOldData();
+            }
+            return item;
+        }
+    }
+
 }

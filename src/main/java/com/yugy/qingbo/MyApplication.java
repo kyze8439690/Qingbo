@@ -1,6 +1,7 @@
-package com.yugy.qingbo.application;
+package com.yugy.qingbo;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Environment;
 
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
@@ -18,9 +19,16 @@ import java.io.File;
  */
 public class MyApplication extends Application {
 
+    private static Context mContext;
+
+    public static Context getContext(){
+        return mContext;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        mContext = getApplicationContext();
         DisplayImageOptions options = new DisplayImageOptions.Builder()
                 .showStubImage(R.drawable.jingles_1)
                 .showImageForEmptyUri(R.drawable.ic_launcher)

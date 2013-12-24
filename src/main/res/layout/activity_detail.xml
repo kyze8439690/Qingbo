@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<com.yugy.qingbo.widget.SlidingUpPanelLayout
+<com.yugy.qingbo.ui.view.SlidingUpPanelLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/detail_rootlayout"
     android:layout_width="match_parent"
@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         >
 
-        <com.yugy.qingbo.widget.HackyViewPager
+        <com.yugy.qingbo.ui.view.HackyViewPager
             android:id="@+id/detail_picpager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -103,4 +103,4 @@
 
     </RelativeLayout>
 
-</com.yugy.qingbo.widget.SlidingUpPanelLayout>
+</com.yugy.qingbo.ui.view.SlidingUpPanelLayout>

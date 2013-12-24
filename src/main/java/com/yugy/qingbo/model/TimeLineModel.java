@@ -1,10 +1,11 @@
 package com.yugy.qingbo.model;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.SpannableString;
 
-import com.yugy.qingbo.func.FuncStr;
+import com.yugy.qingbo.Utils.TextUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,13 +37,13 @@ public class TimeLineModel implements Parcelable{
     private String unParseTime;
 
     public void parse(JSONObject json) throws JSONException, ParseException {
-        text = FuncStr.parseStatusText(json.getString("text"));
+        text = TextUtil.parseStatusText(json.getString("text"));
         name = json.getJSONObject("user").getString("screen_name");
         headUrl = json.getJSONObject("user").getString("avatar_large");
 //        headUrl = json.getJSONObject("user").getString("profile_image_url");
-        topics.addAll(FuncStr.getTopic(json.getString("text")));
+        topics.addAll(TextUtil.getTopic(json.getString("text")));
         unParseTime = json.getString("created_at");
-        time = FuncStr.parseTime(unParseTime);
+        time = TextUtil.parseTime(unParseTime);
         commentCount = json.getInt("comments_count");
         repostCount = json.getInt("reposts_count");
         JSONArray picsJson = json.getJSONArray("pic_urls");
@@ -53,9 +54,9 @@ public class TimeLineModel implements Parcelable{
         hasPic = json.has("thumbnail_pic");
         if (hasRepost = json.has("retweeted_status")) {
             JSONObject repostJson = json.getJSONObject("retweeted_status");
-            repostName = FuncStr.parseStatusText("此微博最初是由@" + repostJson.getJSONObject("user").getString("screen_name") + " 分享的");
-            repostText = FuncStr.parseStatusText(repostJson.getString("text"));
-            topics.addAll(FuncStr.getTopic(repostJson.getString("text")));
+            repostName = TextUtil.parseStatusText("此微博最初是由@" + repostJson.getJSONObject("user").getString("screen_name") + " 分享的");
+            repostText = TextUtil.parseStatusText(repostJson.getString("text"));
+            topics.addAll(TextUtil.getTopic(repostJson.getString("text")));
             JSONArray repostPicsJson = repostJson.getJSONArray("pic_urls");
             hasRepostPics = (repostPicsJson.length() > 1);
             for (int i = 0; i < repostPicsJson.length(); i++){
@@ -66,7 +67,7 @@ public class TimeLineModel implements Parcelable{
     }
 
     public void reParseTime() throws ParseException {
-        time = FuncStr.parseTime(unParseTime);
+        time = TextUtil.parseTime(unParseTime);
     }
 
     @Override
@@ -76,6 +77,7 @@ public class TimeLineModel implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+
         dest.writeIntArray(new int[]{
             commentCount,
             repostCount
@@ -119,13 +121,13 @@ public class TimeLineModel implements Parcelable{
 
         String[] stringData = new String[6];
         in.readStringArray(stringData);
-        this.text = FuncStr.parseStatusText(stringData[0]);
+        this.text = TextUtil.parseStatusText(stringData[0]);
         this.name = stringData[1];
         this.headUrl = stringData[2];
         this.unParseTime = stringData[3];
-        this.time = FuncStr.parseTime(this.unParseTime);
-        this.repostName = FuncStr.parseStatusText(stringData[4]);
-        this.repostText = FuncStr.parseStatusText(stringData[5]);
+        this.time = TextUtil.parseTime(this.unParseTime);
+        this.repostName = TextUtil.parseStatusText(stringData[4]);
+        this.repostText = TextUtil.parseStatusText(stringData[5]);
 
         ArrayList<ArrayList<String>> stringArrayData = new ArrayList<ArrayList<String>>();
         in.readList(stringArrayData, ArrayList.class.getClassLoader());
