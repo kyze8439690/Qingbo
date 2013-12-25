@@ -37,7 +37,7 @@ public class MyApplication extends Application {
                 .cacheOnDisc(true)
                 .displayer(new FadeInBitmapDisplayer(600))
                 .build();
-        File cacheDir = new File(Environment.getExternalStorageDirectory().getPath() + "/Qingbo/cache");
+        File cacheDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext())
                 .denyCacheImageMultipleSizesInMemory()
                 .memoryCache(new LruMemoryCache(2 * 1024 * 1024))

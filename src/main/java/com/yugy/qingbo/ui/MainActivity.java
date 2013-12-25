@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.haarman.listviewanimations.swinginadapters.AnimationAdapter;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
@@ -44,11 +43,13 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.DefaultHeaderTransformer;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshAttacher;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
-public class MainActivity extends Activity implements ListView.OnItemClickListener, PullToRefreshAttacher.OnRefreshListener{
+public class MainActivity extends Activity implements ListView.OnItemClickListener, OnRefreshListener{
 
     private DrawerLayout mDrawerLayout;
     private RelativeLayout mDrawerLeftLayout;
@@ -60,7 +61,6 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     private ActionBarDrawerToggle mDrawerToggle;
     private TextView mEmptyView;
 
-    private PullToRefreshAttacher mPullToRefreshAttacher;
     private PullToRefreshLayout mPullToRefreshLayout;
     private DefaultHeaderTransformer mHeaderTransformer;
     private AccountsDataSource mAccountsDataSource;
@@ -134,6 +134,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, mSpeedScrollListener);
         mTimeLineList.setOnScrollListener(pauseOnScrollListener);
         mPullToRefreshLayout = (PullToRefreshLayout) findViewById(R.id.main_refreshlayout);
+        ActionBarPullToRefresh.from(this).allChildrenArePullable().listener(this).setup(mPullToRefreshLayout);
 
         mDrawerListViewString = new String[]{
             "账号",
@@ -162,23 +163,9 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     private void initComponents(){
         mTimeLineModels = new ArrayList<TimeLineModel>();
         mTimeLineListAdapter = new TimeLineListAdapter();
-        AnimationAdapter animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
+        CardsAnimationAdapter animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
         animationAdapter.setAbsListView(mTimeLineList);
         mTimeLineList.setAdapter(animationAdapter);
-        mPullToRefreshAttacher = PullToRefreshAttacher.get(this);
-        mHeaderTransformer = (DefaultHeaderTransformer) mPullToRefreshAttacher.getHeaderTransformer();
-        mHeaderTransformer.setProgressBarColor(ColorUtil.getColor());
-        mHeaderTransformer.setPullText("向下滑动即可刷新");
-        mHeaderTransformer.setRefreshingText("正在刷新...");
-        mPullToRefreshAttacher.setHeaderViewListener(new PullToRefreshAttacher.HeaderViewListener() {
-            @Override
-            public void onStateChanged(View view, int i) {
-                if(i == PullToRefreshAttacher.HeaderViewListener.STATE_VISIBLE){
-                    mHeaderTransformer.setProgressBarColor(ColorUtil.getColor());
-                }
-            }
-        });
-        mPullToRefreshLayout.setPullToRefreshAttacher(mPullToRefreshAttacher, this);
     }
 
 
@@ -189,13 +176,27 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         return super.onCreateOptionsMenu(menu);
     }
 
+    private static final int ID_HOME = 0x0102002c; //android.R.id.home
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(mDrawerToggle.onOptionsItemSelected(item)){
-            return true;
-        }
         switch (item.getItemId()){
+            case ID_HOME:
+                //close right drawer first if it has been opened.
+                if(mDrawerLayout.isDrawerVisible(Gravity.END)){
+                    mDrawerLayout.closeDrawer(mDrawerRightLayout);
+                }
+                //open the left drawer
+                if(mDrawerToggle.onOptionsItemSelected(item)){
+                    return true;
+                }
+                break;
             case R.id.main_action_notify:
+                //close left drawer first if it has been opened.
+                if(mDrawerLayout.isDrawerVisible(Gravity.START)){
+                    mDrawerLayout.closeDrawer(mDrawerLeftLayout);
+                }
+                //toggle the right drawer
                 if(mDrawerLayout.isDrawerVisible(Gravity.END)){
                     mDrawerLayout.closeDrawer(mDrawerRightLayout);
                 }else{
@@ -235,7 +236,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     }
 
     private void getNewData(){
-        mPullToRefreshAttacher.setRefreshing(true);
+        mPullToRefreshLayout.setRefreshing(true);
         Weibo.getNewTimeline(this, firstStatusId + "", new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray response) {
@@ -256,7 +257,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                     }
                 }
                 MessageUtil.myToast(MainActivity.this, "更新了" + response.length() + "条新微薄");
-                mPullToRefreshAttacher.setRefreshing(false);
+                mPullToRefreshLayout.setRefreshing(false);
                 mTimeLineListAdapter.notifyDataSetChanged();
                 super.onSuccess(response);
             }
@@ -264,7 +265,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     }
 
     private void getOldData(){
-        mPullToRefreshAttacher.setRefreshing(true);
+        mPullToRefreshLayout.setRefreshing(true);
         Weibo.getOldTimeline(this, lastStatusId + "", new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONArray response) {
@@ -284,7 +285,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                 }
                 MessageUtil.myToast(MainActivity.this, "加载了" + (response.length() - 1) + "条微薄");
                 mTimeLineListAdapter.notifyDataSetChanged();
-                mPullToRefreshAttacher.setRefreshComplete();
+                mPullToRefreshLayout.setRefreshComplete();
                 super.onSuccess(response);
             }
         });
@@ -322,7 +323,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                 } else {
                     MessageUtil.myToast(MainActivity.this, "更新了" + response.length() + "条新微薄");
                 }
-                mPullToRefreshAttacher.setRefreshComplete();
+                mPullToRefreshLayout.setRefreshComplete();
                 super.onSuccess(response);
             }
         });

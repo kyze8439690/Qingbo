@@ -42,4 +42,5 @@ public class CardsAnimationAdapter extends AnimationAdapter {
                 ObjectAnimator.ofFloat(view, "RotationX", mRotationX, 0)
         };
     }
+
 }

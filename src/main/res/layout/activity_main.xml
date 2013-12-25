@@ -36,18 +36,10 @@
         android:background="#FFF"
         >
 
-        <View
-            android:id="@+id/main_left_drawer_person"
-            android:layout_width="match_parent"
-            android:layout_height="160dp"
-            android:background="@drawable/bg_person"
-            />
-
         <ListView
             android:id="@+id/main_left_drawer_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/main_left_drawer_person"
             android:choiceMode="singleChoice"
             android:divider="#ddd"
             android:dividerHeight="1dp"
