@@ -2,5 +2,8 @@
 <resources>
 
     <color name="link_color">#ff2f2f2f</color>
+    <color name="alert">#CC0000</color>
+    <color name="confirm">#FF8800</color>
+    <color name="info">#669900</color>
 
 </resources>

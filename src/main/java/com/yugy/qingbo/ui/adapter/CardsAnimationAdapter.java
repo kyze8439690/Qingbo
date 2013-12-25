@@ -1,18 +1,18 @@
 package com.yugy.qingbo.ui.adapter;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.haarman.listviewanimations.swinginadapters.AnimationAdapter;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ObjectAnimator;
+import com.haarman.listviewanimations.NotAlphaAnimationAdapter;
 import com.yugy.qingbo.MyApplication;
 
 /**
  * Created by yugy on 13-12-25.
  */
-public class CardsAnimationAdapter extends AnimationAdapter {
+public class CardsAnimationAdapter extends NotAlphaAnimationAdapter {
 
     private float mTranslationY = 150;
 

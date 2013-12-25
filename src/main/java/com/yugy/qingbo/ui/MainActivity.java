@@ -1,5 +1,7 @@
 package com.yugy.qingbo.ui;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
@@ -13,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -27,14 +31,12 @@ import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.update.UmengUpdateAgent;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.MessageUtil;
 import com.yugy.qingbo.Utils.ScreenUtil;
-import com.yugy.qingbo.Utils.ColorUtil;
-import com.yugy.qingbo.helper.SpeedScrollListener;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.sql.AccountsDataSource;
 import com.yugy.qingbo.ui.adapter.CardsAnimationAdapter;
+import com.yugy.qingbo.ui.view.AppMsg;
 import com.yugy.qingbo.ui.view.TimeLineListItem;
 
 import org.json.JSONArray;
@@ -44,12 +46,16 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
-import uk.co.senab.actionbarpulltorefresh.library.DefaultHeaderTransformer;
-import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshAttacher;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
-public class MainActivity extends Activity implements ListView.OnItemClickListener, OnRefreshListener{
+public class MainActivity extends Activity implements ListView.OnItemClickListener,
+        OnRefreshListener, View.OnClickListener, AbsListView.OnScrollListener{
+
+    private static final int STATE_ONSCREEN = 0;
+    private static final int STATE_OFFSCREEN = 1;
+    private static final int STATE_RETURNING = 2;
+    private static final int STATE_HIDING = 4;
 
     private DrawerLayout mDrawerLayout;
     private RelativeLayout mDrawerLeftLayout;
@@ -60,15 +66,20 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     private ActionBar mActionbar;
     private ActionBarDrawerToggle mDrawerToggle;
     private TextView mEmptyView;
+    private View mBottomBar;
 
     private PullToRefreshLayout mPullToRefreshLayout;
-    private DefaultHeaderTransformer mHeaderTransformer;
     private AccountsDataSource mAccountsDataSource;
     private String[] mDrawerListViewString;
     private ArrayList<TimeLineModel> mTimeLineModels;
     private TimeLineListAdapter mTimeLineListAdapter;
     private AnimationDrawable mJingleDrawable;
-    private SpeedScrollListener mSpeedScrollListener;
+    private ObjectAnimator mBottomBarHideAnimator;
+    private ObjectAnimator mBottomBarReturnAnimator;
+
+    private int mState = STATE_ONSCREEN;
+    private int mLastY;
+    private int mLastFirstChild;
 
     private long firstStatusId = 0;
     private long lastStatusId = 0;
@@ -126,13 +137,13 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, mJingleDrawable, null, null);
         mEmptyView.setCompoundDrawablePadding(ScreenUtil.dp(this, 10));
         mDrawerRightList.setEmptyView(mEmptyView);
+
         mTimeLineList = (ListView) findViewById(R.id.main_timeline_list);
+
+        mBottomBar = findViewById(R.id.main_bottombar);
         ProgressBar progressBar = new ProgressBar(this);
         progressBar.setIndeterminate(true);
         mTimeLineList.addFooterView(progressBar);
-        mSpeedScrollListener = new SpeedScrollListener();
-        PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, mSpeedScrollListener);
-        mTimeLineList.setOnScrollListener(pauseOnScrollListener);
         mPullToRefreshLayout = (PullToRefreshLayout) findViewById(R.id.main_refreshlayout);
         ActionBarPullToRefresh.from(this).allChildrenArePullable().listener(this).setup(mPullToRefreshLayout);
 
@@ -161,11 +172,63 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     }
 
     private void initComponents(){
+        mBottomBarReturnAnimator = ObjectAnimator.ofFloat(mBottomBar, "translationY", 0);
+        mBottomBarReturnAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mState = STATE_RETURNING;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mState = STATE_ONSCREEN;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mState = STATE_OFFSCREEN;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        mBottomBarHideAnimator = ObjectAnimator.ofFloat(mBottomBar, "translationY", ScreenUtil.dp(this, 75));
+        mBottomBarHideAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mState = STATE_HIDING;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mState = STATE_OFFSCREEN;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mState = STATE_ONSCREEN;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+
         mTimeLineModels = new ArrayList<TimeLineModel>();
         mTimeLineListAdapter = new TimeLineListAdapter();
         CardsAnimationAdapter animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
         animationAdapter.setAbsListView(mTimeLineList);
         mTimeLineList.setAdapter(animationAdapter);
+
+        mLastFirstChild = mTimeLineList.getFirstVisiblePosition();
+        final View firstChild = mTimeLineList.getChildAt(mLastFirstChild);
+        mLastY = firstChild == null ? 0 : firstChild.getTop();
+
+        PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, this);
+        mTimeLineList.setOnScrollListener(pauseOnScrollListener);
     }
 
 
@@ -256,7 +319,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                         e.printStackTrace();
                     }
                 }
-                MessageUtil.myToast(MainActivity.this, "更新了" + response.length() + "条新微薄");
+                AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
                 mPullToRefreshLayout.setRefreshing(false);
                 mTimeLineListAdapter.notifyDataSetChanged();
                 super.onSuccess(response);
@@ -283,7 +346,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                         e.printStackTrace();
                     }
                 }
-                MessageUtil.myToast(MainActivity.this, "加载了" + (response.length() - 1) + "条微薄");
+                AppMsg.makeText(MainActivity.this, "加载了" + (response.length() - 1) + "条微薄", AppMsg.STYLE_INFO).show();
                 mTimeLineListAdapter.notifyDataSetChanged();
                 mPullToRefreshLayout.setRefreshComplete();
                 super.onSuccess(response);
@@ -319,14 +382,82 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                 }
                 mTimeLineListAdapter.notifyDataSetChanged();
                 if (response.length() == 0) {
-                    MessageUtil.myToast(MainActivity.this, "没有新微博");
+                    AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
                 } else {
-                    MessageUtil.myToast(MainActivity.this, "更新了" + response.length() + "条新微薄");
+                    AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
                 }
                 mPullToRefreshLayout.setRefreshComplete();
                 super.onSuccess(response);
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    private boolean isBottomBarReturning(){
+        return mBottomBarReturnAnimator.isRunning() || mBottomBarReturnAnimator.isStarted();
+    }
+
+    private boolean isBottomBarHiding(){
+        return mBottomBarHideAnimator.isRunning() || mBottomBarHideAnimator.isStarted();
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        final View firstChild = mTimeLineList.getChildAt(firstVisibleItem);
+        int yPosition = firstChild == null? 0 : firstChild.getTop();
+
+        switch (mState) {
+            case STATE_OFFSCREEN:
+                // * Return quick return bar if first visible child is the same AND it's Y position increases
+                // * Return quick return bar if first visible child changes to a previous sibling
+                // * AND only if the quick return bar isn't already returning
+                if (!isBottomBarReturning()
+                        && (firstVisibleItem == mLastFirstChild && yPosition > mLastY)
+                        || firstVisibleItem < mLastFirstChild)
+                    mBottomBarReturnAnimator.start();
+                break;
+
+            case STATE_ONSCREEN:
+                // * Hide quick return bar if first visible child is the same AND it's Y position decreases
+                // * Hide quick return bar if first visible child changes to a later sibling
+                // * AND only if the quick return bar isn't already going away
+                if (!isBottomBarHiding()
+                        && (firstVisibleItem == mLastFirstChild && yPosition < mLastY)
+                        || firstVisibleItem > mLastFirstChild)
+                    mBottomBarHideAnimator.start();
+                break;
+
+            case STATE_RETURNING:
+                // * Cancel return of quick return bar if first visible child is the same AND it's Y position decreases
+                // * Cancel return of quick return bar if first visible child changes to a later sibling
+                if ((firstVisibleItem == mLastFirstChild && yPosition < mLastY)
+                        || firstVisibleItem > mLastFirstChild) {
+                    mBottomBarReturnAnimator.cancel();
+                    mBottomBarHideAnimator.start();
+                }
+                break;
+
+            case STATE_HIDING:
+                // * Cancel hide of quick return bar if first visible child is the same AND it's Y position increases
+                // * Cancel hide of quick return bar if first visible child changes to a previous sibling
+                if ((firstVisibleItem == mLastFirstChild && yPosition > mLastY)
+                        || firstVisibleItem < mLastFirstChild) {
+                    mBottomBarHideAnimator.cancel();
+                    mBottomBarReturnAnimator.start();
+                }
+                break;
+        }
+        mLastFirstChild = firstVisibleItem;
+        mLastY = yPosition;
     }
 
     private class TwoDrawerToggle extends ActionBarDrawerToggle{
@@ -395,5 +526,4 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
             return item;
         }
     }
-
 }

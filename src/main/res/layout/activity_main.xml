@@ -26,6 +26,14 @@
             android:overScrollMode="never"
             />
 
+        <View
+            android:id="@+id/main_bottombar"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:background="#000"
+            android:layout_gravity="bottom"
+            />
+
     </uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout>
 
     <RelativeLayout
