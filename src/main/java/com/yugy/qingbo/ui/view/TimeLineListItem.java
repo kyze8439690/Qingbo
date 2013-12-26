@@ -2,6 +2,7 @@ package com.yugy.qingbo.ui.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +16,12 @@ import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.Utils.NetworkUtil;
 import com.yugy.qingbo.Utils.ScreenUtil;
+import com.yugy.qingbo.Utils.TextUtil;
 import com.yugy.qingbo.ui.activity.DetailActivity;
 import com.yugy.qingbo.model.TimeLineModel;
 
@@ -90,6 +93,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
             commentCount.setLayoutParams(lp);
             if(data.hasPic || data.hasRepostPic){
                 pic.setVisibility(VISIBLE);
+                pic.setGif(TextUtil.isGifLink(data.pics.get(0)));
                 if(NetworkUtil.isWifi(getContext())){
                     ImageLoader.getInstance().displayImage(data.pics.get(0).replace("thumbnail", "bmiddle"), pic);
                 }else{
@@ -136,7 +140,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
                 .showImageForEmptyUri(R.drawable.default_head)
                 .cacheInMemory(true)
                 .cacheOnDisc(true)
-                .displayer(new RoundedBitmapDisplayer(ScreenUtil.dp(getContext(), 25)))
+                .displayer(new FadeInBitmapDisplayer(600))
                 .build());
     }
 
@@ -175,12 +179,13 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ImageView image = (ImageView) convertView;
+            GifIconImageView image = (GifIconImageView) convertView;
             if(image == null){
-                image = new ImageView(getContext());
+                image = new GifIconImageView(getContext());
                 image.setLayoutParams(new AbsListView.LayoutParams(imageWidth, imageWidth));
                 image.setScaleType(ImageView.ScaleType.CENTER_CROP);
             }
+            image.setGif(TextUtil.isGifLink(data.get(position)));
             ImageLoader.getInstance().displayImage(data.get(position), image);
             return image;
         }

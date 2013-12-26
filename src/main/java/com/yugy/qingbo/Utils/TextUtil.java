@@ -54,6 +54,10 @@ public class TextUtil {
         return parseString;
     }
 
+    public static boolean isGifLink(String url){
+        return url.endsWith(".gif");
+    }
+
     public static ArrayList<String> getTopic(String text){
         ArrayList<String> topics = new ArrayList<String>();
         Pattern topicPattern = Pattern.compile("#[^#]+#");
