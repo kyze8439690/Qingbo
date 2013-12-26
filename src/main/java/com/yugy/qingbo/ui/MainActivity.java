@@ -31,11 +31,13 @@ import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.update.UmengUpdateAgent;
 import com.yugy.qingbo.R;
+import com.yugy.qingbo.Utils.MessageUtil;
 import com.yugy.qingbo.Utils.ScreenUtil;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.sql.AccountsDataSource;
 import com.yugy.qingbo.ui.adapter.CardsAnimationAdapter;
+import com.yugy.qingbo.ui.componnet.BottomBarOnScrollListener;
 import com.yugy.qingbo.ui.view.AppMsg;
 import com.yugy.qingbo.ui.view.TimeLineListItem;
 
@@ -50,7 +52,7 @@ import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public class MainActivity extends Activity implements ListView.OnItemClickListener,
-        OnRefreshListener, View.OnClickListener, AbsListView.OnScrollListener{
+        OnRefreshListener, View.OnClickListener{
 
     private DrawerLayout mDrawerLayout;
     private RelativeLayout mDrawerLeftLayout;
@@ -168,7 +170,9 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         animationAdapter.setAbsListView(mTimeLineList);
         mTimeLineList.setAdapter(animationAdapter);
 
-        PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, this);
+
+
+        PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, new BottomBarOnScrollListener(mBottomBar));
         mTimeLineList.setOnScrollListener(pauseOnScrollListener);
     }
 
@@ -300,9 +304,9 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         Weibo.getNewTimeline(this, firstStatusId + "", new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray response) {
-                for (int i = 0; i < mTimeLineModels.size(); i++) {
+                for (TimeLineModel mTimeLineModel : mTimeLineModels) {
                     try {
-                        mTimeLineModels.get(i).reParseTime();
+                        mTimeLineModel.reParseTime();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -340,16 +344,6 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                 mTimeLineList.setSelectionAfterHeaderView();
                 break;
         }
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-    }
-
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
     }
 
     private class TwoDrawerToggle extends ActionBarDrawerToggle{

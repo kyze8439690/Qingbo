@@ -21,6 +21,12 @@ public class MessageUtil {
         }
     }
 
+    public static void log(int num){
+        if(Conf.DEBUG){
+            Log.d(Conf.TAG, String.valueOf(num));
+        }
+    }
+
     public static void toast(Context context, String str){
         Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
     }
