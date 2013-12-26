@@ -52,11 +52,6 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class MainActivity extends Activity implements ListView.OnItemClickListener,
         OnRefreshListener, View.OnClickListener, AbsListView.OnScrollListener{
 
-    private static final int STATE_ONSCREEN = 0;
-    private static final int STATE_OFFSCREEN = 1;
-    private static final int STATE_RETURNING = 2;
-    private static final int STATE_HIDING = 4;
-
     private DrawerLayout mDrawerLayout;
     private RelativeLayout mDrawerLeftLayout;
     private RelativeLayout mDrawerRightLayout;
@@ -74,12 +69,6 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     private ArrayList<TimeLineModel> mTimeLineModels;
     private TimeLineListAdapter mTimeLineListAdapter;
     private AnimationDrawable mJingleDrawable;
-    private ObjectAnimator mBottomBarHideAnimator;
-    private ObjectAnimator mBottomBarReturnAnimator;
-
-    private int mState = STATE_ONSCREEN;
-    private int mLastY;
-    private int mLastFirstChild;
 
     private long firstStatusId = 0;
     private long lastStatusId = 0;
@@ -141,6 +130,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         mTimeLineList = (ListView) findViewById(R.id.main_timeline_list);
 
         mBottomBar = findViewById(R.id.main_bottombar);
+        mBottomBar.setOnClickListener(this);
         ProgressBar progressBar = new ProgressBar(this);
         progressBar.setIndeterminate(true);
         mTimeLineList.addFooterView(progressBar);
@@ -172,60 +162,11 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     }
 
     private void initComponents(){
-        mBottomBarReturnAnimator = ObjectAnimator.ofFloat(mBottomBar, "translationY", 0);
-        mBottomBarReturnAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mState = STATE_RETURNING;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mState = STATE_ONSCREEN;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mState = STATE_OFFSCREEN;
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        mBottomBarHideAnimator = ObjectAnimator.ofFloat(mBottomBar, "translationY", ScreenUtil.dp(this, 75));
-        mBottomBarHideAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mState = STATE_HIDING;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mState = STATE_OFFSCREEN;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mState = STATE_ONSCREEN;
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-
         mTimeLineModels = new ArrayList<TimeLineModel>();
         mTimeLineListAdapter = new TimeLineListAdapter();
         CardsAnimationAdapter animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
         animationAdapter.setAbsListView(mTimeLineList);
         mTimeLineList.setAdapter(animationAdapter);
-
-        mLastFirstChild = mTimeLineList.getFirstVisiblePosition();
-        final View firstChild = mTimeLineList.getChildAt(mLastFirstChild);
-        mLastY = firstChild == null ? 0 : firstChild.getTop();
 
         PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, this);
         mTimeLineList.setOnScrollListener(pauseOnScrollListener);
@@ -394,15 +335,11 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 
     @Override
     public void onClick(View v) {
-
-    }
-
-    private boolean isBottomBarReturning(){
-        return mBottomBarReturnAnimator.isRunning() || mBottomBarReturnAnimator.isStarted();
-    }
-
-    private boolean isBottomBarHiding(){
-        return mBottomBarHideAnimator.isRunning() || mBottomBarHideAnimator.isStarted();
+        switch (v.getId()){
+            case R.id.main_bottombar:
+                mTimeLineList.setSelectionAfterHeaderView();
+                break;
+        }
     }
 
     @Override
@@ -412,52 +349,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        final View firstChild = mTimeLineList.getChildAt(firstVisibleItem);
-        int yPosition = firstChild == null? 0 : firstChild.getTop();
 
-        switch (mState) {
-            case STATE_OFFSCREEN:
-                // * Return quick return bar if first visible child is the same AND it's Y position increases
-                // * Return quick return bar if first visible child changes to a previous sibling
-                // * AND only if the quick return bar isn't already returning
-                if (!isBottomBarReturning()
-                        && (firstVisibleItem == mLastFirstChild && yPosition > mLastY)
-                        || firstVisibleItem < mLastFirstChild)
-                    mBottomBarReturnAnimator.start();
-                break;
-
-            case STATE_ONSCREEN:
-                // * Hide quick return bar if first visible child is the same AND it's Y position decreases
-                // * Hide quick return bar if first visible child changes to a later sibling
-                // * AND only if the quick return bar isn't already going away
-                if (!isBottomBarHiding()
-                        && (firstVisibleItem == mLastFirstChild && yPosition < mLastY)
-                        || firstVisibleItem > mLastFirstChild)
-                    mBottomBarHideAnimator.start();
-                break;
-
-            case STATE_RETURNING:
-                // * Cancel return of quick return bar if first visible child is the same AND it's Y position decreases
-                // * Cancel return of quick return bar if first visible child changes to a later sibling
-                if ((firstVisibleItem == mLastFirstChild && yPosition < mLastY)
-                        || firstVisibleItem > mLastFirstChild) {
-                    mBottomBarReturnAnimator.cancel();
-                    mBottomBarHideAnimator.start();
-                }
-                break;
-
-            case STATE_HIDING:
-                // * Cancel hide of quick return bar if first visible child is the same AND it's Y position increases
-                // * Cancel hide of quick return bar if first visible child changes to a previous sibling
-                if ((firstVisibleItem == mLastFirstChild && yPosition > mLastY)
-                        || firstVisibleItem < mLastFirstChild) {
-                    mBottomBarHideAnimator.cancel();
-                    mBottomBarReturnAnimator.start();
-                }
-                break;
-        }
-        mLastFirstChild = firstVisibleItem;
-        mLastY = yPosition;
     }
 
     private class TwoDrawerToggle extends ActionBarDrawerToggle{
