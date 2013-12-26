@@ -11,6 +11,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.umeng.analytics.MobclickAgent;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.ui.fragment.SettingsFragment;
 
@@ -31,6 +32,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mContext = getApplicationContext();
+        MobclickAgent.setDebugMode(true);
         DisplayImageOptions options = new DisplayImageOptions.Builder()
                 .showStubImage(R.drawable.jingles_1)
                 .showImageForEmptyUri(R.drawable.ic_launcher)

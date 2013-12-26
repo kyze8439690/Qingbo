@@ -1,9 +1,8 @@
 package com.yugy.qingbo.ui.activity;
 
 import android.app.ActionBar;
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -23,8 +22,6 @@ import android.widget.TextView;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
-import com.umeng.analytics.MobclickAgent;
-import com.umeng.update.UmengUpdateAgent;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
@@ -46,8 +43,11 @@ import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
-public class MainActivity extends Activity implements ListView.OnItemClickListener,
+public class MainActivity extends BaseActivity implements ListView.OnItemClickListener,
         OnRefreshListener, View.OnClickListener {
+
+    private static final int REQUEST_SETTINGS = 0;
+    public static final int RESULT_SETTING_FONT_CHANGED = 1;
 
     private DrawerLayout mDrawerLayout;
     private RelativeLayout mDrawerLeftLayout;
@@ -74,9 +74,6 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        MobclickAgent.setDebugMode(true);
-        MobclickAgent.onError(this);
-        UmengUpdateAgent.update(this);
         initViews();
         initComponents();
         if(hasAccount()){
@@ -85,14 +82,8 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-        MobclickAgent.onResume(this);
         animationAdapter.setShouldAnimate(
                 PreferenceManager.getDefaultSharedPreferences(this)
                         .getBoolean(SettingsFragment.KEY_PREF_ANIMATION, true)
@@ -100,10 +91,65 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        MobclickAgent.onPause(this);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == REQUEST_SETTINGS && resultCode == RESULT_SETTING_FONT_CHANGED){
+            Intent intent = getIntent();
+            finish();
+            startActivity(intent);
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_actions, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    private static final int ID_HOME = 0x0102002c; //android.R.id.home
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case ID_HOME:
+                //close right drawer first if it has been opened.
+                if(mDrawerLayout.isDrawerVisible(Gravity.END)){
+                    mDrawerLayout.closeDrawer(mDrawerRightLayout);
+                }
+                //open the left drawer
+                if(mDrawerToggle.onOptionsItemSelected(item)){
+                    return true;
+                }
+                break;
+            case R.id.main_action_notify:
+                //close left drawer first if it has been opened.
+                if(mDrawerLayout.isDrawerVisible(Gravity.START)){
+                    mDrawerLayout.closeDrawer(mDrawerLeftLayout);
+                }
+                //toggle the right drawer
+                if(mDrawerLayout.isDrawerVisible(Gravity.END)){
+                    mDrawerLayout.closeDrawer(mDrawerRightLayout);
+                }else{
+                    mDrawerLayout.openDrawer(mDrawerRightLayout);
+                }
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
 
     private boolean hasAccount(){
         mAccountsDataSource = new AccountsDataSource(this);
@@ -177,56 +223,6 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main_actions, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    private static final int ID_HOME = 0x0102002c; //android.R.id.home
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case ID_HOME:
-                //close right drawer first if it has been opened.
-                if(mDrawerLayout.isDrawerVisible(Gravity.END)){
-                    mDrawerLayout.closeDrawer(mDrawerRightLayout);
-                }
-                //open the left drawer
-                if(mDrawerToggle.onOptionsItemSelected(item)){
-                    return true;
-                }
-                break;
-            case R.id.main_action_notify:
-                //close left drawer first if it has been opened.
-                if(mDrawerLayout.isDrawerVisible(Gravity.START)){
-                    mDrawerLayout.closeDrawer(mDrawerLeftLayout);
-                }
-                //toggle the right drawer
-                if(mDrawerLayout.isDrawerVisible(Gravity.END)){
-                    mDrawerLayout.closeDrawer(mDrawerRightLayout);
-                }else{
-                    mDrawerLayout.openDrawer(mDrawerRightLayout);
-                }
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if(parent.equals(mDrawerLeftList)){
             switch(position){
@@ -234,7 +230,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                     startActivity(new Intent(MainActivity.this, AccountActivity.class));
                     break;
                 case 1:
-                    startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                    startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), REQUEST_SETTINGS);
                     break;
             }
         }else if(parent.equals(mTimeLineList)){

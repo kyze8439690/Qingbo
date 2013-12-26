@@ -6,6 +6,7 @@ import android.preference.PreferenceFragment;
 
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.Utils.MessageUtil;
+import com.yugy.qingbo.ui.activity.MainActivity;
 
 /**
  * Created by yugy on 13-12-26.
@@ -29,7 +30,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(KEY_PREF_FONT)){
             fontPreferences = sharedPreferences.getString(KEY_PREF_FONT, "default");
-            MessageUtil.log(fontPreferences);
+            getActivity().setResult(MainActivity.RESULT_SETTING_FONT_CHANGED);
         }
     }
 

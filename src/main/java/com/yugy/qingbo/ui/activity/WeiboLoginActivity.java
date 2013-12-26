@@ -18,7 +18,7 @@ import com.yugy.qingbo.Conf;
 
 import org.json.JSONObject;
 
-public class WeiboLoginActivity extends Activity {
+public class WeiboLoginActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,18 +26,6 @@ public class WeiboLoginActivity extends Activity {
         setContentView(R.layout.activity_weibo_login);
         getActionBar().setDisplayShowHomeEnabled(false);
         initViews();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        MobclickAgent.onResume(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        MobclickAgent.onPause(this);
     }
 
     private WebView mWebView;

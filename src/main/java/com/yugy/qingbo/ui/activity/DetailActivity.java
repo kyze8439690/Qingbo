@@ -1,7 +1,6 @@
 package com.yugy.qingbo.ui.activity;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -39,7 +38,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 /**
  * Created by yugy on 13-11-7.
  */
-public class DetailActivity extends Activity implements View.OnClickListener{
+public class DetailActivity extends BaseActivity implements View.OnClickListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
