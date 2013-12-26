@@ -32,8 +32,7 @@ import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.ui.view.HackyViewPager;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
 
-import uk.co.senab.photoview.PhotoView;
-import uk.co.senab.photoview.PhotoViewAttacher;
+import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
 /**
  * Created by yugy on 13-11-7.
@@ -234,11 +233,11 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
 
             @Override
             public Object instantiateItem(ViewGroup container, final int position) {
-                final PhotoView photoView = new PhotoView(DetailActivity.this);
-                photoView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                photoView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
+                final ImageViewTouch imageViewTouch = new ImageViewTouch(DetailActivity.this);
+                imageViewTouch.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                imageViewTouch.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onViewTap(View view, float v, float v2) {
+                    public void onClick(View v) {
                         if (actionBar.isShowing()) {
                             actionBar.hide();
                             slidingLayout.setPanelHeight(ScreenUtil.dp(DetailActivity.this, 48));
@@ -252,14 +251,14 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
                 ImageLoader.getInstance().loadImage(data.pics.get(position).replace("thumbnail", "large"), targetSize, displayImageOptions, new SimpleImageLoadingListener() {
                     @Override
                     public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                        photoView.setImageBitmap(loadedImage);
+                        imageViewTouch.setImageBitmap(loadedImage);
                         if(position == index){
                             progress.setVisibility(View.GONE);
                         }
                     }
                 });
-                container.addView(photoView);
-                return photoView;
+                container.addView(imageViewTouch);
+                return imageViewTouch;
             }
 
             @Override
