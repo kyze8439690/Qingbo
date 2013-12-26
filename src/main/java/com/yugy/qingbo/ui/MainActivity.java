@@ -1,7 +1,5 @@
 package com.yugy.qingbo.ui;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
@@ -15,8 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -31,13 +27,14 @@ import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.update.UmengUpdateAgent;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.MessageUtil;
 import com.yugy.qingbo.Utils.ScreenUtil;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.sql.AccountsDataSource;
-import com.yugy.qingbo.ui.adapter.CardsAnimationAdapter;
+import com.yugy.qingbo.ui.componnet.TwoDrawerToggle;
+import com.yugy.qingbo.ui.componnet.adapter.CardsAnimationAdapter;
 import com.yugy.qingbo.ui.componnet.BottomBarOnScrollListener;
+import com.yugy.qingbo.ui.componnet.adapter.TimeLineListAdapter;
 import com.yugy.qingbo.ui.view.AppMsg;
 import com.yugy.qingbo.ui.view.TimeLineListItem;
 
@@ -70,7 +67,6 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     private String[] mDrawerListViewString;
     private ArrayList<TimeLineModel> mTimeLineModels;
     private TimeLineListAdapter mTimeLineListAdapter;
-    private AnimationDrawable mJingleDrawable;
 
     private long firstStatusId = 0;
     private long lastStatusId = 0;
@@ -124,15 +120,15 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         mDrawerRightLayout = (RelativeLayout) findViewById(R.id.main_right_drawer);
         mDrawerRightList = (ListView) findViewById(R.id.main_right_drawer_list);
         mEmptyView = (TextView) findViewById(R.id.main_right_drawer_emptyview);
-        mJingleDrawable = (AnimationDrawable) getResources().getDrawable(R.drawable.jingles);
-        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, mJingleDrawable, null, null);
-        mEmptyView.setCompoundDrawablePadding(ScreenUtil.dp(this, 10));
         mDrawerRightList.setEmptyView(mEmptyView);
 
         mTimeLineList = (ListView) findViewById(R.id.main_timeline_list);
 
         mBottomBar = findViewById(R.id.main_bottombar);
-        mBottomBar.setOnClickListener(this);
+        mBottomBar.findViewById(R.id.btn_bottombar_photo).setOnClickListener(this);
+        mBottomBar.findViewById(R.id.btn_bottombar_location).setOnClickListener(this);
+        mBottomBar.findViewById(R.id.btn_bottombar_text).setOnClickListener(this);
+        mBottomBar.findViewById(R.id.btn_bottombar_refresh).setOnClickListener(this);
         ProgressBar progressBar = new ProgressBar(this);
         progressBar.setIndeterminate(true);
         mTimeLineList.addFooterView(progressBar);
@@ -155,9 +151,8 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         mDrawerToggle = new TwoDrawerToggle(
                 this,
                 mDrawerLayout,
-                R.drawable.ic_drawer_toggle,
-                R.string.app_name,
-                R.string.app_name
+                mDrawerLeftLayout,
+                mDrawerRightLayout
         );
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -165,17 +160,18 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 
     private void initComponents(){
         mTimeLineModels = new ArrayList<TimeLineModel>();
-        mTimeLineListAdapter = new TimeLineListAdapter();
+        mTimeLineListAdapter = new TimeLineListAdapter(this);
         CardsAnimationAdapter animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
         animationAdapter.setAbsListView(mTimeLineList);
         mTimeLineList.setAdapter(animationAdapter);
-
-
 
         PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, new BottomBarOnScrollListener(mBottomBar));
         mTimeLineList.setOnScrollListener(pauseOnScrollListener);
     }
 
+    public ArrayList<TimeLineModel> getTimeLineModels() {
+        return mTimeLineModels;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -264,7 +260,11 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                         e.printStackTrace();
                     }
                 }
-                AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
+                if (response.length() == 0) {
+                    AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
+                } else {
+                    AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
+                }
                 mPullToRefreshLayout.setRefreshing(false);
                 mTimeLineListAdapter.notifyDataSetChanged();
                 super.onSuccess(response);
@@ -272,7 +272,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
         });
     }
 
-    private void getOldData(){
+    public void getOldData(){
         mPullToRefreshLayout.setRefreshing(true);
         Weibo.getOldTimeline(this, lastStatusId + "", new JsonHttpResponseHandler(){
             @Override
@@ -340,76 +340,10 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.main_bottombar:
+            case R.id.btn_bottombar_refresh:
                 mTimeLineList.setSelectionAfterHeaderView();
+                getNewData();
                 break;
-        }
-    }
-
-    private class TwoDrawerToggle extends ActionBarDrawerToggle{
-        public TwoDrawerToggle(Activity activity, DrawerLayout drawerLayout, int drawerImageRes, int openDrawerContentDescRes, int closeDrawerContentDescRes) {
-            super(activity, drawerLayout, drawerImageRes, openDrawerContentDescRes, closeDrawerContentDescRes);
-        }
-
-        @Override
-        public void onDrawerOpened(View drawerView) {
-            if(drawerView.equals(mDrawerRightLayout)){
-                if(mJingleDrawable.isVisible()){
-                    if(mJingleDrawable.isRunning()){
-                        mJingleDrawable.stop();
-                    }
-                    mJingleDrawable.start();
-                }
-            }else{
-                super.onDrawerOpened(drawerView);
-            }
-            if(mDrawerLayout.isDrawerOpen(Gravity.END) && drawerView.equals(mDrawerLeftLayout)){
-                mDrawerLayout.closeDrawer(Gravity.END);
-            }else if(mDrawerLayout.isDrawerOpen(Gravity.START) && drawerView.equals(mDrawerRightLayout)){
-                mDrawerLayout.closeDrawer(Gravity.START);
-            }
-        }
-
-        @Override
-        public void onDrawerSlide(View drawerView, float slideOffset) {
-            if(drawerView == mDrawerLeftLayout){
-                super.onDrawerSlide(drawerView, slideOffset);
-            }
-        }
-    }
-
-    private class TimeLineListAdapter extends BaseAdapter{
-
-        @Override
-        public int getCount() {
-            return mTimeLineModels.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            TimeLineListItem item = new TimeLineListItem(MainActivity.this);
-            item.parse(mTimeLineModels.get(position));
-            return item;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            TimeLineListItem item;
-            if(convertView != null){
-                item = (TimeLineListItem) convertView;
-            }else{
-                item = new TimeLineListItem(MainActivity.this);
-            }
-            item.parse(mTimeLineModels.get(position));
-            if(position == getCount() - 1){
-                getOldData();
-            }
-            return item;
         }
     }
 }

@@ -5,8 +5,7 @@ import android.animation.ObjectAnimator;
 import android.view.View;
 import android.widget.AbsListView;
 
-import com.yugy.qingbo.Utils.MessageUtil;
-import com.yugy.qingbo.Utils.ScreenUtil;
+import com.yugy.qingbo.R;
 
 /**
  * Created by yugy on 13-12-26.
@@ -34,7 +33,7 @@ public class BottomBarOnScrollListener implements AbsListView.OnScrollListener {
             @Override
             public void onAnimationRepeat(Animator animation) {}
         });
-        mHideAnimator = ObjectAnimator.ofFloat(mBottomBar, "translationY", ScreenUtil.dp(mBottomBar.getContext(), 75));
+        mHideAnimator = ObjectAnimator.ofFloat(mBottomBar, "translationY", mBottomBar.getResources().getDimension(R.dimen.bottom_height));
         mHideAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
