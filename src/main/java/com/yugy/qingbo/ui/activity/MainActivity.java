@@ -1,21 +1,20 @@
-package com.yugy.qingbo.ui;
+package com.yugy.qingbo.ui.activity;
 
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -27,7 +26,6 @@ import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.update.UmengUpdateAgent;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.ScreenUtil;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.sql.AccountsDataSource;
@@ -35,8 +33,8 @@ import com.yugy.qingbo.ui.componnet.TwoDrawerToggle;
 import com.yugy.qingbo.ui.componnet.adapter.CardsAnimationAdapter;
 import com.yugy.qingbo.ui.componnet.BottomBarOnScrollListener;
 import com.yugy.qingbo.ui.componnet.adapter.TimeLineListAdapter;
+import com.yugy.qingbo.ui.fragment.SettingsFragment;
 import com.yugy.qingbo.ui.view.AppMsg;
-import com.yugy.qingbo.ui.view.TimeLineListItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,7 +47,7 @@ import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public class MainActivity extends Activity implements ListView.OnItemClickListener,
-        OnRefreshListener, View.OnClickListener{
+        OnRefreshListener, View.OnClickListener {
 
     private DrawerLayout mDrawerLayout;
     private RelativeLayout mDrawerLeftLayout;
@@ -67,6 +65,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     private String[] mDrawerListViewString;
     private ArrayList<TimeLineModel> mTimeLineModels;
     private TimeLineListAdapter mTimeLineListAdapter;
+    private CardsAnimationAdapter animationAdapter;
 
     private long firstStatusId = 0;
     private long lastStatusId = 0;
@@ -94,6 +93,10 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     public void onResume() {
         super.onResume();
         MobclickAgent.onResume(this);
+        animationAdapter.setShouldAnimate(
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .getBoolean(SettingsFragment.KEY_PREF_ANIMATION, true)
+        );
     }
 
     @Override
@@ -161,7 +164,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
     private void initComponents(){
         mTimeLineModels = new ArrayList<TimeLineModel>();
         mTimeLineListAdapter = new TimeLineListAdapter(this);
-        CardsAnimationAdapter animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
+        animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
         animationAdapter.setAbsListView(mTimeLineList);
         mTimeLineList.setAdapter(animationAdapter);
 
@@ -229,6 +232,9 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
             switch(position){
                 case 0:
                     startActivity(new Intent(MainActivity.this, AccountActivity.class));
+                    break;
+                case 1:
+                    startActivity(new Intent(MainActivity.this, SettingsActivity.class));
                     break;
             }
         }else if(parent.equals(mTimeLineList)){
@@ -346,4 +352,5 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
                 break;
         }
     }
+
 }

@@ -19,7 +19,7 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.Utils.NetworkUtil;
 import com.yugy.qingbo.Utils.ScreenUtil;
-import com.yugy.qingbo.ui.DetailActivity;
+import com.yugy.qingbo.ui.activity.DetailActivity;
 import com.yugy.qingbo.model.TimeLineModel;
 
 import java.util.ArrayList;

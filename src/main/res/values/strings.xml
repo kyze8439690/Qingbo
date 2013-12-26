@@ -7,5 +7,24 @@
     <string name="title_activity_welcome">欢迎</string>
     <string name="title_activity_account">账号管理</string>
     <string name="title_activity_weibo_login">新浪微博</string>
+    <string name="title_activity_setting">设置</string>
+
+    <string-array name="pref_font_entry">
+        <item>Roboto</item>
+        <item>Roboto Condensed</item>
+        <item>Roboto Slab</item>
+    </string-array>
+
+    <string-array name="pref_font_values">
+        <item>default</item>
+        <item>condensed</item>
+        <item>slab</item>
+    </string-array>
+
+    <string-array name="pref_weibo_amount_entry">
+        <item>20</item>
+        <item>40</item>
+        <item>60</item>
+    </string-array>
 
 </resources>

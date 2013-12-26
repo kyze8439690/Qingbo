@@ -1,4 +1,4 @@
-package com.yugy.qingbo.ui;
+package com.yugy.qingbo.ui.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;

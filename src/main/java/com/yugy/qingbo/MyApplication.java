@@ -3,6 +3,7 @@ package com.yugy.qingbo;
 import android.app.Application;
 import android.content.Context;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
@@ -11,6 +12,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
+import com.yugy.qingbo.ui.fragment.SettingsFragment;
 
 import java.io.File;
 
@@ -45,5 +47,9 @@ public class MyApplication extends Application {
                 .defaultDisplayImageOptions(options)
                 .discCache(new UnlimitedDiscCache(cacheDir)).build();
         ImageLoader.getInstance().init(config);
+
+        SettingsFragment.fontPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+                .getString(SettingsFragment.KEY_PREF_FONT, "default");
+
     }
 }

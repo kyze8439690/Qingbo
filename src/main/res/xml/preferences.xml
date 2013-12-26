@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="通用"
+        >
+
+        <ListPreference
+            android:key="pref_font"
+            android:title="字体"
+            android:summary="设置非中文字体"
+            android:entries="@array/pref_font_entry"
+            android:entryValues="@array/pref_font_values"
+            android:defaultValue="default"
+            />
+
+        <ListPreference
+            android:key="pref_timeline_amount"
+            android:title="刷新数量"
+            android:summary="设置每次刷新获取的微博数"
+            android:entries="@array/pref_weibo_amount_entry"
+            android:entryValues="@array/pref_weibo_amount_entry"
+            android:defaultValue="40"
+            />
+
+        <SwitchPreference
+            android:key="pref_animation"
+            android:title="滚动特效"
+            android:summary="微博列表卡片滚动特效"
+            android:defaultValue="true"
+
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="更多"
+        >
+
+        <Preference android:title="给我发邮件">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="mailto:me@yanghui.name"
+                />
+
+        </Preference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

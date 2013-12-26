@@ -1,6 +1,7 @@
 package com.yugy.qingbo.sdk;
 
 import android.content.Context;
+import android.preference.PreferenceManager;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -11,6 +12,7 @@ import com.yugy.qingbo.sql.Account;
 import com.yugy.qingbo.sql.AccountsDataSource;
 import com.yugy.qingbo.sql.UsersDataSource;
 import com.yugy.qingbo.Conf;
+import com.yugy.qingbo.ui.fragment.SettingsFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -96,10 +98,12 @@ public class Weibo {
     }
 
     public static void getNewTimeline(Context context, String firstStatusId, final JsonHttpResponseHandler responseHandler){
+        String timelineAmount = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(SettingsFragment.KEY_PREF_TIMELINE_AMOUNT, "40");
         RequestParams params = getParamsWithAccessToken(context);
         params.put("since_id", firstStatusId);
-        params.put("count", "40");
-        mClient.get(context, WeiboApiUrl.STATUS_HOME_TIMELINE, params, new JsonHttpResponseHandler(){
+        params.put("count", timelineAmount);
+        mClient.get(context, WeiboApiUrl.STATUS_HOME_TIMELINE, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONObject response) {
                 MessageUtil.log(response.toString());
@@ -121,9 +125,11 @@ public class Weibo {
     }
 
     public static void getOldTimeline(Context context, String lastStatusId, final JsonHttpResponseHandler responseHandler){
+        int timelineAmount = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(SettingsFragment.KEY_PREF_TIMELINE_AMOUNT, "40")) + 1;
         RequestParams params = getParamsWithAccessToken(context);
         params.put("max_id", lastStatusId);
-        params.put("count", "41");
+        params.put("count", String.valueOf(timelineAmount));
         mClient.get(context, WeiboApiUrl.STATUS_HOME_TIMELINE, params, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONObject response) {
