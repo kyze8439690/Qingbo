@@ -23,12 +23,14 @@
 
     <string-array name="pref_page_animation_entry">
         <item>Zoom Out</item>
-        <item>DepthPage</item>
+        <item>Depth Page</item>
+        <item>Fade</item>
     </string-array>
 
     <string-array name="pref_page_animation_values">
         <item>zoom</item>
         <item>depth</item>
+        <item>fade</item>
     </string-array>
 
     <string-array name="pref_weibo_amount_entry">

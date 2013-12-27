@@ -36,7 +36,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
         init();
     }
 
-    private ImageView head;
+    private HeadIconImageView head;
     private TextView name;
     private TextView text;
     private TextView topic;
@@ -55,7 +55,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
     private void init(){
         layoutInflater = LayoutInflater.from(getContext());
         layoutInflater.inflate(R.layout.widget_timeline_listitem, this);
-        head = (ImageView) findViewById(R.id.timeline_listitem_head);
+        head = (HeadIconImageView) findViewById(R.id.timeline_listitem_head);
         name = (TextView) findViewById(R.id.timeline_listitem_name);
         text = (TextView) findViewById(R.id.timeline_listitem_text);
         text.setMovementMethod(LinkMovementMethod.getInstance());

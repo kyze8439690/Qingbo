@@ -18,13 +18,6 @@
             android:layout_height="match_parent"
             />
 
-        <ProgressBar
-            android:id="@+id/detail_progress"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_centerInParent="true"
-            style="@android:style/Widget.Holo.ProgressBar"/>
-
     </RelativeLayout>
 
     <RelativeLayout
@@ -41,7 +34,7 @@
             android:background="@drawable/black_gradient"
             android:id="@+id/detail_frontlayout_head_layout">
 
-            <ImageView
+            <com.yugy.qingbo.ui.view.HeadIconImageView
                 android:id="@+id/detail_head"
                 android:layout_width="60dp"
                 android:layout_height="60dp"

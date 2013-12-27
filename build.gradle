@@ -9,6 +9,9 @@ buildscript {
 apply plugin: 'android'
 
 repositories {
+    maven {
+        url 'https://raw.github.com/chrisbanes/PhotoView/maven/'
+    }
     mavenCentral()
 }
 
@@ -24,8 +27,9 @@ android {
 
 dependencies {
     compile 'com.android.support:support-v4:+'
+    compile 'com.android.support:support-v13:+'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:library:+'
     compile 'uk.co.chrisjenx.calligraphy:calligraphy:+'
-    compile 'com.github.chrisbanes.photoview:library:+'
+    compile 'com.github.chrisbanes.photoview:library:1.2.3-SNAPSHOT'
     compile fileTree(dir: 'libs' , include: '*.jar')
 }
