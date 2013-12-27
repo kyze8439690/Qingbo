@@ -1,4 +1,4 @@
-package com.haarman.listviewanimations;
+package com.yugy.qingbo.ui.componnet.adapter;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;

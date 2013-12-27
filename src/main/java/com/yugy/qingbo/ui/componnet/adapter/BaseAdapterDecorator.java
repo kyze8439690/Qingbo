@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.haarman.listviewanimations;
+package com.yugy.qingbo.ui.componnet.adapter;
 
 import android.database.DataSetObserver;
 import android.view.View;

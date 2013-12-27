@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -32,7 +34,8 @@ import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.ui.view.HackyViewPager;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
 
-import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+import uk.co.senab.photoview.PhotoView;
+import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
  * Created by yugy on 13-11-7.
@@ -217,6 +220,7 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
             .cacheInMemory(false)
             .cacheOnDisc(true)
             .displayer(new FadeInBitmapDisplayer(600))
+            .imageScaleType(ImageScaleType.EXACTLY)
             .build();
 
     private void displayImage(final int index){
@@ -233,11 +237,11 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
 
             @Override
             public Object instantiateItem(ViewGroup container, final int position) {
-                final ImageViewTouch imageViewTouch = new ImageViewTouch(DetailActivity.this);
-                imageViewTouch.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                imageViewTouch.setOnClickListener(new View.OnClickListener() {
+                 final PhotoView photoView = new PhotoView(DetailActivity.this);
+                 photoView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                 photoView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onViewTap(View view, float v, float v2) {
                         if (actionBar.isShowing()) {
                             actionBar.hide();
                             slidingLayout.setPanelHeight(ScreenUtil.dp(DetailActivity.this, 48));
@@ -247,18 +251,25 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
                         }
                     }
                 });
-                ImageSize targetSize = new ImageSize(4096, 4096);
-                ImageLoader.getInstance().loadImage(data.pics.get(position).replace("thumbnail", "large"), targetSize, displayImageOptions, new SimpleImageLoadingListener() {
+                ImageLoader.getInstance().displayImage(data.pics.get(position).replace("thumbnail", "large"), photoView, displayImageOptions, new SimpleImageLoadingListener() {
                     @Override
                     public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                        imageViewTouch.setImageBitmap(loadedImage);
                         if(position == index){
                             progress.setVisibility(View.GONE);
                         }
                     }
                 });
-                container.addView(imageViewTouch);
-                return imageViewTouch;
+//                ImageLoader.getInstance().loadImage(data.pics.get(position).replace("thumbnail", "large"), displayImageOptions, new SimpleImageLoadingListener() {
+//                    @Override
+//                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                        photoView.setImageBitmap(loadedImage);
+//                        if(position == index){
+//                            progress.setVisibility(View.GONE);
+//                        }
+//                    }
+//                });
+                container.addView(photoView);
+                return photoView;
             }
 
             @Override

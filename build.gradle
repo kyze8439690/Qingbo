@@ -26,6 +26,6 @@ dependencies {
     compile 'com.android.support:support-v4:+'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:library:+'
     compile 'uk.co.chrisjenx.calligraphy:calligraphy:+'
-    compile 'it.sephiroth.android.library.imagezoom:library:+'
+    compile 'com.github.chrisbanes.photoview:library:+'
     compile fileTree(dir: 'libs' , include: '*.jar')
 }

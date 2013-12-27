@@ -22,12 +22,12 @@ public class BottomBarOnScrollListener implements AbsListView.OnScrollListener {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                mBottomBarState = BOTTOM_BAR_STATE_ON_SCREEN;
+                mBottomBarState = BOTTOM_BAR_STATE_SHOWN;
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
-                mBottomBarState = BOTTOM_BAR_STATE_OFF_SCREEN;
+                mBottomBarState = BOTTOM_BAR_STATE_HIDED;
             }
 
             @Override
@@ -42,12 +42,12 @@ public class BottomBarOnScrollListener implements AbsListView.OnScrollListener {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                mBottomBarState = BOTTOM_BAR_STATE_OFF_SCREEN;
+                mBottomBarState = BOTTOM_BAR_STATE_HIDED;
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
-                mBottomBarState = BOTTOM_BAR_STATE_ON_SCREEN;
+                mBottomBarState = BOTTOM_BAR_STATE_SHOWN;
             }
 
             @Override
@@ -60,12 +60,12 @@ public class BottomBarOnScrollListener implements AbsListView.OnScrollListener {
     private ObjectAnimator mShowAnimator;
     private ObjectAnimator mHideAnimator;
 
-    private static final int BOTTOM_BAR_STATE_ON_SCREEN = 0;
-    private static final int BOTTOM_BAR_STATE_OFF_SCREEN = 1;
+    private static final int BOTTOM_BAR_STATE_SHOWN = 0;
+    private static final int BOTTOM_BAR_STATE_HIDED = 1;
     private static final int BOTTOM_BAR_STATE_SHOWING = 2;
     private static final int BOTTOM_BAR_STATE_HIDING = 3;
 
-    private int mBottomBarState = BOTTOM_BAR_STATE_ON_SCREEN;
+    private int mBottomBarState = BOTTOM_BAR_STATE_SHOWN;
 
     private static final int ACTION_STATE_IDLE = 0;
     private static final int ACTION_STATE_SCROLL_UP = 1; //scroll to up, look below, hide the bottombar
@@ -87,14 +87,6 @@ public class BottomBarOnScrollListener implements AbsListView.OnScrollListener {
         }
     }
 
-    private boolean isBottomBarShowing(){
-        return mShowAnimator.isRunning() || mShowAnimator.isStarted();
-    }
-
-    private boolean isBottomBarHiding(){
-        return mHideAnimator.isRunning() || mHideAnimator.isStarted();
-    }
-
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
@@ -107,13 +99,13 @@ public class BottomBarOnScrollListener implements AbsListView.OnScrollListener {
 
         int actionState = getActionState(firstVisibleItem, top);
         switch (mBottomBarState){
-            case BOTTOM_BAR_STATE_OFF_SCREEN:
-                if(!isBottomBarShowing() && actionState == ACTION_STATE_SCROLL_DOWN){
+            case BOTTOM_BAR_STATE_HIDED:
+                if(actionState == ACTION_STATE_SCROLL_DOWN){
                     mShowAnimator.start();
                 }
                 break;
-            case BOTTOM_BAR_STATE_ON_SCREEN:
-                if(!isBottomBarHiding() && actionState == ACTION_STATE_SCROLL_UP){
+            case BOTTOM_BAR_STATE_SHOWN:
+                if(actionState == ACTION_STATE_SCROLL_UP){
                     mHideAnimator.start();
                 }
                 break;
