@@ -1,7 +1,6 @@
 package com.yugy.qingbo.ui.activity;
 
 import android.app.ActionBar;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -86,7 +85,7 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
         super.onResume();
         animationAdapter.setShouldAnimate(
                 PreferenceManager.getDefaultSharedPreferences(this)
-                        .getBoolean(SettingsFragment.KEY_PREF_ANIMATION, true)
+                        .getBoolean(SettingsFragment.KEY_PREF_SCROLL_ANIMATION, true)
         );
     }
 

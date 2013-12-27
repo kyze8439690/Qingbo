@@ -50,8 +50,5 @@ public class MyApplication extends Application {
                 .discCache(new UnlimitedDiscCache(cacheDir)).build();
         ImageLoader.getInstance().init(config);
 
-        SettingsFragment.fontPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(SettingsFragment.KEY_PREF_FONT, "default");
-
     }
 }

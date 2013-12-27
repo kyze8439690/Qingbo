@@ -50,11 +50,12 @@ public class BaseActivity extends Activity{
     }
 
     private void initFont(){
-        if(SettingsFragment.fontPreferences.equals("default")){
+        String fontPreferences = PreferenceManager.getDefaultSharedPreferences(this).getString(SettingsFragment.KEY_PREF_FONT, "default");
+        if(fontPreferences.equals("default")){
             CalligraphyConfig.initDefault("");
-        }else if(SettingsFragment.fontPreferences.equals("condensed")){
+        }else if(fontPreferences.equals("condensed")){
             CalligraphyConfig.initDefault("RobotoCondensed-Regular.ttf");
-        }else if(SettingsFragment.fontPreferences.equals("slab")){
+        }else if(fontPreferences.equals("slab")){
             CalligraphyConfig.initDefault("RobotoSlab-Regular.ttf");
         }
     }

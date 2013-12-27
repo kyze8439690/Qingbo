@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         >
 
-        <com.yugy.qingbo.ui.view.HackyViewPager
+        <com.yugy.qingbo.ui.view.PicViewPager
             android:id="@+id/detail_picpager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

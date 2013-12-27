@@ -4,7 +4,6 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -23,15 +22,12 @@ import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.Utils.ScreenUtil;
 import com.yugy.qingbo.model.TimeLineModel;
-import com.yugy.qingbo.ui.view.HackyViewPager;
+import com.yugy.qingbo.ui.view.PicViewPager;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
 
 import uk.co.senab.photoview.PhotoView;
@@ -55,7 +51,7 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
     private RelativeLayout headLayout;
     private RelativeLayout contentLayout;
     private ActionBar actionBar;
-    private HackyViewPager viewPager;
+    private PicViewPager viewPager;
     private ProgressBar progress;
     private TextView actionbarTitle;
     private ImageView head;
@@ -108,7 +104,7 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
                 .showImageForEmptyUri(R.drawable.default_head)
                 .cacheInMemory(true)
                 .cacheOnDisc(true)
-                .displayer(new RoundedBitmapDisplayer(ScreenUtil.dp(this, 40)))
+                .displayer(new FadeInBitmapDisplayer(600))
                 .build());
         name.setText(data.name);
         text.setText(data.text);
@@ -188,7 +184,7 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
         headLayout = (RelativeLayout) findViewById(R.id.detail_frontlayout_head_layout);
 //        slidingLayout.setDragView(headLayout);
         contentLayout = (RelativeLayout)    findViewById(R.id.detail_frontlayout_content_layout);
-        viewPager = (HackyViewPager) findViewById(R.id.detail_picpager);
+        viewPager = (PicViewPager) findViewById(R.id.detail_picpager);
         progress = (ProgressBar) findViewById(R.id.detail_progress);
         int titleId = Resources.getSystem().getIdentifier("action_bar_title", "id", "android");
         actionbarTitle = (TextView) findViewById(titleId);
@@ -220,7 +216,6 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
             .cacheInMemory(false)
             .cacheOnDisc(true)
             .displayer(new FadeInBitmapDisplayer(600))
-            .imageScaleType(ImageScaleType.EXACTLY)
             .build();
 
     private void displayImage(final int index){
@@ -251,6 +246,19 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
                         }
                     }
                 });
+//                ImageSize imageSize = new ImageSize(2048, 2048);
+//                ImageLoader.getInstance().loadImage(
+//                        data.pics.get(position).replace("thumbnail", "large"),
+//                        imageSize, displayImageOptions, new SimpleImageLoadingListener(){
+//                            @Override
+//                            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                                photoView.setImageBitmap(loadedImage);
+//                                if(position == index){
+//                                    progress.setVisibility(View.GONE);
+//                                }
+//                            }
+//                        }
+//                );
                 ImageLoader.getInstance().displayImage(data.pics.get(position).replace("thumbnail", "large"), photoView, displayImageOptions, new SimpleImageLoadingListener() {
                     @Override
                     public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
@@ -259,15 +267,6 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
                         }
                     }
                 });
-//                ImageLoader.getInstance().loadImage(data.pics.get(position).replace("thumbnail", "large"), displayImageOptions, new SimpleImageLoadingListener() {
-//                    @Override
-//                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                        photoView.setImageBitmap(loadedImage);
-//                        if(position == index){
-//                            progress.setVisibility(View.GONE);
-//                        }
-//                    }
-//                });
                 container.addView(photoView);
                 return photoView;
             }

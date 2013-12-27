@@ -13,8 +13,6 @@ import com.yugy.qingbo.ui.activity.MainActivity;
  */
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener{
 
-    public static String fontPreferences;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,13 +21,13 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     }
 
     public static final String KEY_PREF_FONT = "pref_font";
+    public static final String KEY_PREF_PAGE_ANIMATOIN = "pref_page_animation";
     public static final String KEY_PREF_TIMELINE_AMOUNT = "pref_timeline_amount";
-    public static final String KEY_PREF_ANIMATION = "pref_animation";
+    public static final String KEY_PREF_SCROLL_ANIMATION = "pref_scroll_animation";
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(KEY_PREF_FONT)){
-            fontPreferences = sharedPreferences.getString(KEY_PREF_FONT, "default");
             getActivity().setResult(MainActivity.RESULT_SETTING_FONT_CHANGED);
         }
     }

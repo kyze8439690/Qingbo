@@ -16,6 +16,15 @@
             />
 
         <ListPreference
+            android:key="pref_page_animation"
+            android:title="多图浏览特效"
+            android:summary="多图浏览时横向滑动的效果"
+            android:entries="@array/pref_page_animation_entry"
+            android:entryValues="@array/pref_page_animation_values"
+            android:defaultValue="zoom"
+            />
+
+        <ListPreference
             android:key="pref_timeline_amount"
             android:title="刷新数量"
             android:summary="设置每次刷新获取的微博数"
@@ -25,7 +34,7 @@
             />
 
         <SwitchPreference
-            android:key="pref_animation"
+            android:key="pref_scroll_animation"
             android:title="滚动特效"
             android:summary="微博列表卡片滚动特效"
             android:defaultValue="true"

@@ -62,6 +62,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
         topic = (TextView) findViewById(R.id.timeline_listitem_topic);
         time = (TextView) findViewById(R.id.timeline_listitem_time);
         gridView = (NoScrollGridView) findViewById(R.id.timeline_listitem_picgrid);
+        gridView.setSelector(getResources().getDrawable(R.drawable.list_selector_holo));
         pic = (SelectorImageView) findViewById(R.id.timeline_listitem_pic);
         line = findViewById(R.id.timeline_listitem_line);
         repostName = (TextView) findViewById(R.id.timeline_listitem_repost_name);
