@@ -6,14 +6,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ProgressBar;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -21,12 +18,12 @@ import com.yugy.qingbo.R;
 import com.yugy.qingbo.Utils.MessageUtil;
 import com.yugy.qingbo.Utils.ScreenUtil;
 import com.yugy.qingbo.Utils.TextUtil;
+import com.yugy.qingbo.ui.component.gif.GifDrawable;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
 
 import java.io.File;
 import java.io.IOException;
 
-import pl.droidsonroids.gif.GifDrawable;
 import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
 

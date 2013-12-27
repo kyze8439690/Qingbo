@@ -25,10 +25,10 @@ import com.yugy.qingbo.R;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.sql.AccountsDataSource;
-import com.yugy.qingbo.ui.componnet.TwoDrawerToggle;
-import com.yugy.qingbo.ui.componnet.adapter.CardsAnimationAdapter;
-import com.yugy.qingbo.ui.componnet.BottomBarOnScrollListener;
-import com.yugy.qingbo.ui.componnet.adapter.TimeLineListAdapter;
+import com.yugy.qingbo.ui.component.listener.TwoDrawerToggle;
+import com.yugy.qingbo.ui.component.adapter.CardsAnimationAdapter;
+import com.yugy.qingbo.ui.component.listener.BottomBarOnScrollListener;
+import com.yugy.qingbo.ui.component.adapter.TimeLineListAdapter;
 import com.yugy.qingbo.ui.fragment.SettingsFragment;
 import com.yugy.qingbo.ui.view.AppMsg;
 

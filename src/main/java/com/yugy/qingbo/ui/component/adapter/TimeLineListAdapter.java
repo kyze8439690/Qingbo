@@ -1,4 +1,4 @@
-package com.yugy.qingbo.ui.componnet.adapter;
+package com.yugy.qingbo.ui.component.adapter;
 
 import android.view.View;
 import android.view.ViewGroup;

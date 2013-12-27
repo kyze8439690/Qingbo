@@ -1,4 +1,4 @@
-package com.yugy.qingbo.ui.componnet;
+package com.yugy.qingbo.ui.component.listener;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;

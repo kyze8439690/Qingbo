@@ -1,4 +1,4 @@
-package com.yugy.qingbo.ui.componnet;
+package com.yugy.qingbo.ui.component.listener;
 
 import android.app.Activity;
 import android.graphics.drawable.AnimationDrawable;

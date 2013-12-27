@@ -1,4 +1,4 @@
-package com.yugy.qingbo.ui.componnet;
+package com.yugy.qingbo.ui.component.transformer;
 
 import android.support.v4.view.ViewPager;
 import android.view.View;

@@ -1,4 +1,4 @@
-package com.yugy.qingbo.ui.componnet.adapter;
+package com.yugy.qingbo.ui.component.adapter;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;

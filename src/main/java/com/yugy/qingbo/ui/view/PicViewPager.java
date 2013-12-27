@@ -5,11 +5,10 @@ import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 
-import com.yugy.qingbo.ui.componnet.DepthPageTransformer;
-import com.yugy.qingbo.ui.componnet.FadePageTransformer;
-import com.yugy.qingbo.ui.componnet.ZoomOutPageTransformer;
+import com.yugy.qingbo.ui.component.transformer.DepthPageTransformer;
+import com.yugy.qingbo.ui.component.transformer.FadePageTransformer;
+import com.yugy.qingbo.ui.component.transformer.ZoomOutPageTransformer;
 import com.yugy.qingbo.ui.fragment.SettingsFragment;
 
 /**
