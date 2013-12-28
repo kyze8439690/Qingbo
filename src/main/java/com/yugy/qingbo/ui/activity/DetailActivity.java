@@ -21,7 +21,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.ScreenUtil;
+import com.yugy.qingbo.Utils.ScreenUtils;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.ui.fragment.PicFragment;
 import com.yugy.qingbo.ui.view.HeadIconImageView;
@@ -71,7 +71,7 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
             case VIEW_TYPE_PIC:
                 displayImage(getIntent().getIntExtra(VIEW_PICS_ITEM_ID, -1));
                 actionBar.hide();
-                slidingLayout.setPanelHeight(ScreenUtil.dp(this, 48));
+                slidingLayout.setPanelHeight(ScreenUtils.dp(this, 48));
                 break;
             case VIEW_TYPE_CONTENT:
                 text.setSingleLine(false);
@@ -126,7 +126,7 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
         slidingLayout.setPanelOverlayable(true);
         slidingLayout.setPanelTransparent(true);
         slidingLayout.setCoveredFadeColor(Color.TRANSPARENT);
-        slidingLayout.setPanelHeight(ScreenUtil.dp(this, 82 + 48));
+        slidingLayout.setPanelHeight(ScreenUtils.dp(this, 82 + 48));
         slidingLayout.setEnableDragViewTouchEvents(true);
         slidingLayout.setPanelSlideListener(new SlidingUpPanelLayout.SimplePanelSlideListener() {
             @Override
@@ -170,7 +170,7 @@ public class DetailActivity extends BaseActivity implements View.OnClickListener
             public void onPanelCollapsed(View panel) {
                 headLayout.setBackgroundResource(R.drawable.black_gradient);
                 text.setSingleLine(true);
-                if(slidingLayout.getPanelHeight() == ScreenUtil.dp(DetailActivity.this, 48)){
+                if(slidingLayout.getPanelHeight() == ScreenUtils.dp(DetailActivity.this, 48)){
                     actionBar.hide();
                 }
             }

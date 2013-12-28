@@ -11,13 +11,11 @@ import android.widget.ProgressBar;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.assist.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.MessageUtil;
-import com.yugy.qingbo.Utils.ScreenUtil;
-import com.yugy.qingbo.Utils.TextUtil;
+import com.yugy.qingbo.Utils.ScreenUtils;
+import com.yugy.qingbo.Utils.TextUtils;
 import com.yugy.qingbo.ui.component.gif.GifDrawable;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
 
@@ -56,7 +54,7 @@ public class PicFragment extends Fragment implements PhotoViewAttacher.OnViewTap
         mPhotoView.setOnViewTapListener(this);
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.pic_progress);
         String picUrl = getArguments().getString("url");
-        if(TextUtil.isGifLink(picUrl)){
+        if(TextUtils.isGifLink(picUrl)){
             ImageLoader.getInstance().loadImage(picUrl, mOptions, new SimpleImageLoadingListener(){
 
                 @Override
@@ -85,12 +83,6 @@ public class PicFragment extends Fragment implements PhotoViewAttacher.OnViewTap
                         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                             mProgressBar.setVisibility(View.GONE);
                         }
-                    },
-                    new ImageLoadingProgressListener() {
-                        @Override
-                        public void onProgressUpdate(String s, View view, int i, int i2) {
-                            MessageUtil.log(i + "/" + i2);
-                        }
                     }
             );
         }
@@ -113,10 +105,10 @@ public class PicFragment extends Fragment implements PhotoViewAttacher.OnViewTap
     private void toggleActionBarAndPanel(){
         if (getActivity().getActionBar().isShowing()) {
             getActivity().getActionBar().hide();
-            mSlidingUpPanelLayout.setPanelHeight(ScreenUtil.dp(getActivity(), 48));
+            mSlidingUpPanelLayout.setPanelHeight(ScreenUtils.dp(getActivity(), 48));
         } else {
             getActivity().getActionBar().show();
-            mSlidingUpPanelLayout.setPanelHeight(ScreenUtil.dp(getActivity(), 82 + 48));
+            mSlidingUpPanelLayout.setPanelHeight(ScreenUtils.dp(getActivity(), 82 + 48));
         }
     }
 }

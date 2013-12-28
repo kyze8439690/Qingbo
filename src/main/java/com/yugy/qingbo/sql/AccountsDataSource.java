@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.yugy.qingbo.Utils.MessageUtil;
+import com.yugy.qingbo.Utils.MessageUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -134,9 +134,9 @@ public class AccountsDataSource {
      */
     public void deleteAccount(Account account){
         long id = account.getId();
-        MessageUtil.log("删除ID为" + id + "的account");
+        MessageUtils.log("删除ID为" + id + "的account");
         database.delete(MySQLiteHelper.TABLE_ACCOUNTS, MySQLiteHelper.COLUMN_ID + "=" + id, null);
-        MessageUtil.log("设置默认account");
+        MessageUtils.log("设置默认account");
         List<Account> accounts = getAllAccounts();
         accounts.get(0).setUsing(true);
         updateAccount(accounts.get(0));

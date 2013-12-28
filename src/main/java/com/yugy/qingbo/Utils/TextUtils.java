@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * Created by yugy on 13-10-4.
  */
-public class TextUtil {
+public class TextUtils {
 
     /*
     time sample: Fri Oct 04 18:20:31 +0800 2013
@@ -46,7 +46,7 @@ public class TextUtil {
             parseString.setSpan(new ClickableSpan() {
                 @Override
                 public void onClick(View widget) {
-//                    MessageUtil.toast(context, name);
+//                    MessageUtils.toast(context, name);
                 }
             }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             parseString.setSpan(new UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

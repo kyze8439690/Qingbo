@@ -4,6 +4,7 @@
     </style>
 
     <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:windowBackground">@drawable/bg_activity</item>
         <item name="android:actionBarStyle">@style/actionBarStyle</item>
         <item name="ptrHeaderStyle">@style/Widget.Custom.PtrHeader</item>
     </style>

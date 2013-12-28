@@ -36,7 +36,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
@@ -62,7 +61,6 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
     private PullToRefreshLayout mPullToRefreshLayout;
     private AccountsDataSource mAccountsDataSource;
     private String[] mDrawerListViewString;
-    private ArrayList<TimeLineModel> mTimeLineModels;
     private TimeLineListAdapter mTimeLineListAdapter;
     private CardsAnimationAdapter animationAdapter;
 
@@ -207,7 +205,6 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
     }
 
     private void initComponents(){
-        mTimeLineModels = new ArrayList<TimeLineModel>();
         mTimeLineListAdapter = new TimeLineListAdapter(this);
         animationAdapter = new CardsAnimationAdapter(mTimeLineListAdapter);
         animationAdapter.setAbsListView(mTimeLineList);
@@ -215,10 +212,6 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
 
         PauseOnScrollListener pauseOnScrollListener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true, new BottomBarOnScrollListener(mBottomBar));
         mTimeLineList.setOnScrollListener(pauseOnScrollListener);
-    }
-
-    public ArrayList<TimeLineModel> getTimeLineModels() {
-        return mTimeLineModels;
     }
 
     @Override
@@ -234,7 +227,7 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
             }
         }else if(parent.equals(mTimeLineList)){
             Intent intent = new Intent(this, DetailActivity.class);
-            intent.putExtra(DetailActivity.DATA, mTimeLineModels.get(position));
+            intent.putExtra(DetailActivity.DATA, mTimeLineListAdapter.getData().get(position));
             intent.putExtra(DetailActivity.VIEW_TYPE, DetailActivity.VIEW_TYPE_CONTENT);
             startActivity(intent);
         }
@@ -254,7 +247,7 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
                             lastStatusId = response.getJSONObject(i).getLong("id");
                         }
                         data.parse(response.getJSONObject(i));
-                        mTimeLineModels.add(data);
+                        mTimeLineListAdapter.getData().add(data);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (ParseException e) {
@@ -265,9 +258,9 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
                     AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
                 } else {
                     AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
+                    mTimeLineListAdapter.notifyDataSetChanged();
                 }
                 mPullToRefreshLayout.setRefreshing(false);
-                mTimeLineListAdapter.notifyDataSetChanged();
                 super.onSuccess(response);
             }
         });
@@ -285,7 +278,8 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
                             lastStatusId = response.getJSONObject(i).getLong("id");
                         }
                         data.parse(response.getJSONObject(i));
-                        mTimeLineModels.add(mTimeLineModels.size(), data);
+                        mTimeLineListAdapter.getData().add(
+                                mTimeLineListAdapter.getData().size(), data);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (ParseException e) {
@@ -305,7 +299,7 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
         Weibo.getNewTimeline(this, firstStatusId + "", new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray response) {
-                for (TimeLineModel mTimeLineModel : mTimeLineModels) {
+                for (TimeLineModel mTimeLineModel : mTimeLineListAdapter.getData()) {
                     try {
                         mTimeLineModel.reParseTime();
                     } catch (ParseException e) {
@@ -319,18 +313,18 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
                             firstStatusId = response.getJSONObject(i).getLong("id");
                         }
                         data.parse(response.getJSONObject(i));
-                        mTimeLineModels.add(0, data);
+                        mTimeLineListAdapter.getData().add(0, data);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
                 }
-                mTimeLineListAdapter.notifyDataSetChanged();
                 if (response.length() == 0) {
                     AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
                 } else {
                     AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
+                    mTimeLineListAdapter.notifyDataSetChanged();
                 }
                 mPullToRefreshLayout.setRefreshComplete();
                 super.onSuccess(response);

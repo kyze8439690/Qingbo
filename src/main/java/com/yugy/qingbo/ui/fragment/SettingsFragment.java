@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.MessageUtil;
 import com.yugy.qingbo.ui.activity.MainActivity;
 
 /**

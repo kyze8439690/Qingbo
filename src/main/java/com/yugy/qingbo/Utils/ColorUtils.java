@@ -5,7 +5,7 @@ import android.graphics.Color;
 /**
  * Created by yugy on 13-11-7.
  */
-public class ColorUtil {
+public class ColorUtils {
 
     private static final int[] colorList = new int[]{
             Color.parseColor("#5c3292"),

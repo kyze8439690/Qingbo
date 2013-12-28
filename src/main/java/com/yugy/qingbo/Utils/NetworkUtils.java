@@ -7,7 +7,7 @@ import android.net.NetworkInfo;
 /**
  * Created by yugy on 13-11-7.
  */
-public class NetworkUtil {
+public class NetworkUtils {
 
     public static boolean isWifi(Context context){
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

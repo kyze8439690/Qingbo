@@ -3,9 +3,14 @@ package com.yugy.qingbo.ui.component.adapter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 
+import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.ui.activity.MainActivity;
+import com.yugy.qingbo.ui.view.HeadIconImageView;
 import com.yugy.qingbo.ui.view.TimeLineListItem;
+
+import java.util.ArrayList;
 
 /**
  * Created by yugy on 13-12-26.
@@ -13,22 +18,35 @@ import com.yugy.qingbo.ui.view.TimeLineListItem;
 public class TimeLineListAdapter extends BaseAdapter {
 
     private MainActivity mActivity;
+    private ArrayList<TimeLineModel> mData;
 
     public TimeLineListAdapter(MainActivity activity){
+        mData = new ArrayList<TimeLineModel>();
         mActivity = activity;
     }
 
-
-    @Override
-    public int getCount() {
-        return mActivity.getTimeLineModels().size();
+    public ArrayList<TimeLineModel> getData() {
+        return mData;
     }
 
     @Override
-    public Object getItem(int position) {
-        TimeLineListItem item = new TimeLineListItem(mActivity);
-        item.parse(mActivity.getTimeLineModels().get(position));
-        return item;
+    public int getItemViewType(int position) {
+        return getItem(position).type;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 6;
+    }
+
+    @Override
+    public int getCount() {
+        return mData.size();
+    }
+
+    @Override
+    public TimeLineModel getItem(int position) {
+        return mData.get(position);
     }
 
     @Override
@@ -42,12 +60,13 @@ public class TimeLineListAdapter extends BaseAdapter {
         if(convertView != null){
             item = (TimeLineListItem) convertView;
         }else{
-            item = new TimeLineListItem(mActivity);
+            item = new TimeLineListItem(mActivity, getItem(position).type);
         }
-        item.parse(mActivity.getTimeLineModels().get(position));
+        item.parse(mData.get(position));
         if(position == getCount() - 1){
             mActivity.getOldData();
         }
         return item;
     }
+
 }

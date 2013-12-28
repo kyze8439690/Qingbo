@@ -21,10 +21,10 @@
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="15sp"
-        android:text="name"
         android:layout_toRightOf="@id/timeline_listitem_head"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
+        android:text="name"
         />
 
     <TextView
@@ -63,11 +63,23 @@
         android:visibility="invisible"
         />
 
+    <com.yugy.qingbo.ui.view.SelectorImageView
+        android:id="@+id/timeline_listitem_pic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="50dp"
+        android:maxWidth="250dp"
+        android:maxHeight="200dp"
+        android:background="#eee"
+        android:layout_below="@id/timeline_listitem_text"
+        android:layout_marginTop="14dp"
+        />
+
     <TextView
         android:id="@+id/timeline_listitem_commentcount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/timeline_listitem_text"
+        android:layout_below="@id/timeline_listitem_pic"
         android:layout_marginTop="28dp"
         android:layout_marginRight="10dp"
         android:text="1"

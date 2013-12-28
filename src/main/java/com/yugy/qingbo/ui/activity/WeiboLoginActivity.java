@@ -1,6 +1,5 @@
 package com.yugy.qingbo.ui.activity;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -10,9 +9,8 @@ import android.webkit.WebViewClient;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.umeng.analytics.MobclickAgent;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.MessageUtil;
+import com.yugy.qingbo.Utils.MessageUtils;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.Conf;
 
@@ -37,12 +35,12 @@ public class WeiboLoginActivity extends BaseActivity {
         mWebView.setWebViewClient(new WebViewClient(){
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                MessageUtil.log("读取网址url: " + url);
+                MessageUtils.log("读取网址url: " + url);
                 if(url.startsWith(Conf.WEIBO_CALLBACK_URL)){
                     view.loadUrl("about:blank");
                     Uri uri = Uri.parse(url);
                     String code = uri.getQueryParameter("code");
-                    MessageUtil.log("新浪微博code: " + code);
+                    MessageUtils.log("新浪微博code: " + code);
                     final ProgressDialog progressDialog = ProgressDialog.show(
                             WeiboLoginActivity.this,
                             "授权中",
@@ -58,7 +56,7 @@ public class WeiboLoginActivity extends BaseActivity {
                                 @Override
                                 public void onSuccess(JSONObject response) {
                                     progressDialog.dismiss();
-                                    MessageUtil.toast(WeiboLoginActivity.this, "授权成功");
+                                    MessageUtils.toast(WeiboLoginActivity.this, "授权成功");
                                     finish();
                                     super.onSuccess(response);
                                 }
@@ -66,7 +64,7 @@ public class WeiboLoginActivity extends BaseActivity {
                                 @Override
                                 public void onFailure(Throwable e, String content) {
                                     progressDialog.dismiss();
-                                    MessageUtil.toast(WeiboLoginActivity.this, content);
+                                    MessageUtils.toast(WeiboLoginActivity.this, content);
                                     finish();
                                     super.onFailure(e, content);
                                 }
@@ -77,7 +75,7 @@ public class WeiboLoginActivity extends BaseActivity {
                         @Override
                         public void onFailure(Throwable error, String content) {
                             progressDialog.dismiss();
-                            MessageUtil.toast(WeiboLoginActivity.this, content);
+                            MessageUtils.toast(WeiboLoginActivity.this, content);
                             finish();
                             super.onFailure(error, content);
                         }

@@ -7,7 +7,7 @@ import android.util.TypedValue;
 /**
  * Created by yugy on 13-10-4.
  */
-public class ScreenUtil {
+public class ScreenUtils {
 
     public static int dp(Context context, float dp){
         Resources resources = context.getResources();
