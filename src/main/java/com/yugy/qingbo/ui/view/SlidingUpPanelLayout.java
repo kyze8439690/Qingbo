@@ -39,7 +39,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
     /**
      * If no fade color is given by default it will fade to 80% gray.
      */
-    private static final int DEFAULT_FADE_COLOR = 0x99000000;
+    private static final int DEFAULT_FADE_COLOR = 0x00000000;
 
     /**
      * Minimum velocity that will be detected as a fling
@@ -606,7 +606,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
                     }
                 }
 
-                if (ady > dragSlop && adx > ady) {
+                if ((ady > dragSlop && adx > ady) || !isDragViewUnder((int) x, (int) y)) {
                     mDragHelper.cancel();
                     mIsUnableToDrag = true;
                     return false;
@@ -618,6 +618,19 @@ public class SlidingUpPanelLayout extends ViewGroup {
         final boolean interceptForDrag = mDragViewHit && mDragHelper.shouldInterceptTouchEvent(ev);
 
         return interceptForDrag || interceptTap;
+    }
+
+    private boolean isDragViewUnder(int x, int y) {
+        View dragView = mDragView != null ? mDragView : mSlideableView;
+        if (dragView == null) return false;
+        int[] viewLocation = new int[2];
+        dragView.getLocationOnScreen(viewLocation);
+        int[] parentLocation = new int[2];
+        this.getLocationOnScreen(parentLocation);
+        int screenX = parentLocation[0] + x;
+        int screenY = parentLocation[1] + y;
+        return screenX >= viewLocation[0] && screenX < viewLocation[0] + dragView.getWidth() &&
+                screenY >= viewLocation[1] && screenY < viewLocation[1] + dragView.getHeight();
     }
 
     @Override

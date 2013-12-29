@@ -14,6 +14,7 @@ import com.yugy.qingbo.sql.AccountsDataSource;
 import com.yugy.qingbo.sql.UsersDataSource;
 import com.yugy.qingbo.ui.fragment.SettingsFragment;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -97,6 +98,31 @@ public class Weibo {
 
     }
 
+    public static void getComments(Context context, String statusId, String sinceId, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("id", statusId);
+        params.put("since_id", sinceId);
+        mClient.get(context, WeiboApiUrl.COMMENTS_SHOW, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                MessageUtils.log(response.toString());
+                try {
+                    responseHandler.onSuccess(response.getJSONArray("comments"));
+                } catch (JSONException e) {
+                    responseHandler.onFailure(e, "获取comments失败");
+                    e.printStackTrace();
+                }
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                MessageUtils.log(errorResponse.toString());
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
     public static void getNewTimeline(Context context, String firstStatusId, final JsonHttpResponseHandler responseHandler){
         String timelineAmount = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(SettingsFragment.KEY_PREF_TIMELINE_AMOUNT, "40");
@@ -110,7 +136,7 @@ public class Weibo {
                 try {
                     responseHandler.onSuccess(response.getJSONArray("statuses"));
                 } catch (JSONException e) {
-                    responseHandler.onFailure(e, "获取用户信息失败");
+                    responseHandler.onFailure(e, "获取Timeline失败");
                     e.printStackTrace();
                 }
                 super.onSuccess(response);
@@ -170,5 +196,6 @@ public class Weibo {
         public static final String USER_SHOW = "https://api.weibo.com/2/users/show.json";
         public static final String OAUTH2_ACCESS_TOKEN = "https://api.weibo.com/oauth2/access_token";
         public static final String OAUTH2_AUTHORIZE = "https://api.weibo.com/oauth2/authorize";
+        public static final String COMMENTS_SHOW = "https://api.weibo.com/2/comments/show.json";
     }
 }

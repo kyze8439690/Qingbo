@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/detail_frontlayout"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    >
+
+    <RelativeLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingBottom="12dp"
+        android:background="@drawable/black_gradient"
+        android:id="@+id/detail_frontlayout_head_layout">
+
+        <com.yugy.qingbo.ui.view.HeadIconImageView
+            android:id="@+id/detail_head"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/default_head"
+            />
+
+        <TextView
+            android:id="@+id/detail_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="#FFF"
+            android:layout_toRightOf="@id/detail_head"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="15dp"
+            android:text="name"
+            />
+
+        <TextView
+            android:id="@+id/detail_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFF"
+            android:textSize="14sp"
+            android:layout_toRightOf="@id/detail_head"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="14dp"
+            android:layout_below="@id/detail_name"
+            android:text="content"
+            />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/detail_frontlayout_content_layout"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingBottom="14dp"
+        android:layout_below="@id/detail_frontlayout_head_layout">
+
+        <TextView
+            android:id="@+id/detail_repost_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="repost_name"
+            android:layout_marginTop="14dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="14dp"
+            android:visibility="gone"
+            />
+
+        <TextView
+            android:id="@+id/detail_repost_text"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_below="@id/detail_repost_name"
+            android:layout_marginTop="14dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="14dp"
+            android:text="repost_content"
+            android:visibility="gone"
+            />
+
+        <com.yugy.qingbo.ui.view.SelectorImageView
+            android:id="@+id/detail_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="50dp"
+            android:maxWidth="250dp"
+            android:maxHeight="200dp"
+            android:background="#eee"
+            android:layout_below="@id/detail_repost_text"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="14dp"
+            android:visibility="gone"
+            />
+
+        <com.yugy.qingbo.ui.view.NoScrollGridView
+            android:id="@+id/detail_grid"
+            android:layout_height="wrap_content"
+            android:layout_width="246dp"
+            android:horizontalSpacing="3dp"
+            android:verticalSpacing="3dp"
+            android:numColumns="3"
+            android:drawSelectorOnTop="true"
+            android:listSelector="@drawable/list_selector_holo"
+            android:overScrollMode="never"
+            android:layout_below="@id/detail_repost_text"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="14dp"
+            android:visibility="gone"
+            />
+
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/detail_frontlayout_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#CDCDCD"
+        android:layout_below="@id/detail_frontlayout_head_layout"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="14dp"
+        android:visibility="gone"
+        />
+
+</RelativeLayout>

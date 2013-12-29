@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#EEE"
+                android:padding="14dp"
+    >
+
+    <com.yugy.qingbo.ui.view.HeadIconImageView
+        android:id="@+id/comment_head"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/default_head"
+        />
+
+    <TextView
+        android:id="@+id/comment_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="name"
+        android:textSize="14sp"
+        android:layout_toRightOf="@id/comment_head"
+        android:layout_marginLeft="14dp"
+        />
+
+    <TextView
+        android:id="@+id/comment_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/comment_name"
+        android:text="time"
+        android:textColor="#AAA"
+        android:textSize="13sp"
+        android:layout_marginLeft="20dp"
+        android:layout_alignBottom="@id/comment_name"
+        />
+
+    <TextView
+        android:id="@+id/comment_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="content"
+        android:layout_alignLeft="@id/comment_name"
+        android:layout_below="@id/comment_name"
+        android:layout_marginTop="10dp"
+        />
+
+</RelativeLayout>

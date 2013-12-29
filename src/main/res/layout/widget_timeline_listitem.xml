@@ -15,17 +15,6 @@
         />
 
     <TextView
-        android:id="@+id/timeline_listitem_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="15sp"
-        android:layout_toRightOf="@id/timeline_listitem_head"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="5dp"
-        />
-
-    <TextView
         android:id="@+id/timeline_listitem_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -55,8 +44,23 @@
         android:layout_alignParentRight="true"
         android:layout_marginTop="5dp"
         android:layout_marginRight="2dp"
+        android:layout_marginLeft="8dp"
         android:background="@drawable/timeline_listitem_topic_bg"
+        android:singleLine="true"
+        android:ellipsize="end"
         android:visibility="invisible"
+        />
+
+    <TextView
+        android:id="@+id/timeline_listitem_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:layout_toRightOf="@id/timeline_listitem_head"
+        android:layout_toLeftOf="@id/timeline_listitem_topic"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
         />
 
     <View

@@ -17,6 +17,7 @@ import java.util.ArrayList;
  * Created by yugy on 13-10-4.
  */
 public class TimeLineModel implements Parcelable{
+    public String id;
     public SpannableString text;
     public String name;
     public String headUrl;
@@ -36,6 +37,7 @@ public class TimeLineModel implements Parcelable{
     private String unParseTime;
 
     public void parse(JSONObject json) throws JSONException, ParseException {
+        id = json.getString("id");
         text = TextUtils.parseStatusText(json.getString("text"));
         name = json.getJSONObject("user").getString("screen_name");
         headUrl = json.getJSONObject("user").getString("avatar_large");
@@ -89,6 +91,7 @@ public class TimeLineModel implements Parcelable{
                 hasRepostPics
         });
         dest.writeStringArray(new String[]{
+                id,
                 text.toString(),
                 name,
                 headUrl,
@@ -118,15 +121,16 @@ public class TimeLineModel implements Parcelable{
         this.hasRepostPic = booleanData[3];
         this.hasRepostPics = booleanData[4];
 
-        String[] stringData = new String[6];
+        String[] stringData = new String[7];
         in.readStringArray(stringData);
-        this.text = TextUtils.parseStatusText(stringData[0]);
-        this.name = stringData[1];
-        this.headUrl = stringData[2];
-        this.unParseTime = stringData[3];
+        this.id = stringData[0];
+        this.text = TextUtils.parseStatusText(stringData[1]);
+        this.name = stringData[2];
+        this.headUrl = stringData[3];
+        this.unParseTime = stringData[4];
         this.time = TextUtils.parseTime(this.unParseTime);
-        this.repostName = TextUtils.parseStatusText(stringData[4]);
-        this.repostText = TextUtils.parseStatusText(stringData[5]);
+        this.repostName = TextUtils.parseStatusText(stringData[5]);
+        this.repostText = TextUtils.parseStatusText(stringData[6]);
 
         ArrayList<ArrayList<String>> stringArrayData = new ArrayList<ArrayList<String>>();
         in.readList(stringArrayData, ArrayList.class.getClassLoader());
