@@ -24,7 +24,6 @@ public class BaseActivity extends Activity{
         initFont();
         setContentView(R.layout.activity_main);
         MobclickAgent.onError(this);
-        UmengUpdateAgent.update(this);
     }
 
     @Override

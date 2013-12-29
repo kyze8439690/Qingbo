@@ -21,7 +21,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.ScreenUtils;
+import com.yugy.qingbo.utils.ScreenUtils;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.ui.fragment.PicFragment;
 import com.yugy.qingbo.ui.view.HeadIconImageView;

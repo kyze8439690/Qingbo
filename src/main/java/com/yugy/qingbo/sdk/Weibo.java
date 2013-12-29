@@ -8,7 +8,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.yugy.qingbo.Conf;
-import com.yugy.qingbo.Utils.MessageUtils;
+import com.yugy.qingbo.utils.MessageUtils;
 import com.yugy.qingbo.sql.Account;
 import com.yugy.qingbo.sql.AccountsDataSource;
 import com.yugy.qingbo.sql.UsersDataSource;

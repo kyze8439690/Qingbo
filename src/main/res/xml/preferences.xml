@@ -56,6 +56,11 @@
 
         </Preference>
 
+        <Preference
+            android:title="手动检查更新"
+            android:key="pref_check_update"
+            />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

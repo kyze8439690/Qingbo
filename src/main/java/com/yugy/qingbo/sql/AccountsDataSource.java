@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.yugy.qingbo.Utils.MessageUtils;
+import com.yugy.qingbo.utils.MessageUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;

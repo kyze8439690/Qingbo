@@ -10,7 +10,7 @@ import android.webkit.WebViewClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.MessageUtils;
+import com.yugy.qingbo.utils.MessageUtils;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.Conf;
 

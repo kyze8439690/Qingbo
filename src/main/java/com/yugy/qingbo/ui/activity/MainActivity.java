@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
+import com.umeng.update.UmengUpdateAgent;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
@@ -71,6 +72,7 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        UmengUpdateAgent.update(this);
         initViews();
         initComponents();
         if(hasAccount()){

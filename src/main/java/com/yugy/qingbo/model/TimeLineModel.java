@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.SpannableString;
 
-import com.yugy.qingbo.Utils.TextUtils;
+import com.yugy.qingbo.utils.TextUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,31 +15,8 @@ import java.util.ArrayList;
 
 /**
  * Created by yugy on 13-10-4.
- * Data has so many type, such as below:
- * 1.has topic or not(Does not matter)
- * 2.has repost or not
- * 3.pic
- *   (1) has no pic
- *   (2) has one pic
- *   (3) has more than one pic
- * The items above can be combined to so many situations.Sush as:
- * 1.no repost and no pic
- * 2.no repost and one pic
- * 3.no repost and multi pic
- * 4.has repost and no pic
- * 5.has repost and one pic
- * 6.has repost and multi pic
- * So there is totally 6 situations right now
  */
 public class TimeLineModel implements Parcelable{
-
-    public static final int TYPE_NORMAL = 0;
-    public static final int TYPE_ONE_PIC = 1;
-    public static final int TYPE_MULTI_PIC = 2;
-    public static final int TYPE_REPOST = 3;
-    public static final int TYPE_REPOST_ONE_PIC = 4;
-    public static final int TYPE_REPOST_MULTI_PIC = 5;
-
     public SpannableString text;
     public String name;
     public String headUrl;
@@ -55,7 +32,6 @@ public class TimeLineModel implements Parcelable{
     public SpannableString repostText = new SpannableString("");
     public boolean hasRepostPic;
     public boolean hasRepostPics;
-    public int type;
 
     private String unParseTime;
 
@@ -87,24 +63,6 @@ public class TimeLineModel implements Parcelable{
             }
             hasRepostPic = repostJson.has("thumbnail_pic");
         }
-
-        if(hasRepost){
-            if(hasRepostPic){
-                type = TYPE_REPOST_ONE_PIC;
-            }else if(hasRepostPics){
-                type = TYPE_REPOST_MULTI_PIC;
-            }else{
-                type = TYPE_REPOST;
-            }
-        }else{
-            if(hasPic){
-                type = TYPE_ONE_PIC;
-            }else if(hasPics){
-                type = TYPE_MULTI_PIC;
-            }else{
-                type = TYPE_NORMAL;
-            }
-        }
     }
 
     public void reParseTime() throws ParseException {
@@ -120,9 +78,8 @@ public class TimeLineModel implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
 
         dest.writeIntArray(new int[]{
-            commentCount,
-            repostCount,
-            type
+                commentCount,
+                repostCount
         });
         dest.writeBooleanArray(new boolean[]{
                 hasPic,
@@ -148,11 +105,10 @@ public class TimeLineModel implements Parcelable{
     public TimeLineModel(){}
 
     private TimeLineModel(Parcel in) throws ParseException {
-        int[] intData = new int[3];
+        int[] intData = new int[2];
         in.readIntArray(intData);
         this.commentCount = intData[0];
         this.repostCount = intData[1];
-        this.type = intData[2];
 
         boolean[] booleanData = new boolean[5];
         in.readBooleanArray(booleanData);

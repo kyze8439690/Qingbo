@@ -1,4 +1,4 @@
-package com.yugy.qingbo.Utils;
+package com.yugy.qingbo.utils;
 
 import android.content.Context;
 import android.content.res.Resources;

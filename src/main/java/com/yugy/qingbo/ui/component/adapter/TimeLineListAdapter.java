@@ -30,16 +30,6 @@ public class TimeLineListAdapter extends BaseAdapter {
     }
 
     @Override
-    public int getItemViewType(int position) {
-        return getItem(position).type;
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return 6;
-    }
-
-    @Override
     public int getCount() {
         return mData.size();
     }
@@ -60,7 +50,7 @@ public class TimeLineListAdapter extends BaseAdapter {
         if(convertView != null){
             item = (TimeLineListItem) convertView;
         }else{
-            item = new TimeLineListItem(mActivity, getItem(position).type);
+            item = new TimeLineListItem(mActivity);
         }
         item.parse(mData.get(position));
         if(position == getCount() - 1){

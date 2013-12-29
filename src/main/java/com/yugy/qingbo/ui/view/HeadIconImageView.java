@@ -1,6 +1,5 @@
 package com.yugy.qingbo.ui.view;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -14,6 +13,8 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
+import com.yugy.qingbo.R;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -21,38 +22,50 @@ import java.lang.ref.WeakReference;
  */
 public class HeadIconImageView extends ImageView{
 
-    protected Context mContext;
-
     private static final Xfermode sXfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
     //    private BitmapShader mBitmapShader;
     private Bitmap mMaskBitmap;
     private Paint mPaint;
     private WeakReference<Bitmap> mWeakBitmap;
 
+    private Drawable mForegroundSelector;
+
     public HeadIconImageView(Context context) {
         super(context);
-        sharedConstructor(context);
+        init();
     }
 
     public HeadIconImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        sharedConstructor(context);
+        init();
     }
 
     public HeadIconImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        sharedConstructor(context);
+        init();
     }
 
-    private void sharedConstructor(Context context) {
-        mContext = context;
-
+    private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mForegroundSelector = getResources().getDrawable(R.drawable.head_selector);
+    }
+
+    @Override
+    protected void drawableStateChanged() {
+        super.drawableStateChanged();
+        mForegroundSelector.setState(getDrawableState());
+        invalidate();
     }
 
     public void invalidate() {
         mWeakBitmap = null;
         super.invalidate();
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mForegroundSelector.setBounds(0, 0, w, h);
     }
 
     @Override
@@ -82,6 +95,7 @@ public class HeadIconImageView extends ImageView{
                 if (bitmap != null) {
                     mPaint.setXfermode(null);
                     canvas.drawBitmap(bitmap, 0.0f, 0.0f, mPaint);
+                    mForegroundSelector.draw(canvas);
                     return;
                 }
             } catch (Exception e) {

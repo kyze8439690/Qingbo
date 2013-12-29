@@ -1,6 +1,5 @@
-package com.yugy.qingbo.Utils;
+package com.yugy.qingbo.utils;
 
-import android.content.Context;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;

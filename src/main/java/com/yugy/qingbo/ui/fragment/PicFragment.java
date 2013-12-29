@@ -14,8 +14,8 @@ import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.ScreenUtils;
-import com.yugy.qingbo.Utils.TextUtils;
+import com.yugy.qingbo.utils.ScreenUtils;
+import com.yugy.qingbo.utils.TextUtils;
 import com.yugy.qingbo.ui.component.gif.GifDrawable;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
 

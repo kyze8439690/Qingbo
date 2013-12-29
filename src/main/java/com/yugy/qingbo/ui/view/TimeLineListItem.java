@@ -3,6 +3,7 @@ package com.yugy.qingbo.ui.view;
 import android.content.Context;
 import android.content.Intent;
 import android.text.method.LinkMovementMethod;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -16,9 +17,9 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
-import com.yugy.qingbo.Utils.NetworkUtils;
-import com.yugy.qingbo.Utils.ScreenUtils;
-import com.yugy.qingbo.Utils.TextUtils;
+import com.yugy.qingbo.utils.NetworkUtils;
+import com.yugy.qingbo.utils.ScreenUtils;
+import com.yugy.qingbo.utils.TextUtils;
 import com.yugy.qingbo.ui.activity.DetailActivity;
 import com.yugy.qingbo.model.TimeLineModel;
 
@@ -28,10 +29,9 @@ import java.util.ArrayList;
  * Created by yugy on 13-10-4.
  */
 public class TimeLineListItem extends RelativeLayout implements View.OnClickListener, AdapterView.OnItemClickListener{
-
-    public TimeLineListItem(Context context, int type) {
+    public TimeLineListItem(Context context) {
         super(context);
-        init(type);
+        init();
     }
 
     private HeadIconImageView head;
@@ -41,86 +41,83 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
     private TextView time;
     private NoScrollGridView gridView;
     private SelectorImageView pic;
+    private View line;
     private TextView repostName;
     private TextView repostText;
     private TextView commentCount;
     private TextView repostCount;
 
+    private LayoutInflater layoutInflater;
     private TimeLineModel data;
 
-    private void init(int type){
-        switch (type){
-            case TimeLineModel.TYPE_NORMAL:
-                inflate(getContext(), R.layout.widget_timeline_listitem, this);
-                initCommonViews();
-                break;
-            case TimeLineModel.TYPE_ONE_PIC:
-                inflate(getContext(), R.layout.widget_timeline_listitem_one_pic, this);
-                initCommonViews();
-                initOnePicViews();
-                break;
-            case TimeLineModel.TYPE_MULTI_PIC:
-                inflate(getContext(), R.layout.widget_timeline_listitem_multi_pic, this);
-                initCommonViews();
-                initMultiPicViews();
-                break;
-            case TimeLineModel.TYPE_REPOST:
-                inflate(getContext(), R.layout.widget_timeline_listitem_repost, this);
-                initCommonViews();
-                initRepostViews();
-                break;
-            case TimeLineModel.TYPE_REPOST_ONE_PIC:
-                inflate(getContext(), R.layout.widget_timeline_listitem_repost_one_pic, this);
-                initCommonViews();
-                initOnePicViews();
-                initRepostViews();
-                break;
-            case TimeLineModel.TYPE_REPOST_MULTI_PIC:
-                inflate(getContext(), R.layout.widget_timeline_listitem_multi_pic, this);
-                initCommonViews();
-                initMultiPicViews();
-                initRepostViews();
-                break;
-        }
-    }
-
-    private void initCommonViews(){
+    private void init(){
+        layoutInflater = LayoutInflater.from(getContext());
+        layoutInflater.inflate(R.layout.widget_timeline_listitem, this);
         head = (HeadIconImageView) findViewById(R.id.timeline_listitem_head);
         name = (TextView) findViewById(R.id.timeline_listitem_name);
         text = (TextView) findViewById(R.id.timeline_listitem_text);
         text.setMovementMethod(LinkMovementMethod.getInstance());
         topic = (TextView) findViewById(R.id.timeline_listitem_topic);
         time = (TextView) findViewById(R.id.timeline_listitem_time);
-        commentCount = (TextView) findViewById(R.id.timeline_listitem_commentcount);
-        repostCount = (TextView) findViewById(R.id.timeline_listitem_repostcount);
-        commentCount.setOnClickListener(this);
-        repostCount.setOnClickListener(this);
-    }
-
-    private void initOnePicViews(){
-        pic = (SelectorImageView) findViewById(R.id.timeline_listitem_pic);
-        pic.setOnClickListener(this);
-    }
-
-    private void initMultiPicViews(){
         gridView = (NoScrollGridView) findViewById(R.id.timeline_listitem_picgrid);
         gridView.setSelector(getResources().getDrawable(R.drawable.list_selector_holo));
-        gridView.setOnItemClickListener(this);
-    }
-
-    private void initRepostViews(){
+        pic = (SelectorImageView) findViewById(R.id.timeline_listitem_pic);
+        line = findViewById(R.id.timeline_listitem_line);
         repostName = (TextView) findViewById(R.id.timeline_listitem_repost_name);
         repostName.setMovementMethod(LinkMovementMethod.getInstance());
         repostText = (TextView) findViewById(R.id.timeline_listitem_repost_text);
         repostText.setMovementMethod(LinkMovementMethod.getInstance());
+        commentCount = (TextView) findViewById(R.id.timeline_listitem_commentcount);
+        repostCount = (TextView) findViewById(R.id.timeline_listitem_repostcount);
+
+        gridView.setOnItemClickListener(this);
+        pic.setOnClickListener(this);
+        commentCount.setOnClickListener(this);
+        repostCount.setOnClickListener(this);
     }
 
-    private void parseCommonData(){
+    public void parse(TimeLineModel data){
+        this.data = data;
+        if(data.hasPics || data.hasRepostPics){
+            pic.setVisibility(GONE);
+            gridView.setVisibility(VISIBLE);
+            gridView.setAdapter(new PicsAdapter(data.pics));
+            LayoutParams lp = (LayoutParams) commentCount.getLayoutParams();
+            lp.addRule(BELOW, R.id.timeline_listitem_picgrid);
+            commentCount.setLayoutParams(lp);
+        }else{
+            gridView.setVisibility(GONE);
+            LayoutParams lp = (LayoutParams) commentCount.getLayoutParams();
+            lp.addRule(BELOW, R.id.timeline_listitem_pic);
+            commentCount.setLayoutParams(lp);
+            if(data.hasPic || data.hasRepostPic){
+                pic.setVisibility(VISIBLE);
+                pic.setGif(TextUtils.isGifLink(data.pics.get(0)));
+                if(NetworkUtils.isWifi(getContext())){
+                    ImageLoader.getInstance().displayImage(data.pics.get(0).replace("thumbnail", "bmiddle"), pic);
+                }else{
+                    ImageLoader.getInstance().displayImage(data.pics.get(0), pic);
+                }
+            }else{
+                pic.setVisibility(GONE);
+            }
+        }
         if(data.topics.size() == 0){
             topic.setVisibility(INVISIBLE);
         }else{
             topic.setVisibility(VISIBLE);
             topic.setText(data.topics.get(0));
+        }
+        if(data.hasRepost){
+            line.setVisibility(VISIBLE);
+            repostName.setVisibility(VISIBLE);
+            repostText.setVisibility(VISIBLE);
+            repostName.setText(data.repostName);
+            repostText.setText(data.repostText);
+        }else{
+            line.setVisibility(GONE);
+            repostName.setVisibility(GONE);
+            repostText.setVisibility(GONE);
         }
         if(data.commentCount != 0){
             commentCount.setText(data.commentCount + "");
@@ -132,6 +129,7 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
         }else{
             repostCount.setText("转发");
         }
+
         text.setText(data.text);
         name.setText(data.name);
         time.setText(data.time);
@@ -143,50 +141,6 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
                 .cacheOnDisc(true)
                 .displayer(new FadeInBitmapDisplayer(600))
                 .build());
-    }
-
-    private void parseOnePicData(){
-        pic.setGif(TextUtils.isGifLink(data.pics.get(0)));
-        if(NetworkUtils.isWifi(getContext())){
-            ImageLoader.getInstance().displayImage(data.pics.get(0).replace("thumbnail", "bmiddle"), pic);
-        }else{
-            ImageLoader.getInstance().displayImage(data.pics.get(0), pic);
-        }
-    }
-
-    private void parseMultiPicData(){
-        gridView.setAdapter(new PicsAdapter(data.pics));
-    }
-
-    private void parseRepostData(){
-        repostName.setText(data.repostName);
-        repostText.setText(data.repostText);
-    }
-
-    public void parse(TimeLineModel data){
-        this.data = data;
-        parseCommonData();
-        switch (data.type){
-            case TimeLineModel.TYPE_NORMAL:
-                break;
-            case TimeLineModel.TYPE_ONE_PIC:
-                parseOnePicData();
-                break;
-            case TimeLineModel.TYPE_MULTI_PIC:
-                parseMultiPicData();
-                break;
-            case TimeLineModel.TYPE_REPOST:
-                parseRepostData();
-                break;
-            case TimeLineModel.TYPE_REPOST_ONE_PIC:
-                parseOnePicData();
-                parseRepostData();
-                break;
-            case TimeLineModel.TYPE_REPOST_MULTI_PIC:
-                parseMultiPicData();
-                parseRepostData();
-                break;
-        }
     }
 
     @Override
