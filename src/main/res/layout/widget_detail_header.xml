@@ -127,4 +127,11 @@
         android:visibility="gone"
         />
 
+    <include
+        android:layout_below="@id/detail_frontlayout_content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        layout="@layout/include_detail_sticky"
+        />
+
 </RelativeLayout>

@@ -31,7 +31,7 @@
 
     <style name="DetailTheme" parent="android:Theme.Holo.Light">
         <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@null</item>
+        <item name="android:windowBackground">@android:color/black</item>
     </style>
 
     <style name="actionBarStyle" parent="android:Widget.Holo.Light.ActionBar">

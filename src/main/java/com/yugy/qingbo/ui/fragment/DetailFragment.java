@@ -9,7 +9,10 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -32,7 +35,9 @@ import com.yugy.qingbo.ui.view.LoadMoreView;
 import com.yugy.qingbo.ui.view.NoScrollGridView;
 import com.yugy.qingbo.ui.view.SelectorImageView;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
+import com.yugy.qingbo.utils.MessageUtils;
 import com.yugy.qingbo.utils.NetworkUtils;
+import com.yugy.qingbo.utils.ScreenUtils;
 import com.yugy.qingbo.utils.TextUtils;
 
 import org.json.JSONArray;
@@ -60,6 +65,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
     private View mLine;
     private RelativeLayout mHeadLayout;
     private LoadMoreView mLoadMoreView;
+    private View mSticky;
 
     private CommentListAdapter mCommentListAdapter;
     private TimeLineModel mData;
@@ -73,10 +79,21 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
         mViewPager = viewPager;
     }
 
+    private int mDelta;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mListView = (ListView) inflater.inflate(R.layout.fragment_detail_front, container, false);
-        View headerView = inflater.inflate(R.layout.widget_detail_header, null);
+        View rootView = inflater.inflate(R.layout.fragment_detail_front, container, false);
+        mListView = (ListView) rootView.findViewById(R.id.detail_front_list);
+        mSticky = rootView.findViewById(R.id.detail_front_sticky);
+        final View headerView = inflater.inflate(R.layout.widget_detail_header, null);
+        headerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int tabsHeight = ScreenUtils.dp(getActivity(), 48);
+                mDelta = headerView.getHeight() - tabsHeight;
+            }
+        });
         mListView.addHeaderView(headerView);
         mHead = (HeadIconImageView) headerView.findViewById(R.id.detail_head);
         mName = (TextView) headerView.findViewById(R.id.detail_name);
@@ -93,11 +110,34 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
         mLine = headerView.findViewById(R.id.detail_frontlayout_divider);
         mLoadMoreView = new LoadMoreView(getActivity());
         mLoadMoreView.setLoadMoreOnClickListener(this);
+        mListView.addFooterView(mLoadMoreView);
+        mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true,
+                new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (visibleItemCount == 0) return;
+
+                int top = headerView.getTop();
+                int translationY = Math.max(0, mDelta + top);
+                if(translationY == 0){
+                    mSticky.setVisibility(View.VISIBLE);
+                }else if(firstVisibleItem != 0){
+                    mSticky.setVisibility(View.VISIBLE);
+                }else{
+                    mSticky.setVisibility(View.GONE);
+                }
+            }
+        }));
 
         mHeadLayout = (RelativeLayout) headerView.findViewById(R.id.detail_frontlayout_head_layout);
         mSlidingUpPanelLayout.setDragView(mHeadLayout);
 
-        return mListView;
+        return rootView;
     }
 
     @Override
@@ -145,8 +185,6 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
 
         mCommentListAdapter = new CommentListAdapter(getActivity());
         mListView.setAdapter(mCommentListAdapter);
-        mListView.addFooterView(mLoadMoreView);
-        mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true));
         super.onActivityCreated(savedInstanceState);
     }
 
