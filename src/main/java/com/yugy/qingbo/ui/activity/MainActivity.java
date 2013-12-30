@@ -3,6 +3,7 @@ package com.yugy.qingbo.ui.activity;
 import android.app.ActionBar;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -239,30 +240,42 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
         mPullToRefreshLayout.setRefreshing(true);
         Weibo.getNewTimeline(this, firstStatusId + "", new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(JSONArray response) {
-                for (int i = 0; i < response.length(); i++) {
-                    TimeLineModel data = new TimeLineModel();
-                    try {
-                        if (i == 0) {
-                            firstStatusId = response.getJSONObject(i).getLong("id");
-                        }else if(i == response.length() - 1){
-                            lastStatusId = response.getJSONObject(i).getLong("id");
+            public void onSuccess(final JSONArray response) {
+                new AsyncTask<Void, Void, Void>(){
+
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        for (int i = 0; i < response.length(); i++) {
+                            TimeLineModel data = new TimeLineModel();
+                            try {
+                                if (i == 0) {
+                                    firstStatusId = response.getJSONObject(i).getLong("id");
+                                }else if(i == response.length() - 1){
+                                    lastStatusId = response.getJSONObject(i).getLong("id");
+                                }
+                                data.parse(response.getJSONObject(i));
+                                mTimeLineListAdapter.getData().add(data);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
                         }
-                        data.parse(response.getJSONObject(i));
-                        mTimeLineListAdapter.getData().add(data);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                        return null;
                     }
-                }
-                if (response.length() == 0) {
-                    AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
-                } else {
-                    AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
-                    mTimeLineListAdapter.notifyDataSetChanged();
-                }
-                mPullToRefreshLayout.setRefreshing(false);
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        if (response.length() == 0) {
+                            AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
+                        } else {
+                            AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
+                            mTimeLineListAdapter.notifyDataSetChanged();
+                        }
+                        mPullToRefreshLayout.setRefreshing(false);
+                        super.onPostExecute(aVoid);
+                    }
+                }.execute();
                 super.onSuccess(response);
             }
         });
@@ -272,25 +285,37 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
         mPullToRefreshLayout.setRefreshing(true);
         Weibo.getOldTimeline(this, lastStatusId + "", new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONArray response) {
-                for (int i = 1; i < response.length(); i++) {
-                    TimeLineModel data = new TimeLineModel();
-                    try {
-                        if(i == response.length() - 1){
-                            lastStatusId = response.getJSONObject(i).getLong("id");
+            public void onSuccess(final JSONArray response) {
+                new AsyncTask<Void, Void, Void>(){
+
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        for (int i = 1; i < response.length(); i++) {
+                            TimeLineModel data = new TimeLineModel();
+                            try {
+                                if(i == response.length() - 1){
+                                    lastStatusId = response.getJSONObject(i).getLong("id");
+                                }
+                                data.parse(response.getJSONObject(i));
+                                mTimeLineListAdapter.getData().add(
+                                        mTimeLineListAdapter.getData().size(), data);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
                         }
-                        data.parse(response.getJSONObject(i));
-                        mTimeLineListAdapter.getData().add(
-                                mTimeLineListAdapter.getData().size(), data);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                        return null;
                     }
-                }
-                AppMsg.makeText(MainActivity.this, "加载了" + (response.length() - 1) + "条微薄", AppMsg.STYLE_INFO).show();
-                mTimeLineListAdapter.notifyDataSetChanged();
-                mPullToRefreshLayout.setRefreshComplete();
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        AppMsg.makeText(MainActivity.this, "加载了" + (response.length() - 1) + "条微薄", AppMsg.STYLE_INFO).show();
+                        mTimeLineListAdapter.notifyDataSetChanged();
+                        mPullToRefreshLayout.setRefreshComplete();
+                        super.onPostExecute(aVoid);
+                    }
+                }.execute();
                 super.onSuccess(response);
             }
         });
@@ -300,7 +325,7 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
     public void onRefreshStarted(View view) {
         Weibo.getNewTimeline(this, firstStatusId + "", new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(JSONArray response) {
+            public void onSuccess(final JSONArray response) {
                 for (TimeLineModel mTimeLineModel : mTimeLineListAdapter.getData()) {
                     try {
                         mTimeLineModel.reParseTime();
@@ -308,27 +333,39 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
                         e.printStackTrace();
                     }
                 }
-                for (int i = response.length() - 1; i >= 0; i--) {
-                    TimeLineModel data = new TimeLineModel();
-                    try {
-                        if (i == 0) {
-                            firstStatusId = response.getJSONObject(i).getLong("id");
+                new AsyncTask<Void, Void, Void>(){
+
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        for (int i = response.length() - 1; i >= 0; i--) {
+                            TimeLineModel data = new TimeLineModel();
+                            try {
+                                if (i == 0) {
+                                    firstStatusId = response.getJSONObject(i).getLong("id");
+                                }
+                                data.parse(response.getJSONObject(i));
+                                mTimeLineListAdapter.getData().add(0, data);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
                         }
-                        data.parse(response.getJSONObject(i));
-                        mTimeLineListAdapter.getData().add(0, data);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                        return null;
                     }
-                }
-                if (response.length() == 0) {
-                    AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
-                } else {
-                    AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
-                    mTimeLineListAdapter.notifyDataSetChanged();
-                }
-                mPullToRefreshLayout.setRefreshComplete();
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        if (response.length() == 0) {
+                            AppMsg.makeText(MainActivity.this, "没有新微博", AppMsg.STYLE_INFO).show();
+                        } else {
+                            AppMsg.makeText(MainActivity.this, "更新了" + response.length() + "条新微薄", AppMsg.STYLE_INFO).show();
+                            mTimeLineListAdapter.notifyDataSetChanged();
+                        }
+                        mPullToRefreshLayout.setRefreshComplete();
+                        super.onPostExecute(aVoid);
+                    }
+                }.execute();
                 super.onSuccess(response);
             }
         });
