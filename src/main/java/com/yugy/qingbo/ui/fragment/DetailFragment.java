@@ -1,14 +1,16 @@
 package com.yugy.qingbo.ui.fragment;
 
+import android.app.Fragment;
 import android.app.ListFragment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.text.method.LinkMovementMethod;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -24,7 +26,9 @@ import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.ui.activity.DetailActivity;
 import com.yugy.qingbo.ui.component.adapter.CommentListAdapter;
 import com.yugy.qingbo.ui.component.adapter.GridPicsAdapter;
+import com.yugy.qingbo.ui.view.AppMsg;
 import com.yugy.qingbo.ui.view.HeadIconImageView;
+import com.yugy.qingbo.ui.view.LoadMoreView;
 import com.yugy.qingbo.ui.view.NoScrollGridView;
 import com.yugy.qingbo.ui.view.SelectorImageView;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
@@ -33,17 +37,19 @@ import com.yugy.qingbo.utils.TextUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.ParseException;
 
 /**
  * Created by yugy on 13-12-29.
  */
-public class DetailFragment extends ListFragment implements View.OnClickListener, AdapterView.OnItemClickListener{
+public class DetailFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener{
 
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
     private ViewPager mViewPager;
 
+    private ListView mListView;
     private HeadIconImageView mHead;
     private TextView mName;
     private TextView mText;
@@ -53,6 +59,7 @@ public class DetailFragment extends ListFragment implements View.OnClickListener
     private NoScrollGridView mGridView;
     private View mLine;
     private RelativeLayout mHeadLayout;
+    private LoadMoreView mLoadMoreView;
 
     private CommentListAdapter mCommentListAdapter;
     private TimeLineModel mData;
@@ -67,10 +74,10 @@ public class DetailFragment extends ListFragment implements View.OnClickListener
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        View headerView = View.inflate(getActivity(), R.layout.widget_detail_header, null);
-        getListView().addHeaderView(headerView);
-//        getListView().setEmptyView(null);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mListView = (ListView) inflater.inflate(R.layout.fragment_detail_front, container, false);
+        View headerView = inflater.inflate(R.layout.widget_detail_header, null);
+        mListView.addHeaderView(headerView);
         mHead = (HeadIconImageView) headerView.findViewById(R.id.detail_head);
         mName = (TextView) headerView.findViewById(R.id.detail_name);
         mText = (TextView) headerView.findViewById(R.id.detail_text);
@@ -84,10 +91,17 @@ public class DetailFragment extends ListFragment implements View.OnClickListener
         mGridView = (NoScrollGridView) headerView.findViewById(R.id.detail_grid);
         mGridView.setOnItemClickListener(this);
         mLine = headerView.findViewById(R.id.detail_frontlayout_divider);
+        mLoadMoreView = new LoadMoreView(getActivity());
+        mLoadMoreView.setLoadMoreOnClickListener(this);
 
         mHeadLayout = (RelativeLayout) headerView.findViewById(R.id.detail_frontlayout_head_layout);
         mSlidingUpPanelLayout.setDragView(mHeadLayout);
 
+        return mListView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
         mData = getArguments().getParcelable(DetailActivity.DATA);
         switch (getArguments().getInt(DetailActivity.VIEW_TYPE, -1)){
             case DetailActivity.VIEW_TYPE_PIC:
@@ -130,11 +144,9 @@ public class DetailFragment extends ListFragment implements View.OnClickListener
         }
 
         mCommentListAdapter = new CommentListAdapter(getActivity());
-        getListView().setAdapter(mCommentListAdapter);
-        setListShownNoAnimation(true);
-        getListView().setOverScrollMode(ListView.OVER_SCROLL_NEVER);
-        getListView().addFooterView(new ProgressBar(getActivity()));
-        getListView().setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true));
+        mListView.setAdapter(mCommentListAdapter);
+        mListView.addFooterView(mLoadMoreView);
+        mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true));
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -151,7 +163,7 @@ public class DetailFragment extends ListFragment implements View.OnClickListener
 
     public void setPanelColor(int color){
         mHeadLayout.setBackgroundColor(Color.TRANSPARENT);
-        getListView().setBackgroundColor(color);
+        mListView.setBackgroundColor(color);
     }
 
     @Override
@@ -160,11 +172,15 @@ public class DetailFragment extends ListFragment implements View.OnClickListener
             case R.id.detail_pic:
                 togglePanel();
                 break;
+            case R.id.loadmore_loadmore_text:
+                mIsCommentLoaded = false;
+                loadComments();
+                break;
         }
     }
 
     private void togglePanel(){
-        if(mSlidingUpPanelLayout.isExpanded() && (mData.hasPic || mData.hasRepostPic)){
+        if(mSlidingUpPanelLayout.isExpanded() && (mData.hasPic || mData.hasRepostPic || mData.hasPics || mData.hasRepostPics)){
             mSlidingUpPanelLayout.collapsePane();
         }else{
             mSlidingUpPanelLayout.expandPane();
@@ -173,34 +189,58 @@ public class DetailFragment extends ListFragment implements View.OnClickListener
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if(position < mViewPager.getChildCount()){
-            mViewPager.setCurrentItem(position);
+        if(position < mViewPager.getAdapter().getCount()){
             togglePanel();
+            mViewPager.setCurrentItem(position);
         }
     }
 
     public void loadComments(){
         if(!mIsCommentLoaded){
+            mLoadMoreView.setType(LoadMoreView.TYPE_LOADING);
             Weibo.getComments(getActivity(), mData.id, mSinceCommentId, new JsonHttpResponseHandler(){
                 @Override
-                public void onSuccess(JSONArray response) {
-                    for (int i = 0; i < response.length(); i++) {
-                        CommentModel data = new CommentModel();
-                        try {
+                public void onSuccess(JSONObject response) {
+                    try {
+                        //parse comment data
+                        JSONArray comments = response.getJSONArray("comments");
+                        for (int i = 0; i < comments.length(); i++) {
+                            CommentModel data = new CommentModel();
                             if (i == 0) {
-                                mMaxCommentId = response.getJSONObject(i).getString("id");
-                            }else if(i == response.length() - 1){
-                                mSinceCommentId = response.getJSONObject(i).getString("id");
+                                mMaxCommentId = comments.getJSONObject(i).getString("id");
+                            }else if(i == comments.length() - 1){
+                                mSinceCommentId = comments.getJSONObject(i).getString("id");
                             }
-                            data.parse(response.getJSONObject(i));
+                            data.parse(comments.getJSONObject(i));
                             mCommentListAdapter.getData().add(data);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (ParseException e) {
-                            e.printStackTrace();
                         }
+                        if(comments.length() > 0){
+                            //update status info
+                            JSONObject status = comments.getJSONObject(0).getJSONObject("status");
+                            mData.commentCount = status.getInt("comments_count");
+                            mData.repostCount = status.getInt("reposts_count");
+                        }
+                        /*
+                        TODO: add comment count and repost count show sticky
+                         */
+
+                        //check whether has next page
+                        int amount = mCommentListAdapter.getData().size();
+                        int totalAmount = response.getInt("total_number");
+                        if(totalAmount > amount){
+                            mLoadMoreView.setType(LoadMoreView.TYPE_CLICK_TO_LOAD_MORE);
+                        }else{
+                            mListView.removeFooterView(mLoadMoreView);
+                        }
+                    } catch (JSONException e) {
+                        AppMsg.makeText(getActivity(), "JSON解析错误", AppMsg.STYLE_ALERT).show();
+                        e.printStackTrace();
+                    } catch (ParseException e) {
+                        AppMsg.makeText(getActivity(), "时间解析错误", AppMsg.STYLE_ALERT).show();
+                        e.printStackTrace();
                     }
                     mCommentListAdapter.notifyDataSetChanged();
+                    mIsCommentLoaded = true;
                     super.onSuccess(response);
                 }
             });

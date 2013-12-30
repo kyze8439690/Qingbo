@@ -8,10 +8,15 @@
     >
 
     <com.yugy.qingbo.ui.view.HeadIconImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/comment_head"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:src="@drawable/default_head"
+        android:scaleType="centerInside"
+        app:corner_radius="50dp"
+        app:border_width="1dp"
+        app:border_color="#CDCDCD"
+        app:round_background="false"
         />
 
     <TextView

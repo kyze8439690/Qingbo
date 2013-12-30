@@ -9,9 +9,15 @@
     >
 
     <com.yugy.qingbo.ui.view.HeadIconImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/timeline_listitem_head"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:scaleType="centerInside"
+        app:corner_radius="50dp"
+        app:border_width="1dp"
+        app:border_color="#CDCDCD"
+        app:round_background="false"
         />
 
     <TextView
@@ -61,6 +67,8 @@
         android:layout_toLeftOf="@id/timeline_listitem_topic"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
+        android:singleLine="true"
+        android:ellipsize="end"
         />
 
     <View
@@ -101,9 +109,9 @@
         android:minWidth="50dp"
         android:maxWidth="250dp"
         android:maxHeight="200dp"
-        android:background="#eee"
         android:layout_below="@id/timeline_listitem_repost_text"
         android:layout_marginTop="14dp"
+        android:layout_marginRight="14dp"
         android:visibility="gone"
         />
 

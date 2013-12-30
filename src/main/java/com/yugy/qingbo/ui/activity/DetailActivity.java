@@ -68,7 +68,7 @@ public class DetailActivity extends BaseActivity{
                 actionBarBackgroundDrawable.invalidateSelf();
                 actionbarTitle.setTextColor(Color.BLACK);
                 slidingLayout.expandPane();
-                if(mData.hasPic || mData.hasRepostPic){
+                if(mData.hasPic || mData.hasRepostPic || mData.hasPics || mData.hasRepostPics){
                     displayImage(0);
                 }else{
                     slidingLayout.setSlidingEnabled(false);

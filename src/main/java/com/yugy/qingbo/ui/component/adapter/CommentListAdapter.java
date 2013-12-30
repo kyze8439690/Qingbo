@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import com.yugy.qingbo.model.CommentModel;
 import com.yugy.qingbo.ui.view.CommentListItem;
 import com.yugy.qingbo.ui.view.TimeLineListItem;
+import com.yugy.qingbo.utils.MessageUtils;
 
 import java.util.ArrayList;
 
@@ -49,6 +50,7 @@ public class CommentListAdapter extends BaseAdapter{
         if(convertView != null){
             item = (CommentListItem) convertView;
         }else{
+            MessageUtils.log("convertView is null");
             item = new CommentListItem(mContext);
         }
         item.parse(mData.get(position));

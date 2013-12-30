@@ -106,12 +106,7 @@ public class Weibo {
             @Override
             public void onSuccess(JSONObject response) {
                 MessageUtils.log(response.toString());
-                try {
-                    responseHandler.onSuccess(response.getJSONArray("comments"));
-                } catch (JSONException e) {
-                    responseHandler.onFailure(e, "获取comments失败");
-                    e.printStackTrace();
-                }
+                responseHandler.onSuccess(response);
                 super.onSuccess(response);
             }
 

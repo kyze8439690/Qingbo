@@ -3,14 +3,18 @@ package com.yugy.qingbo.ui.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.makeramen.RoundedImageView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.model.CommentModel;
+
+import uk.co.senab.actionbarpulltorefresh.library.Options;
 
 /**
  * Created by yugy on 13-12-30.
@@ -45,18 +49,19 @@ public class CommentListItem extends RelativeLayout implements View.OnClickListe
         mHead.setOnClickListener(this);
     }
 
+    private static final DisplayImageOptions mOptions = new DisplayImageOptions.Builder()
+            .showImageOnLoading(R.drawable.default_head)
+            .showImageForEmptyUri(R.drawable.default_head)
+            .cacheInMemory(true)
+            .cacheOnDisc(true)
+            .displayer(new FadeInBitmapDisplayer(600))
+            .build();
+
     public void parse(CommentModel data){
         mName.setText(data.name);
         mTime.setText(data.time);
         mText.setText(data.text);
-        ImageLoader.getInstance().displayImage(data.head, mHead, new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.default_head)
-                .showImageForEmptyUri(R.drawable.default_head)
-                .showImageForEmptyUri(R.drawable.default_head)
-                .cacheInMemory(true)
-                .cacheOnDisc(true)
-                .displayer(new FadeInBitmapDisplayer(600))
-                .build());
+        ImageLoader.getInstance().displayImage(data.head, mHead, mOptions);
     }
 
     @Override

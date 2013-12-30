@@ -125,15 +125,17 @@ public class TimeLineListItem extends RelativeLayout implements View.OnClickList
         mText.setText(data.text);
         mName.setText(data.name);
         mTime.setText(data.time);
-        ImageLoader.getInstance().displayImage(data.headUrl, mHead, new DisplayImageOptions.Builder()
-                .showStubImage(R.drawable.default_head)
-                .showImageForEmptyUri(R.drawable.default_head)
-                .showImageForEmptyUri(R.drawable.default_head)
-                .cacheInMemory(true)
-                .cacheOnDisc(true)
-                .displayer(new FadeInBitmapDisplayer(600))
-                .build());
+        ImageLoader.getInstance().displayImage(data.headUrl, mHead, mOptions);
     }
+
+    private static final DisplayImageOptions mOptions = new DisplayImageOptions.Builder()
+            .showImageOnLoading(R.drawable.default_head)
+            .showImageForEmptyUri(R.drawable.default_head)
+            .showImageForEmptyUri(R.drawable.default_head)
+            .cacheInMemory(true)
+            .cacheOnDisc(true)
+            .displayer(new FadeInBitmapDisplayer(600))
+            .build();
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

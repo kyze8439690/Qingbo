@@ -31,6 +31,7 @@ dependencies {
     compile 'com.github.chrisbanes.actionbarpulltorefresh:library:+'
     compile 'uk.co.chrisjenx.calligraphy:calligraphy:+'
     compile 'com.github.chrisbanes.photoview:library:1.2.3-SNAPSHOT'
+    compile 'com.makeramen:roundedimageview:1.2.0'
     compile fileTree(dir: 'libs' , include: '*.jar')
 }
 

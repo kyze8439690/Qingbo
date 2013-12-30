@@ -41,29 +41,48 @@ public class TimeLineModel implements Parcelable{
         text = TextUtils.parseStatusText(json.getString("text"));
         name = json.getJSONObject("user").getString("screen_name");
         headUrl = json.getJSONObject("user").getString("avatar_large");
-//        headUrl = json.getJSONObject("user").getString("profile_image_url");
         topics.addAll(TextUtils.getTopic(json.getString("text")));
         unParseTime = json.getString("created_at");
         time = TextUtils.parseTime(unParseTime);
         commentCount = json.getInt("comments_count");
         repostCount = json.getInt("reposts_count");
         JSONArray picsJson = json.getJSONArray("pic_urls");
-        hasPics = (picsJson.length() > 1);
-        for (int i = 0; i < picsJson.length(); i++){
-            pics.add(picsJson.getJSONObject(i).getString("thumbnail_pic"));
+        if(picsJson.length() == 1){//single pic
+            hasPic = true;
+            hasPics = false;
+        }else if(picsJson.length() > 1){//multi pic
+            hasPics = true;
+            hasPic = false;
+        }else{//no pic
+            hasPics = hasPic = false;
         }
-        hasPic = json.has("thumbnail_pic");
+        if(hasPic || hasPics){
+            for (int i = 0; i < picsJson.length(); i++){
+                pics.add(picsJson.getJSONObject(i).getString("thumbnail_pic"));
+            }
+        }
         if (hasRepost = json.has("retweeted_status")) {
             JSONObject repostJson = json.getJSONObject("retweeted_status");
             repostName = TextUtils.parseStatusText("此微博最初是由@" + repostJson.getJSONObject("user").getString("screen_name") + " 分享的");
             repostText = TextUtils.parseStatusText(repostJson.getString("text"));
             topics.addAll(TextUtils.getTopic(repostJson.getString("text")));
             JSONArray repostPicsJson = repostJson.getJSONArray("pic_urls");
-            hasRepostPics = (repostPicsJson.length() > 1);
-            for (int i = 0; i < repostPicsJson.length(); i++){
-                pics.add(repostPicsJson.getJSONObject(i).getString("thumbnail_pic"));
+            if(repostPicsJson.length() == 1){//single repost pic
+                hasRepostPic = true;
+                hasRepostPics = false;
+            }else if(repostPicsJson.length() > 1){//multi repost pic
+                hasRepostPics = true;
+                hasRepostPic = false;
+            }else{//no repost pic
+                hasRepostPic = hasRepostPics = false;
             }
-            hasRepostPic = repostJson.has("thumbnail_pic");
+            if(hasRepostPic || hasRepostPics){
+                for (int i = 0; i < repostPicsJson.length(); i++){
+                    pics.add(repostPicsJson.getJSONObject(i).getString("thumbnail_pic"));
+                }
+            }
+        }else {
+            hasRepostPic = hasRepostPics = false;
         }
     }
 
