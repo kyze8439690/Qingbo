@@ -98,26 +98,6 @@ public class Weibo {
 
     }
 
-    public static void getComments(Context context, String statusId, String sinceId, final JsonHttpResponseHandler responseHandler){
-        RequestParams params = getParamsWithAccessToken(context);
-        params.put("id", statusId);
-        params.put("since_id", sinceId);
-        mClient.get(context, WeiboApiUrl.COMMENTS_SHOW, params, new JsonHttpResponseHandler(){
-            @Override
-            public void onSuccess(JSONObject response) {
-                MessageUtils.log(response.toString());
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
-            }
-
-            @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
-                MessageUtils.log(errorResponse.toString());
-                super.onFailure(e, errorResponse);
-            }
-        });
-    }
-
     public static void getNewTimeline(Context context, String firstStatusId, final JsonHttpResponseHandler responseHandler){
         String timelineAmount = PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(SettingsFragment.KEY_PREF_TIMELINE_AMOUNT, "40");
@@ -172,6 +152,46 @@ public class Weibo {
         });
     }
 
+    public static void getComments(Context context, String statusId, String sinceId, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("id", statusId);
+        params.put("since_id", sinceId);
+        mClient.get(context, WeiboApiUrl.COMMENTS_SHOW, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                MessageUtils.log(response.toString());
+                responseHandler.onSuccess(response);
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                MessageUtils.log(errorResponse.toString());
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
+    public static void getReposts(Context context, String statusId, String sinceId, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("id", statusId);
+        params.put("since_id", sinceId);
+        mClient.get(context, WeiboApiUrl.REPOSTS_SHOW, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                MessageUtils.log(response.toString());
+                responseHandler.onSuccess(response);
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                MessageUtils.log(errorResponse.toString());
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
     private static String mAccessToken = null;
 
     private static RequestParams getParamsWithAccessToken(Context context){
@@ -192,5 +212,6 @@ public class Weibo {
         public static final String OAUTH2_ACCESS_TOKEN = "https://api.weibo.com/oauth2/access_token";
         public static final String OAUTH2_AUTHORIZE = "https://api.weibo.com/oauth2/authorize";
         public static final String COMMENTS_SHOW = "https://api.weibo.com/2/comments/show.json";
+        public static final String REPOSTS_SHOW = "https://api.weibo.com/2/statuses/repost_timeline.json";
     }
 }

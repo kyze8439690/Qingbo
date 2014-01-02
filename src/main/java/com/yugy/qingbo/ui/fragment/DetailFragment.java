@@ -22,11 +22,13 @@ import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.yugy.qingbo.R;
 import com.yugy.qingbo.model.CommentModel;
+import com.yugy.qingbo.model.RepostModel;
 import com.yugy.qingbo.model.TimeLineModel;
 import com.yugy.qingbo.sdk.Weibo;
 import com.yugy.qingbo.ui.activity.DetailActivity;
 import com.yugy.qingbo.ui.component.adapter.CommentListAdapter;
 import com.yugy.qingbo.ui.component.adapter.GridPicsAdapter;
+import com.yugy.qingbo.ui.component.adapter.RepostListAdapter;
 import com.yugy.qingbo.ui.view.AppMsg;
 import com.yugy.qingbo.ui.view.HeadIconImageView;
 import com.yugy.qingbo.ui.view.LoadMoreView;
@@ -72,12 +74,16 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
     private TextView mNoStickyRepost;
 
     private CommentListAdapter mCommentListAdapter;
+    private RepostListAdapter mRepostListAdapter;
     private TimeLineModel mData;
 
     private int mTabType = TAB_TYPE_COMMENT;
     private String mSinceCommentId = "0";
     private String mMaxCommentId = "0";
+    private String mSinceRepostId = "0";
+    private String mMaxRepostId = "0";
     private boolean mIsCommentLoaded = false;
+    private boolean mIsRepsotLoaded = false;
 
     public DetailFragment(SlidingUpPanelLayout slidingUpPanelLayout, ViewPager viewPager){
         mSlidingUpPanelLayout = slidingUpPanelLayout;
@@ -199,6 +205,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
         }
 
         mCommentListAdapter = new CommentListAdapter(getActivity());
+        mRepostListAdapter = new RepostListAdapter(getActivity());
         mListView.setAdapter(mCommentListAdapter);
         super.onActivityCreated(savedInstanceState);
     }
@@ -246,24 +253,45 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
                 togglePanel();
                 break;
             case R.id.loadmore_loadmore_text:
-                mIsCommentLoaded = false;
-                loadComments();
+                if(mTabType == TAB_TYPE_COMMENT){
+                    mIsCommentLoaded = false;
+                    loadComments();
+                }else if(mTabType == TAB_TYPE_REPOST){
+                    mIsRepsotLoaded = false;
+                    loadReposts();
+                }
                 break;
             case R.id.detail_sticky_comment:
                 if(mTabType == TAB_TYPE_REPOST){
-                    setRepostBackgroundResource(R.drawable.tab_selector_normal);
-                    setCommentBackgroundResource(R.drawable.tab_selector_selected);
-                    mTabType = TAB_TYPE_COMMENT;
+                    setTabTypeComment();
                 }
                 break;
             case R.id.detail_sticky_repost:
                 if(mTabType == TAB_TYPE_COMMENT){
-                    setCommentBackgroundResource(R.drawable.tab_selector_normal);
-                    setRepostBackgroundResource(R.drawable.tab_selector_selected);
-                    mTabType = TAB_TYPE_REPOST;
+                    setTabTypeRepost();
                 }
                 break;
         }
+    }
+
+    private void setTabTypeComment(){
+        mLoadMoreView.setVisibility(View.VISIBLE);
+        setRepostBackgroundResource(R.drawable.tab_selector_normal);
+        setCommentBackgroundResource(R.drawable.tab_selector_selected);
+        mTabType = TAB_TYPE_COMMENT;
+        mListView.setAdapter(mCommentListAdapter);
+        loadComments();
+        mListView.setSelection(1);
+    }
+
+    private void setTabTypeRepost(){
+        mLoadMoreView.setVisibility(View.VISIBLE);
+        setCommentBackgroundResource(R.drawable.tab_selector_normal);
+        setRepostBackgroundResource(R.drawable.tab_selector_selected);
+        mTabType = TAB_TYPE_REPOST;
+        mListView.setAdapter(mRepostListAdapter);
+        loadReposts();
+        mListView.setSelection(1);
     }
 
     private void togglePanel(){
@@ -308,7 +336,7 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
                         if(totalAmount > amount){
                             mLoadMoreView.setType(LoadMoreView.TYPE_CLICK_TO_LOAD_MORE);
                         }else{
-                            mListView.removeFooterView(mLoadMoreView);
+                            mLoadMoreView.setVisibility(View.GONE);
                         }
                     } catch (JSONException e) {
                         AppMsg.makeText(getActivity(), "JSON解析错误", AppMsg.STYLE_ALERT).show();
@@ -319,6 +347,49 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
                     }
                     mCommentListAdapter.notifyDataSetChanged();
                     mIsCommentLoaded = true;
+                    super.onSuccess(response);
+                }
+            });
+        }
+    }
+
+    public void loadReposts(){
+        if(!mIsRepsotLoaded){
+            mLoadMoreView.setType(LoadMoreView.TYPE_LOADING);
+            Weibo.getReposts(getActivity(), mData.id, mSinceRepostId, new JsonHttpResponseHandler(){
+                @Override
+                public void onSuccess(JSONObject response) {
+                    try {
+                        //parse comment data
+                        JSONArray reposts = response.getJSONArray("reposts");
+                        for (int i = 0; i < reposts.length(); i++) {
+                            RepostModel data = new RepostModel();
+                            if (i == 0) {
+                                mMaxRepostId = reposts.getJSONObject(i).getString("id");
+                            }else if(i == reposts.length() - 1){
+                                mSinceRepostId = reposts.getJSONObject(i).getString("id");
+                            }
+                            data.parse(reposts.getJSONObject(i));
+                            mRepostListAdapter.getData().add(data);
+                        }
+                        //check whether has next page
+                        int amount = mRepostListAdapter.getData().size();
+                        int totalAmount = response.getInt("total_number");
+                        setRepostCount(totalAmount);
+                        if(totalAmount > amount){
+                            mLoadMoreView.setType(LoadMoreView.TYPE_CLICK_TO_LOAD_MORE);
+                        }else{
+                            mLoadMoreView.setVisibility(View.GONE);
+                        }
+                    } catch (JSONException e) {
+                        AppMsg.makeText(getActivity(), "JSON解析错误", AppMsg.STYLE_ALERT).show();
+                        e.printStackTrace();
+                    } catch (ParseException e) {
+                        AppMsg.makeText(getActivity(), "时间解析错误", AppMsg.STYLE_ALERT).show();
+                        e.printStackTrace();
+                    }
+                    mRepostListAdapter.notifyDataSetChanged();
+                    mIsRepsotLoaded = true;
                     super.onSuccess(response);
                 }
             });
