@@ -1,7 +1,6 @@
 package com.yugy.qingbo.ui.fragment;
 
 import android.app.Fragment;
-import android.app.ListFragment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -12,7 +11,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -35,7 +33,6 @@ import com.yugy.qingbo.ui.view.LoadMoreView;
 import com.yugy.qingbo.ui.view.NoScrollGridView;
 import com.yugy.qingbo.ui.view.SelectorImageView;
 import com.yugy.qingbo.ui.view.SlidingUpPanelLayout;
-import com.yugy.qingbo.utils.MessageUtils;
 import com.yugy.qingbo.utils.NetworkUtils;
 import com.yugy.qingbo.utils.ScreenUtils;
 import com.yugy.qingbo.utils.TextUtils;
@@ -50,6 +47,9 @@ import java.text.ParseException;
  * Created by yugy on 13-12-29.
  */
 public class DetailFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener{
+
+    private static final int TAB_TYPE_COMMENT = 0;
+    private static final int TAB_TYPE_REPOST = 1;
 
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
     private ViewPager mViewPager;
@@ -66,10 +66,15 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
     private RelativeLayout mHeadLayout;
     private LoadMoreView mLoadMoreView;
     private View mSticky;
+    private TextView mStickyComment;
+    private TextView mStickyRepost;
+    private TextView mNoStickyComment;
+    private TextView mNoStickyRepost;
 
     private CommentListAdapter mCommentListAdapter;
     private TimeLineModel mData;
 
+    private int mTabType = TAB_TYPE_COMMENT;
     private String mSinceCommentId = "0";
     private String mMaxCommentId = "0";
     private boolean mIsCommentLoaded = false;
@@ -86,6 +91,8 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
         View rootView = inflater.inflate(R.layout.fragment_detail_front, container, false);
         mListView = (ListView) rootView.findViewById(R.id.detail_front_list);
         mSticky = rootView.findViewById(R.id.detail_front_sticky);
+        mStickyComment = (TextView) mSticky.findViewById(R.id.detail_sticky_comment);
+        mStickyRepost = (TextView) mSticky.findViewById(R.id.detail_sticky_repost);
         final View headerView = inflater.inflate(R.layout.widget_detail_header, null);
         headerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -95,6 +102,12 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
             }
         });
         mListView.addHeaderView(headerView);
+        mNoStickyComment = (TextView) headerView.findViewById(R.id.detail_sticky_comment);
+        mNoStickyRepost = (TextView) headerView.findViewById(R.id.detail_sticky_repost);
+        mStickyComment.setOnClickListener(this);
+        mStickyRepost.setOnClickListener(this);
+        mNoStickyComment.setOnClickListener(this);
+        mNoStickyRepost.setOnClickListener(this);
         mHead = (HeadIconImageView) headerView.findViewById(R.id.detail_head);
         mName = (TextView) headerView.findViewById(R.id.detail_name);
         mText = (TextView) headerView.findViewById(R.id.detail_text);
@@ -162,6 +175,8 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
                 .build());
         mName.setText(mData.name);
         mText.setText(mData.text);
+        setCommentCount(mData.commentCount);
+        setRepostCount(mData.repostCount);
         if(mData.hasRepost){
             mLine.setVisibility(View.VISIBLE);
             mRepostName.setVisibility(View.VISIBLE);
@@ -186,6 +201,26 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
         mCommentListAdapter = new CommentListAdapter(getActivity());
         mListView.setAdapter(mCommentListAdapter);
         super.onActivityCreated(savedInstanceState);
+    }
+
+    private void setCommentCount(int count){
+        mStickyComment.setText("评论(" + count + ")");
+        mNoStickyComment.setText("评论(" + count + ")");
+    }
+
+    private void setRepostCount(int count){
+        mStickyRepost.setText("转发(" + count + ")");
+        mNoStickyRepost.setText("转发(" + count + ")");
+    }
+
+    private void setCommentBackgroundResource(int resId){
+        mStickyComment.setBackgroundResource(resId);
+        mNoStickyComment.setBackgroundResource(resId);
+    }
+
+    private void setRepostBackgroundResource(int resId){
+        mStickyRepost.setBackgroundResource(resId);
+        mNoStickyRepost.setBackgroundResource(resId);
     }
 
     public void setTextColor(int fontColor){
@@ -213,6 +248,20 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
             case R.id.loadmore_loadmore_text:
                 mIsCommentLoaded = false;
                 loadComments();
+                break;
+            case R.id.detail_sticky_comment:
+                if(mTabType == TAB_TYPE_REPOST){
+                    setRepostBackgroundResource(R.drawable.tab_selector_normal);
+                    setCommentBackgroundResource(R.drawable.tab_selector_selected);
+                    mTabType = TAB_TYPE_COMMENT;
+                }
+                break;
+            case R.id.detail_sticky_repost:
+                if(mTabType == TAB_TYPE_COMMENT){
+                    setCommentBackgroundResource(R.drawable.tab_selector_normal);
+                    setRepostBackgroundResource(R.drawable.tab_selector_selected);
+                    mTabType = TAB_TYPE_REPOST;
+                }
                 break;
         }
     }
@@ -252,19 +301,10 @@ public class DetailFragment extends Fragment implements View.OnClickListener, Ad
                             data.parse(comments.getJSONObject(i));
                             mCommentListAdapter.getData().add(data);
                         }
-                        if(comments.length() > 0){
-                            //update status info
-                            JSONObject status = comments.getJSONObject(0).getJSONObject("status");
-                            mData.commentCount = status.getInt("comments_count");
-                            mData.repostCount = status.getInt("reposts_count");
-                        }
-                        /*
-                        TODO: add comment count and repost count show sticky
-                         */
-
                         //check whether has next page
                         int amount = mCommentListAdapter.getData().size();
                         int totalAmount = response.getInt("total_number");
+                        setCommentCount(totalAmount);
                         if(totalAmount > amount){
                             mLoadMoreView.setType(LoadMoreView.TYPE_CLICK_TO_LOAD_MORE);
                         }else{

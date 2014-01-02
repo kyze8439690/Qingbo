@@ -5,4 +5,6 @@
     <color name="confirm">#FF8800</color>
     <color name="info">#669900</color>
 
+    <color name="holo_pressed">#4B33b5e5</color>
+
 </resources>

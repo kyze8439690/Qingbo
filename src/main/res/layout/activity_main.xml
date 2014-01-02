@@ -29,7 +29,7 @@
             android:layout_height="@dimen/bottom_height"
             android:orientation="horizontal"
             android:layout_gravity="bottom"
-            android:background="#000"
+            android:background="@drawable/bg_bottombar"
             android:weightSum="4"
             >
 
