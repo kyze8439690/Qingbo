@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -21,7 +22,9 @@ import java.io.IOException;
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.MessageUtils;
+import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.ScaleImageView;
+import me.yugy.qingbo.view.gif.GifDrawable;
 
 /**
  * Created by yugy on 2014/4/18.
@@ -36,6 +39,7 @@ public class PicFragment extends Fragment{
             .build();
 
     private ScaleImageView mScaleImageView;
+    private ImageView mImageView;
     private ProgressBar mProgressBar;
     private String mPicUrl;
 
@@ -45,8 +49,14 @@ public class PicFragment extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_pic, container, false);
-        mScaleImageView = (ScaleImageView) rootView.findViewById(R.id.image);
+        View rootView;
+        if(TextUtils.isGifLink(mPicUrl)){
+            rootView = inflater.inflate(R.layout.fragment_gif, container, false);
+            mImageView = (ImageView) rootView.findViewById(R.id.image);
+        }else {
+            rootView = inflater.inflate(R.layout.fragment_pic, container, false);
+            mScaleImageView = (ScaleImageView) rootView.findViewById(R.id.image);
+        }
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress);
         return rootView;
     }
@@ -67,8 +77,14 @@ public class PicFragment extends Fragment{
 
                 File file = ImageLoader.getInstance().getDiscCache().get(imageUri);
                 try {
-                    mScaleImageView.setImageFile(file.getAbsolutePath());
-                } catch (IOException e) {
+                    if (TextUtils.isGifLink(mPicUrl)) {
+                        GifDrawable gifDrawable = new GifDrawable(file);
+                        mImageView.setImageDrawable(gifDrawable);
+                        gifDrawable.start();
+                    } else {
+                        mScaleImageView.setImageFile(file.getAbsolutePath());
+                    }
+                }catch (IOException e){
                     e.printStackTrace();
                     MessageUtils.toast(getActivity(), "IO error");
                 }

@@ -26,3 +26,21 @@ dependencies {
     compile 'com.loopj.android:android-async-http:+'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
+
+task nativeLibsToJar(
+        type: Zip,
+        description: 'create a jar archive of the native libs') {
+    destinationDir file('./libs')
+    baseName 'native-libs'
+    extension 'jar'
+
+    from 'libs'
+    include '**/*.so'
+    into 'lib'
+}
+
+tasks.withType(Compile) {
+    compileTask -> compileTask.dependsOn(nativeLibsToJar)
+}
+
+clean.dependsOn 'cleanNativeLibsToJar'

@@ -1,7 +1,6 @@
 package me.yugy.qingbo.view;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
@@ -12,12 +11,14 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.yugy.qingbo.utils.DebugUtils;
+import me.yugy.qingbo.utils.MessageUtils;
 
 /**
  * Displays an image subsampled as necessary to avoid loading too much image data into memory. After a pinch to zoom in,
@@ -42,7 +44,7 @@ import me.yugy.qingbo.utils.DebugUtils;
  * v prefixes - coordinates, translations and distances measured in screen (view) pixels
  * s prefixes - coordinates, translations and distances measured in source image pixels (scaled)
  */
-public class ScaleImageView extends View implements View.OnTouchListener {
+public class ScaleImageView extends ImageView implements View.OnTouchListener {
 
     private static final String TAG = ScaleImageView.class.getSimpleName();
 
@@ -106,7 +108,7 @@ public class ScaleImageView extends View implements View.OnTouchListener {
      */
     public void setImageFile(String extFile) throws IOException {
         reset();
-        BitmapInitTask task = new BitmapInitTask(this, getContext(), extFile, false);
+        BitmapInitTask task = new BitmapInitTask(this, getContext(), extFile);
         task.execute();
         try {
             initialize();
@@ -565,14 +567,12 @@ public class ScaleImageView extends View implements View.OnTouchListener {
         private final WeakReference<ScaleImageView> viewRef;
         private final WeakReference<Context> contextRef;
         private final String source;
-        private final boolean sourceIsAsset;
         private WeakReference<BitmapRegionDecoder> decoderRef;
 
-        public BitmapInitTask(ScaleImageView view, Context context, String source, boolean sourceIsAsset) {
+        public BitmapInitTask(ScaleImageView view, Context context, String source) {
             this.viewRef = new WeakReference<ScaleImageView>(view);
             this.contextRef = new WeakReference<Context>(context);
             this.source = source;
-            this.sourceIsAsset = sourceIsAsset;
         }
 
         @Override
@@ -581,14 +581,16 @@ public class ScaleImageView extends View implements View.OnTouchListener {
                 if (viewRef != null && contextRef != null) {
                     Context context = contextRef.get();
                     if (context != null) {
-                        BitmapRegionDecoder decoder;
-                        if (sourceIsAsset) {
-                            decoder = BitmapRegionDecoder.newInstance(context.getAssets().open(source, AssetManager.ACCESS_RANDOM), true);
-                        } else {
-                            decoder = BitmapRegionDecoder.newInstance(source, true);
+                        try{
+                            BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(source, true);
+                            decoderRef = new WeakReference<BitmapRegionDecoder>(decoder);
+                            return new Point(decoder.getWidth(), decoder.getHeight());
+                        }catch (IOException e){
+                            e.printStackTrace();
+                            Looper.prepare();
+                            MessageUtils.toast(context, "Image failed to decode using GIF decoder");
+                            Looper.loop();
                         }
-                        decoderRef = new WeakReference<BitmapRegionDecoder>(decoder);
-                        return new Point(decoder.getWidth(), decoder.getHeight());
                     }
                 }
             } catch (Exception e) {

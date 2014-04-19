@@ -15,7 +15,7 @@
         android:hardwareAccelerated="true"
         android:largeHeap="true">
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".activity.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,14 +24,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".activity.LoginActivity"
             android:label="@string/login_title">
         </activity>
         <activity
-            android:name=".ui.TimelineActivity">
+            android:name=".activity.TimelineActivity">
         </activity>
         <activity
-            android:name=".ui.PicActivity">
+            android:name=".activity.PicActivity">
         </activity>
 
 

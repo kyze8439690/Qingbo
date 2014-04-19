@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
 import me.yugy.qingbo.type.Status;
-import me.yugy.qingbo.ui.PicActivity;
+import me.yugy.qingbo.activity.PicActivity;
 import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.TextUtils;
