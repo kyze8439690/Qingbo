@@ -3,9 +3,12 @@ package me.yugy.qingbo.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
@@ -20,13 +23,16 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 import me.yugy.qingbo.R;
+import me.yugy.qingbo.activity.PicActivity;
+import me.yugy.qingbo.listener.OnListViewScrollListener;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
 import me.yugy.qingbo.type.Status;
-import me.yugy.qingbo.activity.PicActivity;
 import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
+import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.HeadIconImageView;
+import me.yugy.qingbo.view.LinkTextView;
 import me.yugy.qingbo.view.NoScrollGridView;
 import me.yugy.qingbo.view.RelativeTimeTextView;
 import me.yugy.qingbo.view.SelectorImageView;
@@ -45,17 +51,30 @@ public class TimelineStatusAdapter extends CursorAdapter{
     private static final int TYPE_HAS_REPOST_ONE_PIC = 4;
     private static final int TYPE_HAS_REPOST_MULTI_PICS = 5;
 
+    private static final long ANIM_DEFAULT_SPEED = 1000L;
+
+    private int mScreenHeight;
+
     private OnLoadMoreListener mOnLoadMoreListener;
+    private OnListViewScrollListener mOnListViewScrollListener;
     private Context mContext;
 
-    public TimelineStatusAdapter(Context context) {
+    private SparseBooleanArray mPositionMapper;
+    private int mPreviousPosition;
+    private long mAnimDuration;
+
+
+    public TimelineStatusAdapter(Context context, OnListViewScrollListener onListViewScrollListener) {
         super(context, null, false);
         mContext = context;
+        mOnListViewScrollListener = onListViewScrollListener;
+        mScreenHeight = ScreenUtils.getDisplayHeight(context);
         try{
             mOnLoadMoreListener = (OnLoadMoreListener) context;
         }catch (ClassCastException e){
             throw new ClassCastException("Activity should implement the OnLoadMoreListener interface.");
         }
+        mPreviousPosition = -1;
     }
 
     @Override
@@ -97,6 +116,9 @@ public class TimelineStatusAdapter extends CursorAdapter{
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+
+        int position = cursor.getPosition();
+
         try {
             Status status = Status.fromCursor(cursor);
             switch (getItemViewType(cursor)){
@@ -124,10 +146,38 @@ public class TimelineStatusAdapter extends CursorAdapter{
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        if(cursor.getPosition() == getCount() - 1){
+        if(position == getCount() - 1){
             DebugUtils.log("load more");
             mOnLoadMoreListener.onLoadMore();
         }
+
+        if(!mPositionMapper.get(position) && position > mPreviousPosition){
+            mAnimDuration = (((int) mOnListViewScrollListener.getSpeed()) == 0) ? ANIM_DEFAULT_SPEED : (long) (1 / mOnListViewScrollListener.getSpeed() * 15000);
+
+            if (mAnimDuration > ANIM_DEFAULT_SPEED) {
+                mAnimDuration = ANIM_DEFAULT_SPEED;
+            }
+
+            mPreviousPosition = position;
+
+            view.setTranslationX(0.0F);
+            view.setTranslationY(mScreenHeight);
+            view.setRotationX(45.0F);
+            view.setScaleX(0.7F);
+            view.setScaleY(0.55F);
+
+            view.animate().rotationX(0.0F).rotationY(0.0F).translationX(0).translationY(0).setDuration(mAnimDuration)
+                    .scaleX(1.0F).scaleY(1.0F).setInterpolator(new DecelerateInterpolator()).setStartDelay(0).start();
+
+            mPositionMapper.put(position, true);
+        }
+    }
+
+    @Override
+    public int getCount() {
+        int count = super.getCount();
+        mPositionMapper = new SparseBooleanArray(count);
+        return count;
     }
 
     /**
@@ -185,12 +235,13 @@ public class TimelineStatusAdapter extends CursorAdapter{
     }
 
     private static final DisplayImageOptions HEAD_OPTIONS = new DisplayImageOptions.Builder()
+            .bitmapConfig(Bitmap.Config.RGB_565)
             .showImageOnLoading(R.drawable.default_head)
             .showImageForEmptyUri(R.drawable.default_head)
             .showImageForEmptyUri(R.drawable.default_head)
             .cacheInMemory(true)
             .cacheOnDisc(true)
-            .displayer(new FadeInBitmapDisplayer(600))
+            .displayer(new FadeInBitmapDisplayer(200))
             .build();
 
     private class NoRepostNoPicViewHolder {
@@ -199,7 +250,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public TextView name;
         public RelativeTimeTextView time;
         public TextView topics;
-        public TextView text;
+        public LinkTextView text;
         public TextView commentCount;
         public TextView repostCount;
 
@@ -208,7 +259,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
             name = (TextView) view.findViewById(R.id.status_listitem_name);
             time = (RelativeTimeTextView) view.findViewById(R.id.status_listitem_time);
             topics = (TextView) view.findViewById(R.id.status_listitem_topic);
-            text = (TextView) view.findViewById(R.id.status_listitem_text);
+            text = (LinkTextView) view.findViewById(R.id.status_listitem_text);
             commentCount = (TextView) view.findViewById(R.id.status_listitem_comment_count);
             repostCount = (TextView) view.findViewById(R.id.status_listitem_repost_count);
         }
@@ -224,27 +275,34 @@ public class TimelineStatusAdapter extends CursorAdapter{
                 topics.setVisibility(View.INVISIBLE);
             }
             text.setText(status.text);
-            commentCount.setText(String.valueOf(status.commentCount));
-            repostCount.setText(String.valueOf(status.repostCount));
+            if(status.commentCount == 0){
+                commentCount.setText("");
+            }else {
+                commentCount.setText(String.valueOf(status.commentCount));
+            }
+            if(status.repostCount == 0){
+                repostCount.setText("");
+            }else {
+                repostCount.setText(String.valueOf(status.repostCount));
+            }
         }
     }
 
     private class HasRepostNoPicViewHolder extends NoRepostNoPicViewHolder{
 
         public TextView repostName;
-        public TextView repostText;
+        public LinkTextView repostText;
 
         public HasRepostNoPicViewHolder(View view) {
             super(view);
             repostName = (TextView) view.findViewById(R.id.status_listitem_repost_name);
-            repostText = (TextView) view.findViewById(R.id.status_listitem_repost_text);
+            repostText = (LinkTextView) view.findViewById(R.id.status_listitem_repost_text);
         }
 
         @Override
         public void parse(Status status) {
             super.parse(status);
-            String repostString = String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName);
-            repostName.setText(TextUtils.parseStatusText(repostString));
+            repostName.setText(String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName));
             repostText.setText(status.repostStatus.text);
         }
     }
@@ -283,14 +341,14 @@ public class TimelineStatusAdapter extends CursorAdapter{
     private class HasRepostOnePicViewHolder extends NoRepostNoPicViewHolder implements OnClickListener{
 
         public TextView repostName;
-        public TextView repostText;
+        public LinkTextView repostText;
         public SelectorImageView pic;
         public ArrayList<String> picsUrl;
 
         public HasRepostOnePicViewHolder(View view) {
             super(view);
             repostName = (TextView) view.findViewById(R.id.status_listitem_repost_name);
-            repostText = (TextView) view.findViewById(R.id.status_listitem_repost_text);
+            repostText = (LinkTextView) view.findViewById(R.id.status_listitem_repost_text);
             pic = (SelectorImageView) view.findViewById(R.id.status_listitem_pic);
         }
 
@@ -305,8 +363,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
             }
             picsUrl = status.repostStatus.pics;
             pic.setOnClickListener(this);
-            String repostString = String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName);
-            repostName.setText(TextUtils.parseStatusText(repostString));
+            repostName.setText(String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName));
             repostText.setText(status.repostStatus.text);
         }
 
@@ -348,14 +405,14 @@ public class TimelineStatusAdapter extends CursorAdapter{
     private class HasRepostMultiPicsViewHolder extends NoRepostNoPicViewHolder implements AdapterView.OnItemClickListener{
 
         public TextView repostName;
-        public TextView repostText;
+        public LinkTextView repostText;
         public NoScrollGridView pics;
         private ArrayList<String> picsUrl;
 
         public HasRepostMultiPicsViewHolder(View view) {
             super(view);
             repostName = (TextView) view.findViewById(R.id.status_listitem_repost_name);
-            repostText = (TextView) view.findViewById(R.id.status_listitem_repost_text);
+            repostText = (LinkTextView) view.findViewById(R.id.status_listitem_repost_text);
             pics = (NoScrollGridView) view.findViewById(R.id.status_listitem_picgrid);
         }
 

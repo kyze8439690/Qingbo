@@ -189,7 +189,12 @@ public class ScaleImageView extends ImageView implements View.OnTouchListener {
             public boolean onDoubleTap(MotionEvent e) {
                 DebugUtils.log("Double tap");
                 float minScale = Math.min(getWidth() / (float) sWidth, getHeight() / (float) sHeight);
-                setScaleAndCenter(minScale, getCenter());
+                if(getScale() == minScale){
+                    PointF pointF = new PointF(e.getX(), e.getY());
+                    setScaleAndCenter(maxScale, pointF);
+                }else {
+                    setScaleAndCenter(minScale, getCenter());
+                }
                 return super.onDoubleTap(e);
             }
         });

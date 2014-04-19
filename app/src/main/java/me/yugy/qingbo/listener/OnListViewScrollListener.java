@@ -17,6 +17,10 @@ public abstract class OnListViewScrollListener implements AbsListView.OnScrollLi
 
     private int mScrollState = SCROLL_STATE_IDLE;
 
+    private int mPreviousFirstVisibleItem = 0;
+    private long mPreviousEventTime = 0, mCurrentTime, mTimeToScrollOneElement;
+    private double speed = 0;
+
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
@@ -33,6 +37,17 @@ public abstract class OnListViewScrollListener implements AbsListView.OnScrollLi
             onScrollPositionChanged(mScrollPosition, newScrollPosition);
         }
         mScrollPosition = newScrollPosition;
+
+
+        if (mPreviousFirstVisibleItem != firstVisibleItem) {
+            mCurrentTime = System.currentTimeMillis();
+            mTimeToScrollOneElement = mCurrentTime - mPreviousEventTime;
+            speed = ((double) 1 / mTimeToScrollOneElement) * 1000;
+
+            mPreviousFirstVisibleItem = firstVisibleItem;
+            mPreviousEventTime = mCurrentTime;
+
+        }
     }
 
     private void onScrollPositionChanged(int oldScrollPosition, int newScrollPosition) {
@@ -61,6 +76,9 @@ public abstract class OnListViewScrollListener implements AbsListView.OnScrollLi
 
     public abstract void scrollToBottom();
 
+    public double getSpeed() {
+        return speed;
+    }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {

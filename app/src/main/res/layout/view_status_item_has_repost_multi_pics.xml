@@ -4,6 +4,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingRight="0dp"
+                android:paddingTop="14dp"
+                android:paddingLeft="14dp"
+                android:paddingBottom="14dp"
                 android:background="@drawable/bg_card_white"
                 android:descendantFocusability="blocksDescendants"
     >
@@ -16,7 +19,7 @@
         android:scaleType="centerInside"
         app:corner_radius="50dp"
         app:border_width="1dp"
-        app:border_color="#CDCDCD"
+        app:border_color="#FFCDCDCD"
         app:round_background="false"
         />
 
@@ -33,7 +36,7 @@
         android:text="@string/just_now"
         />
 
-    <TextView
+    <me.yugy.qingbo.view.LinkTextView
         android:id="@+id/status_listitem_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,19 +49,7 @@
 
     <TextView
         android:id="@+id/status_listitem_topic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="#222"
-        android:maxWidth="150dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="2dp"
-        android:layout_marginLeft="8dp"
-        android:background="@drawable/timeline_listitem_topic_bg"
-        android:singleLine="true"
-        android:ellipsize="end"
-        android:visibility="invisible"
+        style="@style/TopicButtonStyle"
         />
 
     <TextView
@@ -93,11 +84,10 @@
         android:layout_below="@id/status_listitem_line"
         android:layout_marginTop="14dp"
         android:layout_marginRight="14dp"
-        android:autoLink="web"
         android:text="this status is originally post by repost_name"
         />
 
-    <TextView
+    <me.yugy.qingbo.view.LinkTextView
         android:id="@+id/status_listitem_repost_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -124,33 +114,19 @@
 
     <TextView
         android:id="@+id/status_listitem_comment_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/ActionButtonStyle"
         android:layout_below="@id/status_listitem_picgrid"
         android:layout_marginTop="16dp"
-        android:layout_marginRight="10dp"
-        android:text="1"
-        android:textStyle="bold"
-        android:textSize="13sp"
-        android:padding="6dp"
+        android:layout_marginRight="14dp"
         android:drawableLeft="@drawable/timeline_listitem_comment_icon"
-        android:drawablePadding="3dp"
-        android:background="@drawable/timeline_listitem_button_background"
         />
 
     <TextView
         android:id="@+id/status_listitem_repost_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/ActionButtonStyle"
         android:layout_toRightOf="@id/status_listitem_comment_count"
         android:layout_alignTop="@id/status_listitem_comment_count"
-        android:text="1"
-        android:textStyle="bold"
-        android:textSize="13sp"
-        android:padding="6dp"
         android:drawableLeft="@drawable/timeline_listitem_repost_icon"
-        android:drawablePadding="3dp"
-        android:background="@drawable/timeline_listitem_button_background"
         />
 
 </RelativeLayout>

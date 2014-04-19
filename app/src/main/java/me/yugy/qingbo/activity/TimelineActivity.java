@@ -27,9 +27,9 @@ import me.yugy.qingbo.listener.OnListViewScrollListener;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
 import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.utils.DebugUtils;
-import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.vendor.Weibo;
 import me.yugy.qingbo.view.CustomHeaderTransformer;
+import me.yugy.qingbo.view.message.AppMsg;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.Options;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
@@ -47,6 +47,7 @@ public class TimelineActivity extends Activity implements
     private View mBottomBar;
     private StatusesDataHelper mStatusesDataHelper;
     private TimelineStatusAdapter mTimelineStatusAdapter;
+    private OnListViewScrollListener mOnListViewScrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +60,7 @@ public class TimelineActivity extends Activity implements
         mBottomBar = findViewById(R.id.bottom_bar);
 
         mStatusesDataHelper = new StatusesDataHelper(this);
-        mTimelineStatusAdapter = new TimelineStatusAdapter(this);
-        mListView.setAdapter(mTimelineStatusAdapter);
-        mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true, new OnListViewScrollListener() {
+        mOnListViewScrollListener = new OnListViewScrollListener() {
 
             private int mBottomBarHeight = -1;
             private int mTranslationY;
@@ -83,7 +82,11 @@ public class TimelineActivity extends Activity implements
                 mTranslationY = mBottomBarHeight;
                 mBottomBar.animate().setDuration(300).translationY(mTranslationY);
             }
-        }));
+        };
+        mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true, mOnListViewScrollListener));
+        mTimelineStatusAdapter = new TimelineStatusAdapter(this, mOnListViewScrollListener);
+        mListView.setAdapter(mTimelineStatusAdapter);
+
         mBottomBar.findViewById(R.id.btn_bottombar_refresh).setOnClickListener(this);
 
         ActionBarPullToRefresh.from(this)
@@ -109,22 +112,25 @@ public class TimelineActivity extends Activity implements
                 DebugUtils.log("解析微博数据");
                 ArrayList<Status> statuses = new ArrayList<Status>();
                 int statusesSize = response.length();
-                for (int i = 0; i < statusesSize; i++) {
-                    Status status = new Status();
-                    try {
+                if(statusesSize == 20){
+                    mStatusesDataHelper.deleteAll();
+                }
+                try {
+                    for (int i = 0; i < statusesSize; i++) {
+                        Status status = new Status();
                         status.parse(response.getJSONObject(i));
                         statuses.add(status);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
                 if(statuses.size() != 0){
                     mStatusesDataHelper.bulkInsert(statuses);
-                    MessageUtils.toast(TimelineActivity.this, "更新了" + statuses.size() + "条新微薄");
+                    AppMsg.makeText(TimelineActivity.this, "更新了" + statuses.size() + "条新微薄").show();
                 } else {
-                    MessageUtils.toast(TimelineActivity.this, "没有新微博");
+                    AppMsg.makeText(TimelineActivity.this, "没有新微博").show();
                 }
                 mPullToRefreshLayout.setRefreshComplete();
                 super.onSuccess(response);
@@ -156,9 +162,9 @@ public class TimelineActivity extends Activity implements
                 }
                 if(statuses.size() != 0){
                     mStatusesDataHelper.bulkInsert(statuses);
-                    MessageUtils.toast(TimelineActivity.this, "加载了" + statuses.size() + "条新微薄");
+                    AppMsg.makeText(TimelineActivity.this, "加载了" + statuses.size() + "条新微薄").show();
                 } else {
-                    MessageUtils.toast(TimelineActivity.this, "没有新微博");
+                    AppMsg.makeText(TimelineActivity.this, "没有新微博").show();
                 }
                 setProgressBarIndeterminateVisibility(false);
                 mLoadingMore = false;

@@ -166,5 +166,4 @@ public class StatusesDataHelper extends BaseDataHelper{
             throw new SQLException("Fail to insert row into " + getContentUri());
         }
     }
-
 }

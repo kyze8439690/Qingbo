@@ -55,10 +55,10 @@ public class GridPicsAdapter extends BaseAdapter{
             image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         }
         image.setGif(TextUtils.isGifLink(mPics.get(position)));
-        if(NetworkUtils.isWifi(mContext)){
-            ImageLoader.getInstance().displayImage(mPics.get(position).replace("thumbnail", "bmiddle"), image);
-        }else {
+        if(!NetworkUtils.isWifi(mContext) || TextUtils.isGifLink(mPics.get(position))){
             ImageLoader.getInstance().displayImage(mPics.get(position), image);
+        }else {
+            ImageLoader.getInstance().displayImage(mPics.get(position).replace("thumbnail", "bmiddle"), image);
         }
         return image;
     }
