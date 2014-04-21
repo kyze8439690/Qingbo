@@ -23,7 +23,7 @@ import me.yugy.qingbo.R;
 import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.utils.TextUtils;
-import me.yugy.qingbo.view.ScaleImageView;
+import me.yugy.qingbo.view.image.ScaleImageView;
 import me.yugy.qingbo.view.gif.GifDrawable;
 
 /**

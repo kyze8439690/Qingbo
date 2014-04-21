@@ -8,7 +8,6 @@ import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
@@ -31,11 +30,11 @@ import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
-import me.yugy.qingbo.view.HeadIconImageView;
-import me.yugy.qingbo.view.LinkTextView;
+import me.yugy.qingbo.view.image.HeadIconImageView;
+import me.yugy.qingbo.view.text.LinkTextView;
 import me.yugy.qingbo.view.NoScrollGridView;
-import me.yugy.qingbo.view.RelativeTimeTextView;
-import me.yugy.qingbo.view.SelectorImageView;
+import me.yugy.qingbo.view.text.RelativeTimeTextView;
+import me.yugy.qingbo.view.image.SelectorImageView;
 
 import static android.view.View.OnClickListener;
 
@@ -151,26 +150,26 @@ public class TimelineStatusAdapter extends CursorAdapter{
             mOnLoadMoreListener.onLoadMore();
         }
 
-        if(!mPositionMapper.get(position) && position > mPreviousPosition){
-            mAnimDuration = (((int) mOnListViewScrollListener.getSpeed()) == 0) ? ANIM_DEFAULT_SPEED : (long) (1 / mOnListViewScrollListener.getSpeed() * 15000);
-
-            if (mAnimDuration > ANIM_DEFAULT_SPEED) {
-                mAnimDuration = ANIM_DEFAULT_SPEED;
-            }
-
-            mPreviousPosition = position;
-
-            view.setTranslationX(0.0F);
-            view.setTranslationY(mScreenHeight);
-            view.setRotationX(45.0F);
-            view.setScaleX(0.7F);
-            view.setScaleY(0.55F);
-
-            view.animate().rotationX(0.0F).rotationY(0.0F).translationX(0).translationY(0).setDuration(mAnimDuration)
-                    .scaleX(1.0F).scaleY(1.0F).setInterpolator(new DecelerateInterpolator()).setStartDelay(0).start();
-
-            mPositionMapper.put(position, true);
-        }
+//        if(!mPositionMapper.get(position) && position > mPreviousPosition){
+//            mAnimDuration = (((int) mOnListViewScrollListener.getSpeed()) == 0) ? ANIM_DEFAULT_SPEED : (long) (1 / mOnListViewScrollListener.getSpeed() * 15000);
+//
+//            if (mAnimDuration > ANIM_DEFAULT_SPEED) {
+//                mAnimDuration = ANIM_DEFAULT_SPEED;
+//            }
+//
+//            mPreviousPosition = position;
+//
+//            view.setTranslationX(0.0F);
+//            view.setTranslationY(mScreenHeight);
+//            view.setRotationX(45.0F);
+//            view.setScaleX(0.7F);
+//            view.setScaleY(0.55F);
+//
+//            view.animate().rotationX(0.0F).rotationY(0.0F).translationX(0).translationY(0).setDuration(mAnimDuration)
+//                    .scaleX(1.0F).scaleY(1.0F).setInterpolator(new DecelerateInterpolator()).setStartDelay(0).start();
+//
+//            mPositionMapper.put(position, true);
+//        }
     }
 
     @Override
@@ -321,10 +320,10 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public void parse(Status status) {
             super.parse(status);
             pic.setGif(TextUtils.isGifLink(status.pics.get(0)));
-            if(NetworkUtils.isWifi(mContext)){
-                ImageLoader.getInstance().displayImage(status.pics.get(0).replace("thumbnail", "bmiddle"), pic);
-            }else {
+            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.pics.get(0))){
                 ImageLoader.getInstance().displayImage(status.pics.get(0), pic);
+            }else {
+                ImageLoader.getInstance().displayImage(status.pics.get(0).replace("thumbnail", "bmiddle"), pic);
             }
             picsUrl = status.pics;
             pic.setOnClickListener(this);
@@ -356,10 +355,10 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public void parse(Status status) {
             super.parse(status);
             pic.setGif(TextUtils.isGifLink(status.repostStatus.pics.get(0)));
-            if(NetworkUtils.isWifi(mContext)) {
-                ImageLoader.getInstance().displayImage(status.repostStatus.pics.get(0).replace("thumbnail", "bmiddle"), pic);
-            }else{
+            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.repostStatus.pics.get(0))) {
                 ImageLoader.getInstance().displayImage(status.repostStatus.pics.get(0), pic);
+            }else{
+                ImageLoader.getInstance().displayImage(status.repostStatus.pics.get(0).replace("thumbnail", "bmiddle"), pic);
             }
             picsUrl = status.repostStatus.pics;
             pic.setOnClickListener(this);
@@ -419,8 +418,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         @Override
         public void parse(Status status) {
             super.parse(status);
-            String repostString = String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName);
-            repostName.setText(TextUtils.parseStatusText(repostString));
+            repostName.setText(String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName));
             repostText.setText(status.repostStatus.text);
             pics.setAdapter(new GridPicsAdapter(mContext, status.repostStatus.pics));
             picsUrl = status.repostStatus.pics;

@@ -79,8 +79,14 @@ public class StatusesDataHelper extends BaseDataHelper{
             }
             throw new SQLException("Fail to select row from " + getContentUri());
         }else{
+            cursor.close();
             return null;
         }
+    }
+
+    public int update(Status status){
+        ContentValues values = getContentValues(status);
+        return update(values, StatusDBInfo.ID + "=" + status.id, null);
     }
 
     public long getNewestId(){
@@ -126,7 +132,6 @@ public class StatusesDataHelper extends BaseDataHelper{
             db.beginTransaction();
             try{
                 for(Status status : statusList){
-
                     ContentValues values = getContentValues(status);
                     if(select(status.id) == null){
                         //insert

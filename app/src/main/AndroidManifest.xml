@@ -31,8 +31,16 @@
             android:name=".activity.TimelineActivity">
         </activity>
         <activity
-            android:name=".activity.PicActivity">
+            android:name=".activity.PicActivity"
+            android:theme="@style/AppTheme.PicActivity"
+            android:parentActivityName=".activity.MainActivity">
         </activity>
+        <activity android:name=".activity.DetailActivity"
+            android:label=""
+            android:theme="@style/AppTheme.DetailActivity"
+            android:parentActivityName=".activity.MainActivity"
+            android:windowSoftInputMode="stateHidden"
+            />
 
 
         <provider

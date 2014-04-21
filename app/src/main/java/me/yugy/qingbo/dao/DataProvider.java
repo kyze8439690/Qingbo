@@ -14,8 +14,10 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import me.yugy.qingbo.Application;
+import me.yugy.qingbo.dao.datahelper.CommentsDataHelper;
 import me.yugy.qingbo.dao.datahelper.StatusesDataHelper;
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
+import me.yugy.qingbo.dao.dbinfo.CommentDBInfo;
 import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
 import me.yugy.qingbo.dao.dbinfo.UserInfoDBInfo;
 
@@ -30,23 +32,28 @@ public class DataProvider extends ContentProvider {
 
     private static final String PATH_USER_INFO = "/userInfo";
     private static final String PATH_STATUSES = "/statuses";
+    private static final String PATH_COMMENTS = "/comments";
 //    public static final String PATH_NEWEST_STATUSES = "/newestStatuses";
 
     public static final Uri USERINFO_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_USER_INFO);
     public static final Uri STATUSES_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_STATUSES);
+    public static final Uri COMMENTS_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_COMMENTS);
 //    public static final Uri NEWEST_STATUSES_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_NEWEST_STATUSES);
 
     private static final int USER_INFO = 0;
     private static final int STATUSES = 1;
+    private static final int COMMENTS = 2;
 //    private static final int NEWEST_STATUSES = 2;
 
     private static final String USER_INFO_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.userinfo";
     private static final String STATUSES_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.statuses";
+    private static final String COMMENTS_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.comments";
 //    public static final String NEWEST_STATUSES_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.newest.statuses";
 
     private static final UriMatcher sUriMATCHER = new UriMatcher(UriMatcher.NO_MATCH){{
         addURI(AUTHORITY, "userInfo", USER_INFO);
         addURI(AUTHORITY, "statuses", STATUSES);
+        addURI(AUTHORITY, "comments", COMMENTS);
 //        addURI(AUTHORITY, "newestStatuses", NEWEST_STATUSES);
     }};
 
@@ -89,6 +96,8 @@ public class DataProvider extends ContentProvider {
                 return UserInfoDataHelper.TABLE_NAME;
             case STATUSES:
                 return StatusesDataHelper.TABLE_NAME;
+            case COMMENTS:
+                return CommentsDataHelper.TABLE_NAME;
 //            case NEWEST_STATUSES:
 //                return NewestStatusesDataHelper.TABLE_NAME;
             default:
@@ -103,6 +112,8 @@ public class DataProvider extends ContentProvider {
                 return USER_INFO_CONTENT_TYPE;
             case STATUSES:
                 return STATUSES_CONTENT_TYPE;
+            case COMMENTS:
+                return COMMENTS_CONTENT_TYPE;
 //            case NEWEST_STATUSES:
 //                return NEWEST_STATUSES_CONTENT_TYPE;
             default:
@@ -202,6 +213,7 @@ public class DataProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             UserInfoDBInfo.TABLE.create(db);
             StatusDBInfo.TABLE.create(db);
+            CommentDBInfo.TABLE.create(db);
 //            NewestStatusDBInfo.TABLE.create(db);
         }
 

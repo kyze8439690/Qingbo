@@ -1,12 +1,11 @@
 package me.yugy.qingbo.utils;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.format.DateUtils;
-import android.text.style.ClickableSpan;
-import android.text.style.URLSpan;
-import android.text.style.UnderlineSpan;
 import android.view.View;
 
 import java.text.ParseException;
@@ -18,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.yugy.qingbo.R;
+import me.yugy.qingbo.view.text.TouchClickableSpan;
 
 /**
  * Created by yugy on 14-3-9.
@@ -48,28 +48,31 @@ public class TextUtils {
 
     public static SpannableString parseStatusText(String text){
         SpannableString parseString = new SpannableString(text);
-        Pattern urlPattern = Pattern.compile("http://t.cn/.{7}");
+        Pattern urlPattern = Pattern.compile("http://t\\.cn/[0-9a-zA-Z]+");
         Pattern atPattern = Pattern.compile("@([0-9a-zA-Z\\u4e00-\\u9fa5_-]+)");
         Matcher urlMatcher = urlPattern.matcher(text);
         Matcher atMatcher = atPattern.matcher(text);
         while(urlMatcher.find()){
-            String url = urlMatcher.group();
+            final String url = urlMatcher.group();
             int start = urlMatcher.start();
             int end = urlMatcher.end();
-            parseString.setSpan(new URLSpan(url), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            parseString.setSpan(new UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            parseString.setSpan(new TouchClickableSpan() {
+                @Override
+                public void onClick(View widget) {
+                    widget.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                }
+            }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         while(atMatcher.find()){
             int start = atMatcher.start();
             int end = atMatcher.end();
             final String name = atMatcher.group();
-            parseString.setSpan(new ClickableSpan() {
+            parseString.setSpan(new TouchClickableSpan() {
                 @Override
                 public void onClick(View widget) {
-//                    MessageUtils.toast(context, name);
+                    MessageUtils.toast(widget.getContext(), name);
                 }
             }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            parseString.setSpan(new UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return parseString;
     }

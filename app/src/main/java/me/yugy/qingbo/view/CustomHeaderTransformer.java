@@ -27,6 +27,7 @@ import android.widget.TextView;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import me.yugy.qingbo.R;
+import me.yugy.qingbo.utils.ScreenUtils;
 import uk.co.senab.actionbarpulltorefresh.library.HeaderTransformer;
 import uk.co.senab.actionbarpulltorefresh.library.sdk.Compat;
 
@@ -80,7 +81,7 @@ public class CustomHeaderTransformer extends HeaderTransformer {
                 .getInteger(android.R.integer.config_shortAnimTime);
 
         mProgressDrawableColor = activity.getResources()
-                .getColor(R.color.gplus_color_1);
+                .getColor(R.color.gplus_color_3);
 
         // Setup the View styles
         setupViewsFromStyles(activity, headerView);
@@ -311,13 +312,13 @@ public class CustomHeaderTransformer extends HeaderTransformer {
                     R.styleable.PullToRefreshHeader_ptrProgressBarColor, mProgressDrawableColor);
         }
 
-        mProgressBarStyle = styleAttrs.getInt(
-                R.styleable.PullToRefreshHeader_ptrProgressBarStyle, PROGRESS_BAR_STYLE_OUTSIDE);
+        mProgressBarStyle = PROGRESS_BAR_STYLE_INSIDE;
+        mProgressBarHeight = ScreenUtils.dp(abContext, 3);
 
-        if(styleAttrs.hasValue(R.styleable.PullToRefreshHeader_ptrProgressBarHeight)) {
-            mProgressBarHeight = styleAttrs.getDimensionPixelSize(
-                    R.styleable.PullToRefreshHeader_ptrProgressBarHeight, mProgressBarHeight);
-        }
+//        if(styleAttrs.hasValue(R.styleable.PullToRefreshHeader_ptrProgressBarHeight)) {
+//            mProgressBarHeight = styleAttrs.getDimensionPixelSize(
+//                    R.styleable.PullToRefreshHeader_ptrProgressBarHeight, mProgressBarHeight);
+//        }
 
         // Retrieve the text strings from the style (if they're set)
         if (styleAttrs.hasValue(R.styleable.PullToRefreshHeader_ptrPullText)) {

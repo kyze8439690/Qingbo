@@ -10,5 +10,17 @@
     <string name="location">位置</string>
     <string name="text">文字</string>
     <string name="refresh">刷新</string>
+    <string name="detail_description">%d person reposted this</string>
+    <string name="add_comment_hint">Add a comment</string>
+    <string name="send_comment">Sending comment...</string>
+
+    <string-array name="actionbar_dropdown_entry">
+        <item>全部</item>
+        <item>好友</item>
+        <item>原创</item>
+        <item>图片</item>
+        <item>视频</item>
+        <item>音乐</item>
+    </string-array>
 
 </resources>

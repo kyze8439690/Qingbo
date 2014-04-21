@@ -1,12 +1,24 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <style name="AppTheme" parent="android:Theme.Holo.Light">
         <!-- Customize your theme here. -->
         <item name="android:actionBarStyle">@style/ActionBar</item>
+        <item name="android:windowBackground">@color/window_background</item>
     </style>
 
-    <style name="ActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
+    <style name="AppTheme.PicActivity" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:actionBarStyle">@style/ActionBar.PicActivity</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_ab_back_holo_dark</item>
+    </style>
+
+    <style name="AppTheme.DetailActivity" parent="android:Theme.Holo.Light">
+        <item name="android:homeAsUpIndicator">@drawable/ic_ab_back_holo_light</item>
+        <item name="android:actionBarStyle">@style/ActionBar.DetailActivity</item>
+        <item name="android:windowBackground">@color/detail_window_background</item>
+    </style>
+
+    <style name="ActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid">
         <item name="android:indeterminateProgressStyle">@style/ActionBar.Progress</item>
     </style>
 
@@ -16,7 +28,15 @@
         <item name="android:minHeight">32dp</item>
         <item name="android:maxHeight">32dp</item>
     </style>
-    
+
+    <style name="ActionBar.PicActivity" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:displayOptions">showTitle|homeAsUp</item>
+    </style>
+
+    <style name="ActionBar.DetailActivity" parent="ActionBar">
+        <item name="android:displayOptions">showHome|homeAsUp</item>
+    </style>
+
     <style name="ActionButtonStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -29,6 +49,7 @@
         <item name="android:paddingRight">10dp</item>
         <item name="android:drawablePadding">3dp</item>
         <item name="android:background">@drawable/btn_white</item>
+        <item name="android:clickable">true</item>
     </style>
 
     <style name="TopicButtonStyle">
@@ -46,6 +67,7 @@
         <item name="android:ellipsize">end</item>
         <item name="android:visibility">invisible</item>
         <item name="android:gravity">center_vertical</item>
+        <item name="android:clickable">true</item>
     </style>
 
 </resources>

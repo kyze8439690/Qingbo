@@ -1,12 +1,16 @@
 package me.yugy.qingbo.activity;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -40,7 +44,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
  */
 public class TimelineActivity extends Activity implements
         LoaderManager.LoaderCallbacks<Cursor>, OnRefreshListener, OnLoadMoreListener,
-        View.OnClickListener {
+        View.OnClickListener, ActionBar.OnNavigationListener, AdapterView.OnItemClickListener {
 
     private PullToRefreshLayout mPullToRefreshLayout;
     private ListView mListView;
@@ -54,6 +58,10 @@ public class TimelineActivity extends Activity implements
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_timeline);
+
+        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        getActionBar().setDisplayShowTitleEnabled(false);
+        getActionBar().setListNavigationCallbacks(ArrayAdapter.createFromResource(this, R.array.actionbar_dropdown_entry, android.R.layout.simple_spinner_dropdown_item), this);
 
         mPullToRefreshLayout = (PullToRefreshLayout) findViewById(R.id.ptr_layout);
         mListView = (ListView) findViewById(R.id.list);
@@ -86,6 +94,7 @@ public class TimelineActivity extends Activity implements
         mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true, mOnListViewScrollListener));
         mTimelineStatusAdapter = new TimelineStatusAdapter(this, mOnListViewScrollListener);
         mListView.setAdapter(mTimelineStatusAdapter);
+        mListView.setOnItemClickListener(this);
 
         mBottomBar.findViewById(R.id.btn_bottombar_refresh).setOnClickListener(this);
 
@@ -106,6 +115,7 @@ public class TimelineActivity extends Activity implements
 
     private void getNewData(){
         mPullToRefreshLayout.setRefreshing(true);
+        setProgressBarIndeterminateVisibility(true);
         Weibo.getNewTimeline(this, mStatusesDataHelper.getNewestId(), new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(final JSONArray response) {
@@ -133,6 +143,7 @@ public class TimelineActivity extends Activity implements
                     AppMsg.makeText(TimelineActivity.this, "没有新微博").show();
                 }
                 mPullToRefreshLayout.setRefreshComplete();
+                setProgressBarIndeterminateVisibility(false);
                 super.onSuccess(response);
             }
         });
@@ -207,6 +218,26 @@ public class TimelineActivity extends Activity implements
                 mListView.setSelectionAfterHeaderView();
                 getNewData();
                 break;
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+        return false;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        try {
+            Cursor cursor = (Cursor)parent.getAdapter().getItem(position);
+            Status status = Status.fromCursor(cursor);
+            Intent intent = new Intent(this, DetailActivity.class);
+            intent.putExtra("status", status);
+            startActivity(intent);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 }

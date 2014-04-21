@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:paddingLeft="16dp"
+              android:paddingRight="16dp"
+              android:paddingTop="16dp"
+              android:descendantFocusability="blocksDescendants">
+    
+    <com.makeramen.RoundedImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/comment_listitem_head"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        app:corner_radius="2dp"
+        android:src="@drawable/default_head"
+        />
+
+    <TextView
+        android:id="@+id/comment_listitem_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:layout_toRightOf="@id/comment_listitem_head"
+        android:layout_marginLeft="16dp"
+        android:text="name"
+        android:singleLine="true"
+        android:layout_marginRight="150dp"
+        android:ellipsize="end"
+        />
+
+    <me.yugy.qingbo.view.text.RelativeTimeTextView
+        android:id="@+id/comment_listitem_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="time"
+        android:textSize="12sp"
+        android:layout_alignBottom="@id/comment_listitem_name"
+        android:textColor="#ff737373"
+        android:maxWidth="150dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        />
+
+    <me.yugy.qingbo.view.text.LinkTextView
+        android:id="@+id/comment_listitem_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/comment_listitem_name"
+        android:layout_marginTop="8dp"
+        android:layout_alignLeft="@id/comment_listitem_name"
+        android:text="@string/text"
+        />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ffe5e5e5"
+        android:layout_below="@id/comment_listitem_text"
+        android:layout_marginTop="16dp"
+        />
+
+</RelativeLayout>

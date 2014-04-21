@@ -4,4 +4,7 @@
     <color name="gplus_color_2">#f4b400</color>
     <color name="gplus_color_3">#427fed</color>
     <color name="gplus_color_4">#b23424</color>
+
+    <color name="window_background">#e5e5e5</color>
+    <color name="detail_window_background">#f5f5f5</color>
 </resources>

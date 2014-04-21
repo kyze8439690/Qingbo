@@ -11,7 +11,7 @@
                 android:descendantFocusability="blocksDescendants"
     >
 
-    <me.yugy.qingbo.view.HeadIconImageView
+    <me.yugy.qingbo.view.image.HeadIconImageView
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/status_listitem_head"
         android:layout_width="50dp"
@@ -23,7 +23,7 @@
         app:round_background="false"
         />
 
-    <me.yugy.qingbo.view.RelativeTimeTextView
+    <me.yugy.qingbo.view.text.RelativeTimeTextView
         android:id="@+id/status_listitem_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,14 +36,13 @@
         android:text="@string/just_now"
         />
 
-    <me.yugy.qingbo.view.LinkTextView
+    <me.yugy.qingbo.view.text.LinkTextView
         android:id="@+id/status_listitem_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/status_listitem_head"
         android:layout_marginRight="14dp"
         android:layout_marginTop="10dp"
-        android:autoLink="web"
         android:text="text"
         />
 

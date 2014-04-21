@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
-import me.yugy.qingbo.view.GifIconImageView;
+import me.yugy.qingbo.view.image.GifIconImageView;
 
 /**
  * Created by yugy on 2014/4/17.
@@ -55,7 +55,7 @@ public class GridPicsAdapter extends BaseAdapter{
             image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         }
         image.setGif(TextUtils.isGifLink(mPics.get(position)));
-        if(!NetworkUtils.isWifi(mContext) || TextUtils.isGifLink(mPics.get(position))){
+        if(!NetworkUtils.isWifi() || TextUtils.isGifLink(mPics.get(position))){
             ImageLoader.getInstance().displayImage(mPics.get(position), image);
         }else {
             ImageLoader.getInstance().displayImage(mPics.get(position).replace("thumbnail", "bmiddle"), image);

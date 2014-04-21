@@ -1,35 +1,37 @@
-package me.yugy.qingbo.view;
+package me.yugy.qingbo.view.image;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 
+import com.makeramen.RoundedImageView;
 import me.yugy.qingbo.R;
 
 /**
- * Created by yugy on 13-11-7.
+ * Created by yugy on 13-12-27.
  */
-public class SelectorImageView extends GifIconImageView{
-    public SelectorImageView(Context context) {
+public class HeadIconImageView extends RoundedImageView {
+
+    private Drawable mForegroundSelector;
+
+    public HeadIconImageView(Context context) {
         super(context);
         init();
     }
 
-    public SelectorImageView(Context context, AttributeSet attrs) {
+    public HeadIconImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public SelectorImageView(Context context, AttributeSet attrs, int defStyle) {
+    public HeadIconImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
 
-    private Drawable mForegroundSelector;
-
-    private void init(){
-        mForegroundSelector = getResources().getDrawable(R.drawable.list_selector_holo);
+    private void init() {
+        mForegroundSelector = getResources().getDrawable(R.drawable.head_selector);
     }
 
     @Override
@@ -51,4 +53,3 @@ public class SelectorImageView extends GifIconImageView{
         mForegroundSelector.draw(canvas);
     }
 }
-

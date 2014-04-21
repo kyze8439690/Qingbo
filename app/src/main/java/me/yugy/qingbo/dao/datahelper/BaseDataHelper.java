@@ -76,5 +76,9 @@ public abstract class BaseDataHelper {
         return new CursorLoader(getContext(), getContentUri(), null, null, null, sortOrder);
     }
 
+    public CursorLoader getCursorLoader(String selection, String sortOrder){
+        return new CursorLoader(getContext(), getContentUri(), null, selection, null, sortOrder);
+    }
+
 }
 

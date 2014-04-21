@@ -160,12 +160,54 @@ public class Weibo {
         });
     }
 
-    public static void getComments(Context context, String statusId, String sinceId, final JsonHttpResponseHandler responseHandler){
+    public static void getNewComments(Context context, long statusId, long sinceId, final JsonHttpResponseHandler responseHandler){
         RequestParams params = getParamsWithAccessToken(context);
-        params.put("id", statusId);
-        params.put("since_id", sinceId);
-        params.put("count", "20");
+        params.put("id", String.valueOf(statusId));
+        params.put("since_id", String.valueOf(sinceId));
+        DebugUtils.log("newestCommentId:" + sinceId);
         mClient.get(context, WeiboApiUrl.COMMENTS_SHOW, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log(response.toString());
+                responseHandler.onSuccess(response);
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                DebugUtils.log(errorResponse.toString());
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
+    public static void getOldComments(Context context, long statusId, long lastCommentId, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("id", String.valueOf(statusId));
+        params.put("max_id", String.valueOf(lastCommentId));
+        DebugUtils.log("oldestCommentId:" + lastCommentId);
+        mClient.get(context, WeiboApiUrl.COMMENTS_SHOW, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log(response.toString());
+                responseHandler.onSuccess(response);
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                DebugUtils.log(errorResponse.toString());
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
+    public static void createComment(Context context, String comment, long statusId, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("comment", comment);
+        params.put("id", String.valueOf(statusId));
+        DebugUtils.log("Comment: " + comment);
+        mClient.post(context, WeiboApiUrl.COMMENTS_CREATE, params, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONObject response) {
                 DebugUtils.log(response.toString());
@@ -218,6 +260,7 @@ public class Weibo {
         public static final String OAUTH2_AUTHORIZE = "https://api.weibo.com/oauth2/authorize";
         public static final String COMMENTS_SHOW = "https://api.weibo.com/2/comments/show.json";
         public static final String REPOSTS_SHOW = "https://api.weibo.com/2/statuses/repost_timeline.json";
+        public static final String COMMENTS_CREATE = "https://api.weibo.com/2/comments/create.json";
     }
 
 }

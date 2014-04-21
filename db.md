@@ -35,3 +35,16 @@
 - repost_json
 
 ----------
+
+### Comments ###
+微博评论
+
+数据项：
+
+- id
+- status_id
+- uid
+- text
+- time
+
+----------

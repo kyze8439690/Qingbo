@@ -1,4 +1,4 @@
-package me.yugy.qingbo.view;
+package me.yugy.qingbo.view.text;
 
 import android.content.Context;
 import android.os.Handler;
