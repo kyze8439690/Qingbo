@@ -7,7 +7,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.text.ParseException;
@@ -15,8 +14,8 @@ import java.util.List;
 
 import me.yugy.qingbo.dao.DataProvider;
 import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
-import me.yugy.qingbo.dao.dbinfo.UserInfoDBInfo;
 import me.yugy.qingbo.type.Status;
+import me.yugy.qingbo.utils.ArrayUtils;
 
 /**
  * Created by yugy on 2014/4/16.
@@ -45,28 +44,24 @@ public class StatusesDataHelper extends BaseDataHelper{
         values.put(StatusDBInfo.TEXT, status.text.toString());
         values.put(StatusDBInfo.UID, status.user.uid);
 
-        JSONArray topics = new JSONArray();
-        for(String topic : status.topics){
-            topics.put(topic);
-        }
-        values.put(StatusDBInfo.TOPICS, topics.toString());
+        values.put(StatusDBInfo.TOPICS, ArrayUtils.convertArrayToString(status.topics));
 
         values.put(StatusDBInfo.TIME, status.time);
         values.put(StatusDBInfo.COMMENT_COUNT, status.commentCount);
         values.put(StatusDBInfo.REPOST_COUNT, status.repostCount);
 
-        JSONArray pics = new JSONArray();
-        for(String pic : status.pics){
-            pics.put(pic);
-        }
-        values.put(StatusDBInfo.PICS, pics.toString());
+        values.put(StatusDBInfo.PICS, ArrayUtils.convertArrayToString(status.pics));
 
-        values.put(StatusDBInfo.REPOST_JSON, status.repostJson.toString());
+        if(status.repostStatus != null) {
+            values.put(StatusDBInfo.REPOST_STATUS_ID, status.repostStatus.id);
+        }else{
+            values.put(StatusDBInfo.REPOST_STATUS_ID, -1);
+        }
         return values;
     }
 
     public Status select(long id){
-        Cursor cursor = query(null, StatusDBInfo.ID + "=\"" + id + "\"", null, null);
+        Cursor cursor = query(null, StatusDBInfo.ID + "=?", new String[]{String.valueOf(id)}, null);
         if(cursor.moveToFirst()){
             try {
                 Status status = Status.fromCursor(cursor);
@@ -85,14 +80,18 @@ public class StatusesDataHelper extends BaseDataHelper{
     }
 
     public int update(Status status){
+        new UserInfoDataHelper(getContext()).insert(status.user);
+        if(status.repostStatus != null){
+            new RepostStatusesDataHelper(getContext()).insert(status.repostStatus);
+        }
         ContentValues values = getContentValues(status);
-        return update(values, StatusDBInfo.ID + "=" + status.id, null);
+        return update(values, StatusDBInfo.ID + "=?", new String[]{String.valueOf(status.id)});
     }
 
     public long getNewestId(){
         synchronized (DataProvider.obj){
             SQLiteDatabase db = DataProvider.getDBHelper().getReadableDatabase();
-            Cursor cursor = db.query(getTableName(), new String [] {"MAX(" + StatusDBInfo.ID + ")"}, null, null, null, null, null);
+            Cursor cursor = db.query(getTableName(), new String[] {"MAX(" + StatusDBInfo.ID + ")"}, null, null, null, null, null);
             long id;
             if(cursor.moveToFirst()){
                 id = cursor.getLong(0);
@@ -138,26 +137,13 @@ public class StatusesDataHelper extends BaseDataHelper{
                         db.insert(getTableName(), null, values);
                     }else{
                         //update
-                        db.update(getTableName(), values, StatusDBInfo.ID + "=\"" + status.id + "\"", null);
+                        db.update(getTableName(), values, StatusDBInfo.ID + "=?", new String[]{String.valueOf(status.id)});
                     }
 
-                    values = UserInfoDataHelper.getContentValues(status.user);
-                    if(new UserInfoDataHelper(getContext()).select(status.user.uid) == null){
-                        //insert
-                        db.insert(UserInfoDataHelper.TABLE_NAME, null, values);
-                    }else{
-                        //update
-                        db.update(UserInfoDataHelper.TABLE_NAME, values, UserInfoDBInfo.UID + "=\"" + status.user.uid + "\"", null);
-                    }
+                    new UserInfoDataHelper(getContext()).insert(status.user);
                     if(status.repostStatus != null){
-                        values = UserInfoDataHelper.getContentValues(status.repostStatus.user);
-                        if(new UserInfoDataHelper(getContext()).select(status.repostStatus.user.uid) == null){
-                            //insert
-                            db.insert(UserInfoDataHelper.TABLE_NAME, null, values);
-                        }else{
-                            //update
-                            db.update(UserInfoDataHelper.TABLE_NAME, values, UserInfoDBInfo.UID + "=\"" + status.repostStatus.user.uid + "\"", null);
-                        }
+                        new UserInfoDataHelper(getContext()).insert(status.user);
+                        new RepostStatusesDataHelper(getContext()).insert(status.repostStatus);
                     }
                 }
                 db.setTransactionSuccessful();

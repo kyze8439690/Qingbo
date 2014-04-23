@@ -13,6 +13,8 @@
     <string name="detail_description">%d person reposted this</string>
     <string name="add_comment_hint">Add a comment</string>
     <string name="send_comment">Sending comment...</string>
+    <string name="open_drawer">Open drawer</string>
+    <string name="close_drawer">Close drawer</string>
 
     <string-array name="actionbar_dropdown_entry">
         <item>全部</item>

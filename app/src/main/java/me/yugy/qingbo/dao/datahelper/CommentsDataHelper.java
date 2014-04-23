@@ -51,7 +51,7 @@ public class CommentsDataHelper extends BaseDataHelper{
     }
 
     public Comment select(long id){
-        Cursor cursor = query(null, CommentDBInfo.ID + "=" + id, null, null);
+        Cursor cursor = query(null, CommentDBInfo.ID + "=?", new String[]{String.valueOf(id)}, null);
         if(cursor.moveToFirst()){
             Comment comment = Comment.fromCursor(cursor);
             cursor.close();
@@ -72,7 +72,7 @@ public class CommentsDataHelper extends BaseDataHelper{
                     if(select(comment.id) == null){
                         db.insert(getTableName(), null, values);
                     }else{
-                        db.update(getTableName(), values, CommentDBInfo.ID + "=" + comment.id, null);
+                        db.update(getTableName(), values, CommentDBInfo.ID + "=?", new String[]{String.valueOf(comment.id)});
                     }
 
                     values = UserInfoDataHelper.getContentValues(comment.user);
@@ -81,7 +81,7 @@ public class CommentsDataHelper extends BaseDataHelper{
                         db.insert(UserInfoDataHelper.TABLE_NAME, null, values);
                     }else{
                         //update
-                        db.update(UserInfoDataHelper.TABLE_NAME, values, UserInfoDBInfo.UID + "=\"" + comment.user.uid + "\"", null);
+                        db.update(UserInfoDataHelper.TABLE_NAME, values, UserInfoDBInfo.UID + "=?", new String[]{String.valueOf(comment.user.uid)});
                     }
                 }
                 db.setTransactionSuccessful();
@@ -99,7 +99,7 @@ public class CommentsDataHelper extends BaseDataHelper{
     public long getCommentCount(long statusId){
         synchronized (DataProvider.obj){
             SQLiteDatabase db = DataProvider.getDBHelper().getReadableDatabase();
-            Cursor cursor = db.query(getTableName(), new String [] {"count(*)"}, CommentDBInfo.STATUS_ID + "=" + statusId, null, null, null, null);
+            Cursor cursor = db.query(getTableName(), new String[] {"count(*)"}, CommentDBInfo.STATUS_ID + "=?", new String[]{String.valueOf(statusId)}, null, null, null);
             long count;
             if(cursor.moveToFirst()){
                 count = cursor.getLong(0);
@@ -113,7 +113,7 @@ public class CommentsDataHelper extends BaseDataHelper{
     public long getNewestId(long statusId){
         synchronized (DataProvider.obj){
             SQLiteDatabase db = DataProvider.getDBHelper().getReadableDatabase();
-            Cursor cursor = db.query(getTableName(), new String [] {"MAX(" + CommentDBInfo.ID + ")"}, CommentDBInfo.STATUS_ID + "=" + statusId, null, null, null, null);
+            Cursor cursor = db.query(getTableName(), new String[] {"MAX(" + CommentDBInfo.ID + ")"}, CommentDBInfo.STATUS_ID + "=?", new String[]{String.valueOf(statusId)}, null, null, null);
             long id;
             if(cursor.moveToFirst()){
                 id = cursor.getLong(0);
@@ -129,7 +129,7 @@ public class CommentsDataHelper extends BaseDataHelper{
     public long getOldestId(long statusId){
         synchronized (DataProvider.obj){
             SQLiteDatabase db = DataProvider.getDBHelper().getReadableDatabase();
-            Cursor cursor = db.query(getTableName(), new String [] {"MIN(" + CommentDBInfo.ID + ")"}, CommentDBInfo.STATUS_ID + "=" + statusId, null, null, null, null);
+            Cursor cursor = db.query(getTableName(), new String [] {"MIN(" + CommentDBInfo.ID + ")"}, CommentDBInfo.STATUS_ID + "=?", new String[]{String.valueOf(statusId)}, null, null, null);
             long id;
             if(cursor.moveToFirst()){
                 id = cursor.getLong(0);

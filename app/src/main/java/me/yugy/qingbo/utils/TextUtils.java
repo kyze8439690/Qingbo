@@ -24,6 +24,21 @@ import me.yugy.qingbo.view.text.TouchClickableSpan;
  */
 public class TextUtils {
 
+    /*
+    time sample: Fri Oct 04 18:20:31 +0800 2013
+     */
+    private static SimpleDateFormat decodeDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
+
+    private static final Pattern URL_PATTERN = Pattern.compile("http://t\\.cn/[0-9a-zA-Z]+");
+    private static final Pattern AT_PATTERN = Pattern.compile("@([0-9a-zA-Z\\u4e00-\\u9fa5_-]+)");
+    private static final Pattern TOPIC_PATTERN = Pattern.compile("#[^#]+#");
+
+    public static SpannableString getClickForWholeText(String text, TouchClickableSpan clickableSpan){
+        SpannableString spannableString = new SpannableString(text);
+        spannableString.setSpan(clickableSpan, 0, spannableString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return spannableString;
+    }
+
     public static CharSequence getRelativeTimeDisplayString(Context context, long referenceTime) {
         long now = System.currentTimeMillis();
         long difference = now - referenceTime;
@@ -36,11 +51,6 @@ public class TextUtils {
                         DateUtils.FORMAT_ABBREV_RELATIVE);
     }
 
-    /*
-    time sample: Fri Oct 04 18:20:31 +0800 2013
-     */
-    private static SimpleDateFormat decodeDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
-
     public static long parseDate(String time) throws ParseException {
         Date date = decodeDateFormat.parse(time);
         return date.getTime();
@@ -48,10 +58,8 @@ public class TextUtils {
 
     public static SpannableString parseStatusText(String text){
         SpannableString parseString = new SpannableString(text);
-        Pattern urlPattern = Pattern.compile("http://t\\.cn/[0-9a-zA-Z]+");
-        Pattern atPattern = Pattern.compile("@([0-9a-zA-Z\\u4e00-\\u9fa5_-]+)");
-        Matcher urlMatcher = urlPattern.matcher(text);
-        Matcher atMatcher = atPattern.matcher(text);
+        Matcher urlMatcher = URL_PATTERN.matcher(text);
+        Matcher atMatcher = AT_PATTERN.matcher(text);
         while(urlMatcher.find()){
             final String url = urlMatcher.group();
             int start = urlMatcher.start();
@@ -81,13 +89,14 @@ public class TextUtils {
         return url.endsWith(".gif");
     }
 
-    public static ArrayList<String> getTopic(String text){
-        ArrayList<String> topics = new ArrayList<String>();
-        Pattern topicPattern = Pattern.compile("#[^#]+#");
-        Matcher topicMatcher = topicPattern.matcher(text);
+    public static String[] getTopic(String text){
+        ArrayList<String> topicsList = new ArrayList<String>();
+        Matcher topicMatcher = TOPIC_PATTERN.matcher(text);
         while(topicMatcher.find()){
-            topics.add(topicMatcher.group());
+            topicsList.add(topicMatcher.group());
         }
+        String[] topics = new String[topicsList.size()];
+        topicsList.toArray(topics);
         return topics;
     }
 

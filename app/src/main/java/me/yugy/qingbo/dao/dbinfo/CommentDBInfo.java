@@ -18,7 +18,7 @@ public class CommentDBInfo implements BaseColumns{
     public static final String TIME = "time";
 
     public static final SQLiteTable TABLE = new SQLiteTable(CommentsDataHelper.TABLE_NAME)
-            .addColumn(ID, Column.DataType.INTEGER)
+            .addColumn(ID, Column.Constraint.UNIQUE, Column.DataType.INTEGER)
             .addColumn(STATUS_ID, Column.DataType.INTEGER)
             .addColumn(UID, Column.DataType.INTEGER)
             .addColumn(TEXT, Column.DataType.TEXT)

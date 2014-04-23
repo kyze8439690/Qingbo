@@ -32,8 +32,7 @@
         </activity>
         <activity
             android:name=".activity.PicActivity"
-            android:theme="@style/AppTheme.PicActivity"
-            android:parentActivityName=".activity.MainActivity">
+            android:theme="@style/AppTheme.PicActivity">
         </activity>
         <activity android:name=".activity.DetailActivity"
             android:label=""

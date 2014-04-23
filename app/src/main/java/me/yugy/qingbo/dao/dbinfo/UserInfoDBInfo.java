@@ -22,7 +22,7 @@ public class UserInfoDBInfo implements BaseColumns {
     public static final String FRIENDS_COUNT = "friends_count";
 
     public static final SQLiteTable TABLE = new SQLiteTable(UserInfoDataHelper.TABLE_NAME)
-            .addColumn(UID, Column.DataType.TEXT)
+            .addColumn(UID, Column.Constraint.UNIQUE, Column.DataType.TEXT)
             .addColumn(SCREEN_NAME, Column.DataType.TEXT)
             .addColumn(LOCATION, Column.DataType.TEXT)
             .addColumn(STATUSES_COUNT, Column.DataType.TEXT)

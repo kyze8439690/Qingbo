@@ -20,7 +20,7 @@
 ----------
 
 ### Statuses ###
-好友发布的微博，不包括转发的微博，转发微博以json格式保存在数据库
+好友发布的微博
 
 数据项：
 
@@ -32,7 +32,7 @@
 - comment_count
 - repost_count
 - pics
-- repost_json
+- repost_status_id
 
 ----------
 
@@ -48,3 +48,17 @@
 - time
 
 ----------
+
+### RepostStatuses ###
+转发的微博
+
+数据项：
+
+- id
+- text
+- uid
+- topics
+- time
+- comment_count
+- repost_count
+- pics

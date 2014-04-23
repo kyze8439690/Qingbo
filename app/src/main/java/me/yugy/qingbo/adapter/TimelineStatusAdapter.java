@@ -19,7 +19,6 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import org.json.JSONException;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.activity.PicActivity;
@@ -30,11 +29,11 @@ import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
-import me.yugy.qingbo.view.image.HeadIconImageView;
-import me.yugy.qingbo.view.text.LinkTextView;
 import me.yugy.qingbo.view.NoScrollGridView;
-import me.yugy.qingbo.view.text.RelativeTimeTextView;
+import me.yugy.qingbo.view.image.HeadIconImageView;
 import me.yugy.qingbo.view.image.SelectorImageView;
+import me.yugy.qingbo.view.text.LinkTextView;
+import me.yugy.qingbo.view.text.RelativeTimeTextView;
 
 import static android.view.View.OnClickListener;
 
@@ -80,7 +79,15 @@ public class TimelineStatusAdapter extends CursorAdapter{
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         View view;
         NoRepostNoPicViewHolder viewHolder;
-        switch (getItemViewType(cursor)){
+        Status status = null;
+        try {
+            status = Status.fromCursor(cursor);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        switch (getItemViewType(status)){
             case TYPE_NO_REPOST_NO_PIC:
                 view = LayoutInflater.from(context).inflate(R.layout.view_status_item_no_repost_no_pic, null);
                 viewHolder = new NoRepostNoPicViewHolder(view);
@@ -116,11 +123,13 @@ public class TimelineStatusAdapter extends CursorAdapter{
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
 
+//        Debug.startMethodTracing("qingbo");
+
         int position = cursor.getPosition();
 
         try {
             Status status = Status.fromCursor(cursor);
-            switch (getItemViewType(cursor)){
+            switch (getItemViewType(status)){
                 case TYPE_NO_REPOST_NO_PIC:
                     ((NoRepostNoPicViewHolder) view.getTag()).parse(status);
                     break;
@@ -149,6 +158,8 @@ public class TimelineStatusAdapter extends CursorAdapter{
             DebugUtils.log("load more");
             mOnLoadMoreListener.onLoadMore();
         }
+
+//        Debug.stopMethodTracing();
 
 //        if(!mPositionMapper.get(position) && position > mPreviousPosition){
 //            mAnimDuration = (((int) mOnListViewScrollListener.getSpeed()) == 0) ? ANIM_DEFAULT_SPEED : (long) (1 / mOnListViewScrollListener.getSpeed() * 15000);
@@ -193,44 +204,44 @@ public class TimelineStatusAdapter extends CursorAdapter{
         return 6;
     }
 
-    public int getItemViewType(Cursor cursor){
-        try {
-            Status status = Status.fromCursor(cursor);
-            if(status.repostStatus == null){
-                //no repost, return 0/1/2
-                if(!status.hasPic && !status.hasPics){
-                    return TYPE_NO_REPOST_NO_PIC;
-                }else if(status.hasPic && !status.hasPics){
-                    return TYPE_NO_REPOST_ONE_PIC;
-                }else if(status.hasPics && !status.hasPic){
-                    return TYPE_NO_REPOST_MULTI_PICS;
-                }else{
-                    return -1;
-                }
+    public int getItemViewType(Status status){
+        if(status.repostStatus == null){
+            //no repost, return 0/1/2
+            if(!status.hasPic && !status.hasPics){
+                return TYPE_NO_REPOST_NO_PIC;
+            }else if(status.hasPic && !status.hasPics){
+                return TYPE_NO_REPOST_ONE_PIC;
+            }else if(status.hasPics && !status.hasPic){
+                return TYPE_NO_REPOST_MULTI_PICS;
             }else{
-                //has repost, return 3/4/5
-                if(!status.repostStatus.hasPic && !status.repostStatus.hasPics){
-                    return TYPE_HAS_REPOST_NO_PIC;
-                }else if(status.repostStatus.hasPic && !status.repostStatus.hasPics){
-                    return TYPE_HAS_REPOST_ONE_PIC;
-                }else if(status.repostStatus.hasPics && !status.repostStatus.hasPic){
-                    return TYPE_HAS_REPOST_MULTI_PICS;
-                }else{
-                    return -1;
-                }
+                return -1;
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
+        }else{
+            //has repost, return 3/4/5
+            if(!status.repostStatus.hasPic && !status.repostStatus.hasPics){
+                return TYPE_HAS_REPOST_NO_PIC;
+            }else if(status.repostStatus.hasPic && !status.repostStatus.hasPics){
+                return TYPE_HAS_REPOST_ONE_PIC;
+            }else if(status.repostStatus.hasPics && !status.repostStatus.hasPic){
+                return TYPE_HAS_REPOST_MULTI_PICS;
+            }else{
+                return -1;
+            }
         }
-        return -2;
     }
 
     @Override
     public int getItemViewType(int position) {
         Cursor cursor = (Cursor) getItem(position);
-        return getItemViewType(cursor);
+        Status status = null;
+        try {
+            status = Status.fromCursor(cursor);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return getItemViewType(status);
     }
 
     private static final DisplayImageOptions HEAD_OPTIONS = new DisplayImageOptions.Builder()
@@ -267,9 +278,9 @@ public class TimelineStatusAdapter extends CursorAdapter{
             ImageLoader.getInstance().displayImage(status.user.avatar, head, HEAD_OPTIONS);
             name.setText(status.user.screenName);
             time.setReferenceTime(status.time);
-            if(status.topics.size() != 0){
+            if(status.topics.length != 0){
                 topics.setVisibility(View.VISIBLE);
-                topics.setText(status.topics.get(0));
+                topics.setText(status.topics[0]);
             }else{
                 topics.setVisibility(View.INVISIBLE);
             }
@@ -309,7 +320,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
     private class NoRepostOnePicViewHolder extends NoRepostNoPicViewHolder implements OnClickListener{
 
         public SelectorImageView pic;
-        public ArrayList<String> picsUrl;
+        public String[] picsUrl;
 
         public NoRepostOnePicViewHolder(View view) {
             super(view);
@@ -319,11 +330,11 @@ public class TimelineStatusAdapter extends CursorAdapter{
         @Override
         public void parse(Status status) {
             super.parse(status);
-            pic.setGif(TextUtils.isGifLink(status.pics.get(0)));
-            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.pics.get(0))){
-                ImageLoader.getInstance().displayImage(status.pics.get(0), pic);
+            pic.setGif(TextUtils.isGifLink(status.pics[0]));
+            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.pics[0])){
+                ImageLoader.getInstance().displayImage(status.pics[0], pic);
             }else {
-                ImageLoader.getInstance().displayImage(status.pics.get(0).replace("thumbnail", "bmiddle"), pic);
+                ImageLoader.getInstance().displayImage(status.pics[0].replace("thumbnail", "bmiddle"), pic);
             }
             picsUrl = status.pics;
             pic.setOnClickListener(this);
@@ -342,7 +353,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public TextView repostName;
         public LinkTextView repostText;
         public SelectorImageView pic;
-        public ArrayList<String> picsUrl;
+        public String[] picsUrl;
 
         public HasRepostOnePicViewHolder(View view) {
             super(view);
@@ -354,11 +365,11 @@ public class TimelineStatusAdapter extends CursorAdapter{
         @Override
         public void parse(Status status) {
             super.parse(status);
-            pic.setGif(TextUtils.isGifLink(status.repostStatus.pics.get(0)));
-            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.repostStatus.pics.get(0))) {
-                ImageLoader.getInstance().displayImage(status.repostStatus.pics.get(0), pic);
+            pic.setGif(TextUtils.isGifLink(status.repostStatus.pics[0]));
+            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.repostStatus.pics[0])) {
+                ImageLoader.getInstance().displayImage(status.repostStatus.pics[0], pic);
             }else{
-                ImageLoader.getInstance().displayImage(status.repostStatus.pics.get(0).replace("thumbnail", "bmiddle"), pic);
+                ImageLoader.getInstance().displayImage(status.repostStatus.pics[0].replace("thumbnail", "bmiddle"), pic);
             }
             picsUrl = status.repostStatus.pics;
             pic.setOnClickListener(this);
@@ -377,7 +388,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
     private class NoRepostMultiPicsViewHolder extends NoRepostNoPicViewHolder implements AdapterView.OnItemClickListener{
 
         public NoScrollGridView pics;
-        private ArrayList<String> picsUrl;
+        private String[] picsUrl;
 
         public NoRepostMultiPicsViewHolder(View view) {
             super(view);
@@ -406,7 +417,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public TextView repostName;
         public LinkTextView repostText;
         public NoScrollGridView pics;
-        private ArrayList<String> picsUrl;
+        private String[] picsUrl;
 
         public HasRepostMultiPicsViewHolder(View view) {
             super(view);

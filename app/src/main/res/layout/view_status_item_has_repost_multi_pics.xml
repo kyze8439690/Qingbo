@@ -76,7 +76,7 @@
         android:layout_marginRight="14dp"
         />
 
-    <TextView
+    <me.yugy.qingbo.view.text.LinkTextView
         android:id="@+id/status_listitem_repost_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

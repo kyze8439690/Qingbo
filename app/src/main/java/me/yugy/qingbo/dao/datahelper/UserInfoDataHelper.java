@@ -49,7 +49,7 @@ public class UserInfoDataHelper extends BaseDataHelper{
     }
 
     public UserInfo select(String uid){
-        Cursor cursor = query(null, UserInfoDBInfo.UID + "=\"" + uid + "\"", null, null);
+        Cursor cursor = query(null, UserInfoDBInfo.UID + "=?", new String[]{uid}, null);
         UserInfo userInfo = null;
         if(cursor.moveToFirst()){
             userInfo = UserInfo.fromCursor(cursor);
@@ -90,7 +90,7 @@ public class UserInfoDataHelper extends BaseDataHelper{
                         db.insert(getTableName(), null, values);
                     }else{
                         //update
-                        db.update(getTableName(), values, UserInfoDBInfo.UID + "=\"" + userInfo.uid + "\"", null);
+                        db.update(getTableName(), values, UserInfoDBInfo.UID + "=?", new String[]{userInfo.uid});
                     }
                 }
                 db.setTransactionSuccessful();
@@ -107,6 +107,6 @@ public class UserInfoDataHelper extends BaseDataHelper{
 
     public int update(UserInfo userInfo){
         ContentValues values = getContentValues(userInfo);
-        return update(values, UserInfoDBInfo.UID + "=\"" + userInfo.uid + "\"", null);
+        return update(values, UserInfoDBInfo.UID + "=?", new String[]{userInfo.uid});
     }
 }

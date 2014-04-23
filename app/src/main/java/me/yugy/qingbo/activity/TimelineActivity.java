@@ -5,8 +5,11 @@ import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -27,6 +30,8 @@ import me.yugy.qingbo.R;
 import me.yugy.qingbo.adapter.TimelineStatusAdapter;
 import me.yugy.qingbo.dao.datahelper.StatusesDataHelper;
 import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
+import me.yugy.qingbo.debug.ViewServer;
+import me.yugy.qingbo.listener.DrawerToggle;
 import me.yugy.qingbo.listener.OnListViewScrollListener;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
 import me.yugy.qingbo.type.Status;
@@ -46,9 +51,11 @@ public class TimelineActivity extends Activity implements
         LoaderManager.LoaderCallbacks<Cursor>, OnRefreshListener, OnLoadMoreListener,
         View.OnClickListener, ActionBar.OnNavigationListener, AdapterView.OnItemClickListener {
 
+    private DrawerLayout mDrawerLayout;
     private PullToRefreshLayout mPullToRefreshLayout;
     private ListView mListView;
     private View mBottomBar;
+    private DrawerToggle mDrawerToggle;
     private StatusesDataHelper mStatusesDataHelper;
     private TimelineStatusAdapter mTimelineStatusAdapter;
     private OnListViewScrollListener mOnListViewScrollListener;
@@ -57,16 +64,21 @@ public class TimelineActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        ViewServer.get(this).addWindow(this);
         setContentView(R.layout.activity_timeline);
 
         getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         getActionBar().setDisplayShowTitleEnabled(false);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
         getActionBar().setListNavigationCallbacks(ArrayAdapter.createFromResource(this, R.array.actionbar_dropdown_entry, android.R.layout.simple_spinner_dropdown_item), this);
 
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mPullToRefreshLayout = (PullToRefreshLayout) findViewById(R.id.ptr_layout);
         mListView = (ListView) findViewById(R.id.list);
         mBottomBar = findViewById(R.id.bottom_bar);
-
+        mDrawerToggle = new DrawerToggle(this, mDrawerLayout);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
         mStatusesDataHelper = new StatusesDataHelper(this);
         mOnListViewScrollListener = new OnListViewScrollListener() {
 
@@ -185,6 +197,26 @@ public class TimelineActivity extends Activity implements
     }
 
     @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return mStatusesDataHelper.getCursorLoader(StatusDBInfo.ID + " DESC");
     }
@@ -239,5 +271,15 @@ public class TimelineActivity extends Activity implements
         } catch (ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        ViewServer.get(this).removeWindow(this);
+    }
+
+    public void onResume() {
+        super.onResume();
+        ViewServer.get(this).setFocusedWindow(this);
     }
 }
