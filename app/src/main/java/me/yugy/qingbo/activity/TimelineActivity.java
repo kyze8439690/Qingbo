@@ -104,7 +104,7 @@ public class TimelineActivity extends Activity implements
             }
         };
         mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true, mOnListViewScrollListener));
-        mTimelineStatusAdapter = new TimelineStatusAdapter(this, mOnListViewScrollListener);
+        mTimelineStatusAdapter = new TimelineStatusAdapter(this);
         mListView.setAdapter(mTimelineStatusAdapter);
         mListView.setOnItemClickListener(this);
 

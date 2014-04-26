@@ -1,10 +1,7 @@
 package me.yugy.qingbo.activity;
 
 import android.app.Activity;
-import android.app.LoaderManager;
 import android.content.Context;
-import android.content.Loader;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -31,36 +28,38 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 import me.yugy.qingbo.R;
-import me.yugy.qingbo.adapter.CommentAdapter;
-import me.yugy.qingbo.dao.datahelper.CommentsDataHelper;
-import me.yugy.qingbo.dao.datahelper.StatusesDataHelper;
-import me.yugy.qingbo.dao.dbinfo.CommentDBInfo;
+import me.yugy.qingbo.adapter.RepostCommentAdapter;
+import me.yugy.qingbo.dao.datahelper.RepostStatusesDataHelper;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
-import me.yugy.qingbo.tasker.CreateCommentTasker;
+import me.yugy.qingbo.tasker.CreateRepostCommentTasker;
 import me.yugy.qingbo.type.Comment;
-import me.yugy.qingbo.type.Status;
+import me.yugy.qingbo.type.RepostStatus;
 import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.vendor.Weibo;
-import me.yugy.qingbo.view.DetailHeaderViewHelper;
+import me.yugy.qingbo.view.RepostDetailHeaderViewHelper;
+
+import static me.yugy.qingbo.tasker.CreateRepostCommentTasker.OnCommentListener;
 
 /**
- * Created by yugy on 2014/4/20.
+ * Created by yugy on 2014/4/24.
  */
-public class DetailActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>, AdapterView.OnItemClickListener,
-        OnLoadMoreListener, TextWatcher, View.OnClickListener, CreateCommentTasker.OnCommentListener {
+public class RepostDetailActivity extends Activity implements TextWatcher, View.OnClickListener, AdapterView.OnItemClickListener, OnLoadMoreListener, OnCommentListener{
 
     private boolean mIsLoading;
+    private boolean mNoCommentViewIsShown = false;
 
-    private Status mStatus;
     private ListView mListView;
-    private DetailHeaderViewHelper mDetailHeaderViewHelper;
-    private CommentsDataHelper mCommentsDataHelper;
-    private CommentAdapter mCommentAdapter;
     private View mNoCommentView;
     private EditText mEditText;
     private ImageButton mSendCommentButton;
+    private RepostStatusesDataHelper mRepostStatusesDataHelper;
+    private RepostCommentAdapter mRepostCommentAdapter;
+    private RepostDetailHeaderViewHelper mRepostDetailHeaderViewHelper;
 
-    private boolean mNoCommentViewIsShown = false;
+    private RepostStatus mRepostStatus;
+
+    private long mNewestCommentId = 0;
+    private long mOldestCommentId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,34 +74,32 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
         mSendCommentButton.setOnClickListener(this);
         mSendCommentButton.setEnabled(false);
 
-        mStatus = getIntent().getParcelableExtra("status");
-        mCommentsDataHelper = new CommentsDataHelper(this);
-        mCommentAdapter = new CommentAdapter(this);
+        mRepostStatus = getIntent().getParcelableExtra("repostStatus");
+        mRepostStatusesDataHelper = new RepostStatusesDataHelper(this);
+        mRepostCommentAdapter = new RepostCommentAdapter(this);
 
-        mDetailHeaderViewHelper = new DetailHeaderViewHelper(this);
-        mListView.addHeaderView(mDetailHeaderViewHelper.getHeaderView(mStatus), null, false);
-        if(mStatus.repostCount != 0){
+        mRepostDetailHeaderViewHelper = new RepostDetailHeaderViewHelper(this);
+        mListView.addHeaderView(mRepostDetailHeaderViewHelper.getHeaderView(mRepostStatus), null, false);
+        if(mRepostStatus.repostCount != 0){
             TextView detailView = (TextView) getLayoutInflater().inflate(R.layout.view_detail_description, null);
-            detailView.setText(String.format(getString(R.string.detail_description), mStatus.repostCount));
+            detailView.setText(String.format(getString(R.string.detail_description), mRepostStatus.repostCount));
             mListView.addHeaderView(detailView, null, false);
         }
-        mListView.setAdapter(mCommentAdapter);
+        mListView.setAdapter(mRepostCommentAdapter);
         mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true));
         mListView.setOnItemClickListener(this);
 
         mIsLoading = true;
         setProgressBarIndeterminateVisibility(true);
         getNewCommentData();
-
-        getLoaderManager().initLoader(0, null, this);
     }
 
     private void getNewCommentData(){
-        Weibo.getNewComments(this, mStatus.id, mCommentsDataHelper.getNewestId(mStatus.id), new JsonHttpResponseHandler(){
+        Weibo.getNewComments(this, mRepostStatus.id, mNewestCommentId, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONObject response) {
                 try {
-                    mStatus.commentCount = response.getInt("total_number");
+                    mRepostStatus.commentCount = response.getInt("total_number");
                     updateStatusData();
                     ArrayList<Comment> comments = new ArrayList<Comment>();
                     JSONArray commentJsonArray = response.getJSONArray("comments");
@@ -110,6 +107,12 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
                     for(int i = 0; i < commentSize; i++){
                         Comment comment = new Comment();
                         comment.parse(commentJsonArray.getJSONObject(i));
+                        if(i == 0){
+                            mNewestCommentId = comment.id;
+                        }
+                        if(mOldestCommentId == 0 && i == commentSize - 1){
+                            mOldestCommentId = comment.id;
+                        }
                         comments.add(comment);
                     }
                     if(comments.size() != 0) {
@@ -117,8 +120,8 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
                             mListView.removeHeaderView(mNoCommentView);
                             mNoCommentViewIsShown = false;
                         }
-                        mCommentsDataHelper.bulkInsert(comments);
-                    }else if(mCommentsDataHelper.getCommentCount(mStatus.id) == 0){
+                        mRepostCommentAdapter.appendNewData(comments);
+                    }else if(mRepostCommentAdapter.getCount() == 0){
                         if(!mNoCommentViewIsShown) {
                             mNoCommentView = getLayoutInflater().inflate(R.layout.view_no_comment, null);
                             mListView.addHeaderView(mNoCommentView, null, false);
@@ -131,17 +134,18 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
                     e.printStackTrace();
                 }
                 setLoading(false);
+
                 super.onSuccess(response);
             }
         });
     }
 
     private void getOldCommentData(){
-        Weibo.getOldComments(this, mStatus.id, mCommentsDataHelper.getOldestId(mStatus.id), new JsonHttpResponseHandler() {
+        Weibo.getOldComments(this, mRepostStatus.id, mOldestCommentId, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONObject response) {
                 try {
-                    mStatus.commentCount = response.getInt("total_number");
+                    mRepostStatus.commentCount = response.getInt("total_number");
                     updateStatusData();
                     ArrayList<Comment> comments = new ArrayList<Comment>();
                     JSONArray commentJsonArray = response.getJSONArray("comments");
@@ -149,10 +153,13 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
                     for (int i = 0; i < commentSize; i++) {
                         Comment comment = new Comment();
                         comment.parse(commentJsonArray.getJSONObject(i));
+                        if(i == commentSize - 1){
+                            mOldestCommentId = comment.id;
+                        }
                         comments.add(comment);
                     }
                     if (comments.size() != 0) {
-                        mCommentsDataHelper.bulkInsert(comments);
+                        mRepostCommentAdapter.appendOldData(comments);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -166,12 +173,18 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
     }
 
     private void updateStatusData(){
-        if(mStatus.commentCount == 0){
-            mDetailHeaderViewHelper.getCommentCountView().setText("");
+        if(mRepostStatus.commentCount == 0){
+            mRepostDetailHeaderViewHelper.getCommentCountView().setText("");
         }else {
-            mDetailHeaderViewHelper.getCommentCountView().setText(String.valueOf(mStatus.commentCount));
+            mRepostDetailHeaderViewHelper.getCommentCountView().setText(String.valueOf(mRepostStatus.commentCount));
         }
-        new StatusesDataHelper(this).update(mStatus);
+        mRepostStatusesDataHelper.update(mRepostStatus);
+    }
+
+    public void setLoading(boolean isLoading) {
+        mIsLoading = isLoading;
+        setProgressBarIndeterminateVisibility(isLoading);
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -185,6 +198,9 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
+            case android.R.id.home:
+                finish();
+                return true;
             case R.id.refresh:
                 if(!mIsLoading) {
                     setLoading(true);
@@ -193,43 +209,6 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    public void setLoading(boolean isLoading) {
-        mIsLoading = isLoading;
-        setProgressBarIndeterminateVisibility(isLoading);
-        invalidateOptionsMenu();
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return mCommentsDataHelper.getCursorLoader(CommentDBInfo.STATUS_ID + "=" + mStatus.id, CommentDBInfo.ID + " DESC");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCommentAdapter.changeCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mCommentAdapter.changeCursor(null);
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        int index = position - mListView.getHeaderViewsCount();
-        MessageUtils.toast(this, index + "");
-    }
-
-    @Override
-    public void onLoadMore() {
-        if(!mIsLoading){
-            if(mCommentAdapter.getCount() < mStatus.commentCount){
-                setLoading(true);
-                getOldCommentData();
-            }
         }
     }
 
@@ -246,13 +225,29 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
 
     @Override
     public void onClick(View v) {
-        new CreateCommentTasker(this)
-                .add(mEditText.getText().toString(), mStatus.id)
+        new CreateRepostCommentTasker(this)
+                .add(mEditText.getText().toString(), mRepostStatus.id)
                 .execute();
     }
 
     @Override
-    public void onSuccess() {
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        int index = position - mListView.getHeaderViewsCount();
+        MessageUtils.toast(this, index + "");
+    }
+
+    @Override
+    public void onLoadMore() {
+        if(!mIsLoading){
+            if(mRepostCommentAdapter.getCount() < mRepostStatus.commentCount){
+                setLoading(true);
+                getOldCommentData();
+            }
+        }
+    }
+
+    @Override
+    public void onSuccess(final Comment comment) {
         mEditText.setText("");
         InputMethodManager imm = (InputMethodManager)getSystemService(
                 Context.INPUT_METHOD_SERVICE);
@@ -260,7 +255,9 @@ public class DetailActivity extends Activity implements LoaderManager.LoaderCall
         if(mNoCommentViewIsShown){
             mListView.removeHeaderView(mNoCommentView);
         }
-        mStatus.commentCount++;
+        mRepostStatus.commentCount++;
         updateStatusData();
+        mRepostCommentAdapter.appendNewData(comment);
+        mNewestCommentId = comment.id;
     }
 }

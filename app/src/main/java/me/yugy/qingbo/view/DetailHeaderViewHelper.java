@@ -16,9 +16,9 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.activity.PicActivity;
+import me.yugy.qingbo.activity.RepostDetailActivity;
 import me.yugy.qingbo.adapter.GridPicsAdapter;
 import me.yugy.qingbo.type.Status;
-import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.image.HeadIconImageView;
@@ -111,7 +111,9 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
                     new TouchClickableSpan() {
                         @Override
                         public void onClick(View widget) {
-                            MessageUtils.toast(widget.getContext(), status.repostStatus.user.screenName);
+                            Intent intent = new Intent(widget.getContext(), RepostDetailActivity.class);
+                            intent.putExtra("repostStatus", status.repostStatus);
+                            widget.getContext().startActivity(intent);
                         }
                     });
             repostName.setText(repostNameString);
@@ -143,7 +145,9 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
                     new TouchClickableSpan() {
                         @Override
                         public void onClick(View widget) {
-                            MessageUtils.toast(widget.getContext(), status.repostStatus.user.screenName);
+                            Intent intent = new Intent(widget.getContext(), RepostDetailActivity.class);
+                            intent.putExtra("repostStatus", status.repostStatus);
+                            widget.getContext().startActivity(intent);
                         }
                     });
             repostName.setText(repostNameString);
@@ -162,7 +166,9 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
                     new TouchClickableSpan() {
                         @Override
                         public void onClick(View widget) {
-                            MessageUtils.toast(widget.getContext(), status.repostStatus.user.screenName);
+                            Intent intent = new Intent(widget.getContext(), RepostDetailActivity.class);
+                            intent.putExtra("repostStatus", status.repostStatus);
+                            widget.getContext().startActivity(intent);
                         }
                     });
             repostName.setText(repostNameString);

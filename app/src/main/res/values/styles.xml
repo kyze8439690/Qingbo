@@ -71,4 +71,11 @@
         <item name="android:clickable">true</item>
     </style>
 
+    <style name="RoundHeadIconStyle">
+        <item name="android:layout_width">50dp</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:src">@drawable/default_head</item>
+    </style>
+
 </resources>

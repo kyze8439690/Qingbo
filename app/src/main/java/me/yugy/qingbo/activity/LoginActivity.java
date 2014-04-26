@@ -68,7 +68,7 @@ public class LoginActivity extends Activity {
 
                         @Override
                         public void onSuccess(int statusCode, Header[] headers, String uid) {
-                            Weibo.getUserInfo(progressDialog.getContext(), uid, new JsonHttpResponseHandler() {
+                            Weibo.getUserInfo(progressDialog.getContext(), Long.decode(uid), new JsonHttpResponseHandler() {
                                 @Override
                                 public void onSuccess(JSONObject response) {
                                     progressDialog.dismiss();

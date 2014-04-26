@@ -40,12 +40,16 @@ public class Status implements Parcelable{
     public void parse(JSONObject json) throws JSONException, ParseException {
         id = json.getLong("id");
         text = TextUtils.parseStatusText(json.getString("text"));
+        time = TextUtils.parseDate(json.getString("created_at"));
         if(json.has("deleted")){
-            time = TextUtils.parseDate(json.getString("created_at"));
+            topics = new String[0];
+            pics = new String[0];
+            commentCount = 0;
+            repostCount = 0;
+            hasPic = hasPics = false;
         }else {
             user.parse(json.getJSONObject("user"));
             topics = TextUtils.getTopic(json.getString("text"));
-            time = TextUtils.parseDate(json.getString("created_at"));
             commentCount = json.getInt("comments_count");
             repostCount = json.getInt("reposts_count");
             pics = ArrayUtils.getWeiboPicArray(json.getJSONArray("pic_urls"));
@@ -143,7 +147,7 @@ public class Status implements Parcelable{
         status.id = cursor.getLong(cursor.getColumnIndex(StatusDBInfo.ID));
         status.text = TextUtils.parseStatusText(cursor.getString(cursor.getColumnIndex(StatusDBInfo.TEXT)));
         UserInfoDataHelper userInfoDataHelper = new UserInfoDataHelper(Application.getContext());
-        status.user = userInfoDataHelper.select(cursor.getString(cursor.getColumnIndex(StatusDBInfo.UID)));
+        status.user = userInfoDataHelper.select(cursor.getLong(cursor.getColumnIndex(StatusDBInfo.UID)));
 
         String topicString = cursor.getString(cursor.getColumnIndex(StatusDBInfo.TOPICS));
         status.topics = ArrayUtils.convertStringToArray(topicString);

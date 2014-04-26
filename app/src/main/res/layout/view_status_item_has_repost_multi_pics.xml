@@ -14,13 +14,8 @@
     <me.yugy.qingbo.view.image.HeadIconImageView
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/status_listitem_head"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:scaleType="centerInside"
         app:corner_radius="50dp"
-        app:border_width="1dp"
-        app:border_color="#FFCDCDCD"
-        app:round_background="false"
+        style="@style/RoundHeadIconStyle"
         />
 
     <me.yugy.qingbo.view.text.RelativeTimeTextView

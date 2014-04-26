@@ -11,15 +11,14 @@ import org.json.JSONObject;
 import java.text.ParseException;
 
 import me.yugy.qingbo.R;
-import me.yugy.qingbo.dao.datahelper.CommentsDataHelper;
 import me.yugy.qingbo.type.Comment;
 import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.vendor.Weibo;
 
 /**
- * Created by yugy on 2014/4/21.
+ * Created by yugy on 2014/4/25.
  */
-public class CreateCommentTasker {
+public class CreateRepostCommentTasker {
 
     private Context mContext;
     private ProgressDialog mProgressDialog;
@@ -28,7 +27,7 @@ public class CreateCommentTasker {
     private String mComment;
     private long mStatusId;
 
-    public CreateCommentTasker(Context context){
+    public CreateRepostCommentTasker(Context context){
         mContext = context;
         try{
             mOnCommentListener = (OnCommentListener) context;
@@ -41,7 +40,7 @@ public class CreateCommentTasker {
         mProgressDialog.setIndeterminate(true);
     }
 
-    public CreateCommentTasker add(String comment, long statusId){
+    public CreateRepostCommentTasker add(String comment, long statusId){
         mComment = comment;
         mStatusId = statusId;
         return this;
@@ -49,20 +48,19 @@ public class CreateCommentTasker {
 
     public void execute(){
         mProgressDialog.show();
-        Weibo.createComment(mContext, mComment, mStatusId, new JsonHttpResponseHandler(){
+        Weibo.createComment(mContext, mComment, mStatusId, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONObject response) {
                 try {
                     Comment comment = new Comment();
                     comment.parse(response);
-                    new CommentsDataHelper(mContext).insert(comment);
+                    mProgressDialog.dismiss();
+                    mOnCommentListener.onSuccess(comment);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                mProgressDialog.dismiss();
-                mOnCommentListener.onSuccess();
                 super.onSuccess(response);
             }
 
@@ -84,6 +82,7 @@ public class CreateCommentTasker {
     }
 
     public static interface OnCommentListener {
-        public void onSuccess();
+        public void onSuccess(Comment comment);
     }
+
 }

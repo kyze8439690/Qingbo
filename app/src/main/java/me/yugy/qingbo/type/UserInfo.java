@@ -14,7 +14,9 @@ import me.yugy.qingbo.dao.dbinfo.UserInfoDBInfo;
  */
 public class UserInfo implements Parcelable {
 
-    public String uid = "-1";
+    public long uid = -1;
+    public boolean following = false;
+    public boolean followMe = false;
     public String screenName = "";
     public String location = "";
     public String statusesCount = "";
@@ -25,7 +27,9 @@ public class UserInfo implements Parcelable {
     public String friendsCount = "";
 
     public void parse(JSONObject json) throws JSONException {
-        uid = json.getString("idstr");
+        uid = json.getLong("id");
+        following = json.getBoolean("following");
+        followMe = json.getBoolean("follow_me");
         screenName = json.getString("screen_name");
         location = json.getString("location");
         statusesCount = json.getString("statuses_count");
@@ -34,8 +38,8 @@ public class UserInfo implements Parcelable {
         avatar = json.getString("avatar_hd");
         if(json.has("cover_image")){
             cover = json.getString("cover_image");
-        }else{
-            cover = "";
+        }else if(json.has("cover_image_phone")){
+            cover = json.getString("cover_image_phone");
         }
         friendsCount = json.getString("friends_count");
     }
@@ -47,8 +51,12 @@ public class UserInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(uid);
+        dest.writeBooleanArray(new boolean[]{
+                following,
+                followMe
+        });
         dest.writeStringArray(new String[]{
-                uid,
                 screenName,
                 location,
                 statusesCount,
@@ -64,17 +72,21 @@ public class UserInfo implements Parcelable {
         @Override
         public UserInfo createFromParcel(Parcel source) {
             UserInfo userInfo = new UserInfo();
-            String[] strings = new String[9];
+            userInfo.uid = source.readLong();
+            boolean[] booleans = new boolean[2];
+            source.readBooleanArray(booleans);
+            userInfo.following = booleans[0];
+            userInfo.followMe = booleans[1];
+            String[] strings = new String[8];
             source.readStringArray(strings);
-            userInfo.uid = strings[0];
-            userInfo.screenName = strings[1];
-            userInfo.location = strings[2];
-            userInfo.statusesCount = strings[3];
-            userInfo.description = strings[4];
-            userInfo.followersCount = strings[5];
-            userInfo.avatar = strings[6];
-            userInfo.cover = strings[7];
-            userInfo.friendsCount = strings[8];
+            userInfo.screenName = strings[0];
+            userInfo.location = strings[1];
+            userInfo.statusesCount = strings[2];
+            userInfo.description = strings[3];
+            userInfo.followersCount = strings[4];
+            userInfo.avatar = strings[5];
+            userInfo.cover = strings[6];
+            userInfo.friendsCount = strings[7];
             return userInfo;
         }
 
@@ -86,7 +98,11 @@ public class UserInfo implements Parcelable {
 
     public static UserInfo fromCursor(Cursor cursor) {
         UserInfo userInfo = new UserInfo();
-        userInfo.uid = cursor.getString(cursor.getColumnIndex(UserInfoDBInfo.UID));
+        userInfo.uid = cursor.getLong(cursor.getColumnIndex(UserInfoDBInfo.UID));
+        int following = cursor.getInt(cursor.getColumnIndex(UserInfoDBInfo.FOLLOWING));
+        userInfo.following = following == 1;
+        int followMe = cursor.getInt(cursor.getColumnIndex(UserInfoDBInfo.FOLLOW_ME));
+        userInfo.followMe = followMe == 1;
         userInfo.screenName = cursor.getString(cursor.getColumnIndex(UserInfoDBInfo.SCREEN_NAME));
         userInfo.location = cursor.getString(cursor.getColumnIndex(UserInfoDBInfo.LOCATION));
         userInfo.statusesCount = cursor.getString(cursor.getColumnIndex(UserInfoDBInfo.STATUSES_COUNT));

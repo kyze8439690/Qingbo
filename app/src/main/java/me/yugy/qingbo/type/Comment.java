@@ -77,7 +77,7 @@ public class Comment implements Parcelable{
         comment.statusId = cursor.getLong(cursor.getColumnIndex(CommentDBInfo.STATUS_ID));
         long uid = cursor.getLong(cursor.getColumnIndex(CommentDBInfo.UID));
         UserInfoDataHelper userInfoDataHelper = new UserInfoDataHelper(Application.getContext());
-        comment.user = userInfoDataHelper.select(String.valueOf(uid));
+        comment.user = userInfoDataHelper.select(uid);
         comment.time = cursor.getLong(cursor.getColumnIndex(CommentDBInfo.TIME));
         comment.text = TextUtils.parseStatusText(cursor.getString(cursor.getColumnIndex(CommentDBInfo.TEXT)));
         return comment;

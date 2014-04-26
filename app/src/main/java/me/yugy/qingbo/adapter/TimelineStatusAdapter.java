@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +21,11 @@ import java.text.ParseException;
 
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.activity.PicActivity;
-import me.yugy.qingbo.listener.OnListViewScrollListener;
+import me.yugy.qingbo.activity.UserActivity;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
 import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
-import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.NoScrollGridView;
 import me.yugy.qingbo.view.image.HeadIconImageView;
@@ -49,30 +47,17 @@ public class TimelineStatusAdapter extends CursorAdapter{
     private static final int TYPE_HAS_REPOST_ONE_PIC = 4;
     private static final int TYPE_HAS_REPOST_MULTI_PICS = 5;
 
-    private static final long ANIM_DEFAULT_SPEED = 1000L;
-
-    private int mScreenHeight;
-
     private OnLoadMoreListener mOnLoadMoreListener;
-    private OnListViewScrollListener mOnListViewScrollListener;
     private Context mContext;
 
-    private SparseBooleanArray mPositionMapper;
-    private int mPreviousPosition;
-    private long mAnimDuration;
-
-
-    public TimelineStatusAdapter(Context context, OnListViewScrollListener onListViewScrollListener) {
+    public TimelineStatusAdapter(Context context) {
         super(context, null, false);
         mContext = context;
-        mOnListViewScrollListener = onListViewScrollListener;
-        mScreenHeight = ScreenUtils.getDisplayHeight(context);
         try{
             mOnLoadMoreListener = (OnLoadMoreListener) context;
         }catch (ClassCastException e){
             throw new ClassCastException("Activity should implement the OnLoadMoreListener interface.");
         }
-        mPreviousPosition = -1;
     }
 
     @Override
@@ -160,34 +145,6 @@ public class TimelineStatusAdapter extends CursorAdapter{
         }
 
 //        Debug.stopMethodTracing();
-
-//        if(!mPositionMapper.get(position) && position > mPreviousPosition){
-//            mAnimDuration = (((int) mOnListViewScrollListener.getSpeed()) == 0) ? ANIM_DEFAULT_SPEED : (long) (1 / mOnListViewScrollListener.getSpeed() * 15000);
-//
-//            if (mAnimDuration > ANIM_DEFAULT_SPEED) {
-//                mAnimDuration = ANIM_DEFAULT_SPEED;
-//            }
-//
-//            mPreviousPosition = position;
-//
-//            view.setTranslationX(0.0F);
-//            view.setTranslationY(mScreenHeight);
-//            view.setRotationX(45.0F);
-//            view.setScaleX(0.7F);
-//            view.setScaleY(0.55F);
-//
-//            view.animate().rotationX(0.0F).rotationY(0.0F).translationX(0).translationY(0).setDuration(mAnimDuration)
-//                    .scaleX(1.0F).scaleY(1.0F).setInterpolator(new DecelerateInterpolator()).setStartDelay(0).start();
-//
-//            mPositionMapper.put(position, true);
-//        }
-    }
-
-    @Override
-    public int getCount() {
-        int count = super.getCount();
-        mPositionMapper = new SparseBooleanArray(count);
-        return count;
     }
 
     /**
@@ -254,7 +211,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
             .displayer(new FadeInBitmapDisplayer(200))
             .build();
 
-    private class NoRepostNoPicViewHolder {
+    private class NoRepostNoPicViewHolder implements OnClickListener{
 
         public HeadIconImageView head;
         public TextView name;
@@ -263,6 +220,8 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public LinkTextView text;
         public TextView commentCount;
         public TextView repostCount;
+
+        private String mUserName;
 
         public NoRepostNoPicViewHolder(View view){
             head = (HeadIconImageView) view.findViewById(R.id.status_listitem_head);
@@ -275,6 +234,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         }
 
         public void parse(Status status){
+            mUserName = status.user.screenName;
             ImageLoader.getInstance().displayImage(status.user.avatar, head, HEAD_OPTIONS);
             name.setText(status.user.screenName);
             time.setReferenceTime(status.time);
@@ -294,6 +254,16 @@ public class TimelineStatusAdapter extends CursorAdapter{
                 repostCount.setText("");
             }else {
                 repostCount.setText(String.valueOf(status.repostCount));
+            }
+            head.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if(v.getId() == R.id.status_listitem_head){
+                Intent intent = new Intent(mContext, UserActivity.class);
+                intent.putExtra("userName", mUserName);
+                mContext.startActivity(intent);
             }
         }
     }
@@ -317,7 +287,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         }
     }
 
-    private class NoRepostOnePicViewHolder extends NoRepostNoPicViewHolder implements OnClickListener{
+    private class NoRepostOnePicViewHolder extends NoRepostNoPicViewHolder{
 
         public SelectorImageView pic;
         public String[] picsUrl;
@@ -342,13 +312,16 @@ public class TimelineStatusAdapter extends CursorAdapter{
 
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(v.getContext(), PicActivity.class);
-            intent.putExtra("pics", picsUrl);
-            v.getContext().startActivity(intent);
+            super.onClick(v);
+            if(v.getId() == R.id.status_listitem_pic){
+                Intent intent = new Intent(mContext, PicActivity.class);
+                intent.putExtra("pics", picsUrl);
+                mContext.startActivity(intent);
+            }
         }
     }
 
-    private class HasRepostOnePicViewHolder extends NoRepostNoPicViewHolder implements OnClickListener{
+    private class HasRepostOnePicViewHolder extends NoRepostNoPicViewHolder{
 
         public TextView repostName;
         public LinkTextView repostText;
@@ -379,9 +352,12 @@ public class TimelineStatusAdapter extends CursorAdapter{
 
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(v.getContext(), PicActivity.class);
-            intent.putExtra("pics", picsUrl);
-            v.getContext().startActivity(intent);
+            super.onClick(v);
+            if(v.getId() == R.id.status_listitem_pic){
+                Intent intent = new Intent(mContext, PicActivity.class);
+                intent.putExtra("pics", picsUrl);
+                mContext.startActivity(intent);
+            }
         }
     }
 

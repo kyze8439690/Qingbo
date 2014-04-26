@@ -37,6 +37,10 @@ public class UserInfoDataHelper extends BaseDataHelper{
     public static ContentValues getContentValues(UserInfo userInfo){
         ContentValues values = new ContentValues();
         values.put(UserInfoDBInfo.UID, userInfo.uid);
+        int following = userInfo.following ? 1 : 0;
+        values.put(UserInfoDBInfo.FOLLOWING, following);
+        int followMe = userInfo.followMe ? 1 : 0;
+        values.put(UserInfoDBInfo.FOLLOW_ME, followMe);
         values.put(UserInfoDBInfo.SCREEN_NAME, userInfo.screenName);
         values.put(UserInfoDBInfo.LOCATION, userInfo.location);
         values.put(UserInfoDBInfo.STATUSES_COUNT, userInfo.statusesCount);
@@ -48,8 +52,18 @@ public class UserInfoDataHelper extends BaseDataHelper{
         return values;
     }
 
-    public UserInfo select(String uid){
-        Cursor cursor = query(null, UserInfoDBInfo.UID + "=?", new String[]{uid}, null);
+    public UserInfo select(long uid){
+        Cursor cursor = query(null, UserInfoDBInfo.UID + "=?", new String[]{String.valueOf(uid)}, null);
+        UserInfo userInfo = null;
+        if(cursor.moveToFirst()){
+            userInfo = UserInfo.fromCursor(cursor);
+        }
+        cursor.close();
+        return userInfo;
+    }
+
+    public UserInfo select(String username){
+        Cursor cursor = query(null, UserInfoDBInfo.SCREEN_NAME + "=?", new String[]{username}, null);
         UserInfo userInfo = null;
         if(cursor.moveToFirst()){
             userInfo = UserInfo.fromCursor(cursor);
@@ -90,7 +104,7 @@ public class UserInfoDataHelper extends BaseDataHelper{
                         db.insert(getTableName(), null, values);
                     }else{
                         //update
-                        db.update(getTableName(), values, UserInfoDBInfo.UID + "=?", new String[]{userInfo.uid});
+                        db.update(getTableName(), values, UserInfoDBInfo.UID + "=?", new String[]{String.valueOf(userInfo.uid)});
                     }
                 }
                 db.setTransactionSuccessful();
@@ -107,6 +121,6 @@ public class UserInfoDataHelper extends BaseDataHelper{
 
     public int update(UserInfo userInfo){
         ContentValues values = getContentValues(userInfo);
-        return update(values, UserInfoDBInfo.UID + "=?", new String[]{userInfo.uid});
+        return update(values, UserInfoDBInfo.UID + "=?", new String[]{String.valueOf(userInfo.uid)});
     }
 }

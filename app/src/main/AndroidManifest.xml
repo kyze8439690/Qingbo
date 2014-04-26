@@ -23,24 +23,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activity.LoginActivity"
-            android:label="@string/login_title">
-        </activity>
-        <activity
-            android:name=".activity.TimelineActivity">
-        </activity>
-        <activity
-            android:name=".activity.PicActivity"
-            android:theme="@style/AppTheme.PicActivity">
-        </activity>
+        <activity android:name=".activity.LoginActivity"
+                  android:label="@string/login_title"/>
+        <activity android:name=".activity.TimelineActivity"/>
+        <activity android:name=".activity.PicActivity"
+                  android:theme="@style/AppTheme.PicActivity"/>
         <activity android:name=".activity.DetailActivity"
-            android:label=""
-            android:theme="@style/AppTheme.DetailActivity"
-            android:parentActivityName=".activity.MainActivity"
-            android:windowSoftInputMode="stateHidden"
-            />
-
+                  android:label=""
+                  android:theme="@style/AppTheme.DetailActivity"
+                  android:parentActivityName=".activity.MainActivity"
+                  android:windowSoftInputMode="stateHidden"
+                  />
+        <activity android:name=".activity.RepostDetailActivity"
+                  android:label=""
+                  android:theme="@style/AppTheme.DetailActivity"
+                  android:windowSoftInputMode="stateHidden"
+                  />
+        <activity android:name=".activity.UserActivity"
+                  android:theme="@style/AppTheme.DetailActivity"
+                  />
 
         <provider
             android:authorities="me.yugy.qingbo.provider"

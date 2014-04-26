@@ -78,9 +78,39 @@ public class Weibo {
         });
     }
 
-    public static void getUserInfo(final Context context, String userId, final JsonHttpResponseHandler responseHandler){
+    public static void getUserInfo(final Context context, long userId, final JsonHttpResponseHandler responseHandler){
         RequestParams params = getParamsWithAccessToken(context);
-        params.put("uid", userId);
+        params.put("uid", String.valueOf(userId));
+        mClient.get(context, WeiboApiUrl.USER_SHOW, params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log("获取用户信息成功: " + response.toString());
+                UserInfoDataHelper dataHelper = new UserInfoDataHelper(context);
+                UserInfo userInfo = new UserInfo();
+                try {
+                    userInfo.parse(response);
+                    dataHelper.insert(userInfo);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                responseHandler.onSuccess(response);
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                DebugUtils.log("获取用户信息失败: " + errorResponse.toString());
+
+                responseHandler.onFailure(e, "获取用户信息失败");
+                super.onFailure(e, errorResponse);
+            }
+        });
+
+    }
+
+    public static void getUserInfo(final Context context, String userName, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("screen_name", userName);
         mClient.get(context, WeiboApiUrl.USER_SHOW, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONObject response) {
@@ -218,6 +248,7 @@ public class Weibo {
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse.toString());
+                responseHandler.onFailure(e, errorResponse);
                 super.onFailure(e, errorResponse);
             }
         });
