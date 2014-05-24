@@ -14,13 +14,14 @@ import java.util.List;
 
 import me.yugy.qingbo.dao.DataProvider;
 import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
+import me.yugy.qingbo.type.BaseStatus;
 import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.utils.ArrayUtils;
 
 /**
  * Created by yugy on 2014/4/16.
  */
-public class StatusesDataHelper extends BaseDataHelper{
+public class StatusesDataHelper extends BaseDataHelper implements BaseStatusesDataHelper{
 
     public static final String TABLE_NAME = "statuses";
 
@@ -57,6 +58,9 @@ public class StatusesDataHelper extends BaseDataHelper{
         }else{
             values.put(StatusDBInfo.REPOST_STATUS_ID, -1);
         }
+
+        values.put(StatusDBInfo.TYPE, status.type);
+
         return values;
     }
 
@@ -77,15 +81,6 @@ public class StatusesDataHelper extends BaseDataHelper{
             cursor.close();
             return null;
         }
-    }
-
-    public int update(Status status){
-        new UserInfoDataHelper(getContext()).insert(status.user);
-        if(status.repostStatus != null){
-            new RepostStatusesDataHelper(getContext()).insert(status.repostStatus);
-        }
-        ContentValues values = getContentValues(status);
-        return update(values, StatusDBInfo.ID + "=?", new String[]{String.valueOf(status.id)});
     }
 
     public long getNewestId(){
@@ -156,5 +151,16 @@ public class StatusesDataHelper extends BaseDataHelper{
             }
             throw new SQLException("Fail to insert row into " + getContentUri());
         }
+    }
+
+    @Override
+    public int update(BaseStatus baseStatus) {
+        Status status = (Status) baseStatus;
+        new UserInfoDataHelper(getContext()).insert(status.user);
+        if(status.repostStatus != null){
+            new RepostStatusesDataHelper(getContext()).insert(status.repostStatus);
+        }
+        ContentValues values = getContentValues(status);
+        return update(values, StatusDBInfo.ID + "=?", new String[]{String.valueOf(status.id)});
     }
 }

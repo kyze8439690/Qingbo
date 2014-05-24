@@ -9,7 +9,6 @@ import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.image.GifIconImageView;
@@ -21,12 +20,16 @@ public class GridPicsAdapter extends BaseAdapter{
 
     private Context mContext;
     private String[] mPics;
-    private int mImageWidth;
+    private static int mImageWidth = 0;
+    private boolean mIsWifi;
 
-    public GridPicsAdapter(Context context, String[] pics){
+    public GridPicsAdapter(Context context, String[] pics, boolean isWifi){
         mContext = context;
         mPics = pics;
-        mImageWidth = ScreenUtils.dp(context, 80);
+        mIsWifi = isWifi;
+        if(mImageWidth == 0) {
+            mImageWidth = ScreenUtils.dp(context, 80);
+        }
     }
 
     @Override
@@ -53,7 +56,7 @@ public class GridPicsAdapter extends BaseAdapter{
             image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         }
         image.setGif(TextUtils.isGifLink(mPics[position]));
-        if(!NetworkUtils.isWifi() || TextUtils.isGifLink(mPics[position])){
+        if(!mIsWifi || TextUtils.isGifLink(mPics[position])){
             ImageLoader.getInstance().displayImage(mPics[position], image);
         }else {
             ImageLoader.getInstance().displayImage(mPics[position].replace("thumbnail", "bmiddle"), image);

@@ -15,6 +15,7 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.activity.PicActivity;
+import me.yugy.qingbo.activity.UserActivity;
 import me.yugy.qingbo.adapter.GridPicsAdapter;
 import me.yugy.qingbo.type.RepostStatus;
 import me.yugy.qingbo.utils.NetworkUtils;
@@ -47,7 +48,8 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
     private TextView mCommentCountView;
     private TextView mRepostCountView;
 
-    private String[] picsUrl;
+    private String[] mPicsUrl;
+    private String mUsername;
 
     public RepostDetailHeaderViewHelper(Context context){
         mContext = context;
@@ -76,6 +78,8 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
 
         //parse basic data
         ImageLoader.getInstance().displayImage(repostStatus.user.avatar, head, HEAD_OPTIONS);
+        head.setOnClickListener(this);
+        mUsername = repostStatus.user.screenName;
         name.setText(repostStatus.user.screenName);
         time.setReferenceTime(repostStatus.time);
         if(repostStatus.topics.length != 0){
@@ -103,12 +107,12 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
             }else {
                 ImageLoader.getInstance().displayImage(repostStatus.pics[0].replace("thumbnail", "bmiddle"), pic);
             }
-            picsUrl = repostStatus.pics;
+            mPicsUrl = repostStatus.pics;
             pic.setOnClickListener(this);
         }else if(type == TYPE_MULTI_PICS){
             NoScrollGridView pics = (NoScrollGridView) view.findViewById(R.id.status_listitem_picgrid);
-            pics.setAdapter(new GridPicsAdapter(mContext, repostStatus.pics));
-            picsUrl = repostStatus.pics;
+            pics.setAdapter(new GridPicsAdapter(mContext, repostStatus.pics, NetworkUtils.isWifi()));
+            mPicsUrl = repostStatus.pics;
             pics.setOnItemClickListener(this);
         }
 
@@ -139,6 +143,11 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
     @Override
     public void onClick(View v) {
         switch (v.getId()){
+            case R.id.status_listitem_head:
+                Intent intent = new Intent(mContext, UserActivity.class);
+                intent.putExtra("userName", mUsername);
+                mContext.startActivity(intent);
+                break;
             case R.id.status_listitem_comment_count:
 
                 break;
@@ -146,8 +155,8 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
 
                 break;
             case R.id.status_listitem_pic:
-                Intent intent = new Intent(mContext, PicActivity.class);
-                intent.putExtra("pics", picsUrl);
+                intent = new Intent(mContext, PicActivity.class);
+                intent.putExtra("pics", mPicsUrl);
                 mContext.startActivity(intent);
                 break;
         }
@@ -156,7 +165,7 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(mContext, PicActivity.class);
-        intent.putExtra("pics", picsUrl);
+        intent.putExtra("pics", mPicsUrl);
         intent.putExtra("position", position);
         mContext.startActivity(intent);
     }

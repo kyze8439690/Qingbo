@@ -21,21 +21,20 @@ import me.yugy.qingbo.utils.TextUtils;
 /**
  * Created by yugy on 2014/4/16.
  */
-public class Status implements Parcelable{
+public class Status implements Parcelable, BaseStatus{
 
     public long id;
     public SpannableString text;
     public UserInfo user = new UserInfo();
     public String[] topics;
-//    public ArrayList<String> topics = new ArrayList<String>();
     public long time;
     public int commentCount= 0;
     public int repostCount = 0;
     public boolean hasPic = false;
     public boolean hasPics = false;
     public String[] pics;
-//    public ArrayList<String> pics = new ArrayList<String>();
     public RepostStatus repostStatus = null;
+    public int type = -1;
 
     public void parse(JSONObject json) throws JSONException, ParseException {
         id = json.getLong("id");
@@ -70,6 +69,63 @@ public class Status implements Parcelable{
                 repostStatus = null;
             }
         }
+        type = getType();
+    }
+
+    public static Status fromRepostStatus(RepostStatus repostStatus){
+        Status status = new Status();
+        status.id = repostStatus.id;
+        status.text = repostStatus.text;
+        status.time = repostStatus.time;
+        status.user = repostStatus.user;
+        status.topics = repostStatus.topics;
+        status.commentCount = repostStatus.commentCount;
+        status.repostCount = repostStatus.repostCount;
+        status.hasPic = repostStatus.hasPic;
+        status.hasPics = repostStatus.hasPics;
+        status.pics = repostStatus.pics;
+        status.repostStatus = null;
+        status.type = getType(repostStatus);
+        return status;
+    }
+
+    public int getType(){
+        if(repostStatus == null){
+            //no repost, return 0/1/2
+            if(!hasPic && !hasPics){
+                return TYPE_NO_REPOST_NO_PIC;
+            }else if(hasPic && !hasPics){
+                return TYPE_NO_REPOST_ONE_PIC;
+            }else if(hasPics && !hasPic){
+                return TYPE_NO_REPOST_MULTI_PICS;
+            }else{
+                return -1;
+            }
+        }else{
+            //has repost, return 3/4/5
+            if(!repostStatus.hasPic && !repostStatus.hasPics){
+                return TYPE_HAS_REPOST_NO_PIC;
+            }else if(repostStatus.hasPic && !repostStatus.hasPics){
+                return TYPE_HAS_REPOST_ONE_PIC;
+            }else if(repostStatus.hasPics && !repostStatus.hasPic){
+                return TYPE_HAS_REPOST_MULTI_PICS;
+            }else{
+                return -1;
+            }
+        }
+    }
+
+    public static int getType(RepostStatus repostStatus){
+        //no repost, return 0/1/2
+        if(!repostStatus.hasPic && !repostStatus.hasPics){
+            return TYPE_NO_REPOST_NO_PIC;
+        }else if(repostStatus.hasPic && !repostStatus.hasPics){
+            return TYPE_NO_REPOST_ONE_PIC;
+        }else if(repostStatus.hasPics && !repostStatus.hasPic){
+            return TYPE_NO_REPOST_MULTI_PICS;
+        }else{
+            return -1;
+        }
     }
 
     @Override
@@ -86,7 +142,8 @@ public class Status implements Parcelable{
         });
         dest.writeIntArray(new int[]{
                 commentCount,
-                repostCount
+                repostCount,
+                type
         });
         dest.writeBooleanArray(new boolean[]{
                 hasPic,
@@ -114,10 +171,11 @@ public class Status implements Parcelable{
             status.id = longs[0];
             status.time = longs[1];
 
-            int[] ints = new int[2];
+            int[] ints = new int[3];
             source.readIntArray(ints);
             status.commentCount = ints[0];
             status.repostCount = ints[1];
+            status.type = ints[2];
 
             boolean[] booleans = new boolean[2];
             source.readBooleanArray(booleans);
@@ -174,6 +232,8 @@ public class Status implements Parcelable{
         }else{
             status.repostStatus = null;
         }
+
+        status.type = cursor.getInt(cursor.getColumnIndex(StatusDBInfo.TYPE));
 
         return status;
     }

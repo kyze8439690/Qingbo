@@ -20,13 +20,12 @@ import me.yugy.qingbo.utils.TextUtils;
 /**
  * Created by yugy on 2014/4/22.
  */
-public class RepostStatus implements Parcelable{
+public class RepostStatus implements Parcelable, BaseStatus{
 
     public long id;
     public SpannableString text;
     public UserInfo user = new UserInfo();
     public String[] topics;
-    //    public ArrayList<String> topics = new ArrayList<String>();
     public long time;
     public int commentCount= 0;
     public int repostCount = 0;
@@ -34,6 +33,7 @@ public class RepostStatus implements Parcelable{
     public boolean hasPics = false;
     public String[] pics;
 
+    @Override
     public void parse(JSONObject json) throws JSONException, ParseException {
         id = json.getLong("id");
         text = TextUtils.parseStatusText(json.getString("text"));
@@ -154,6 +154,21 @@ public class RepostStatus implements Parcelable{
             repostStatus.hasPics = repostStatus.hasPic = false;
         }
 
+        return repostStatus;
+    }
+
+    public static RepostStatus fromStatus(Status status) {
+        RepostStatus repostStatus = new RepostStatus();
+        repostStatus.id = status.id;
+        repostStatus.text = status.text;
+        repostStatus.time = status.time;
+        repostStatus.user = status.user;
+        repostStatus.topics = status.topics;
+        repostStatus.commentCount = status.commentCount;
+        repostStatus.repostCount = status.repostCount;
+        repostStatus.hasPic = status.hasPic;
+        repostStatus.hasPics = status.hasPics;
+        repostStatus.pics = status.pics;
         return repostStatus;
     }
 }

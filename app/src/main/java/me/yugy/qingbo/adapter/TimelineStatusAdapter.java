@@ -22,6 +22,7 @@ import java.text.ParseException;
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.activity.PicActivity;
 import me.yugy.qingbo.activity.UserActivity;
+import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
 import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.utils.DebugUtils;
@@ -40,19 +41,15 @@ import static android.view.View.OnClickListener;
  */
 public class TimelineStatusAdapter extends CursorAdapter{
 
-    private static final int TYPE_NO_REPOST_NO_PIC = 0;
-    private static final int TYPE_NO_REPOST_ONE_PIC = 1;
-    private static final int TYPE_NO_REPOST_MULTI_PICS = 2;
-    private static final int TYPE_HAS_REPOST_NO_PIC = 3;
-    private static final int TYPE_HAS_REPOST_ONE_PIC = 4;
-    private static final int TYPE_HAS_REPOST_MULTI_PICS = 5;
-
     private OnLoadMoreListener mOnLoadMoreListener;
     private Context mContext;
+    private boolean mIsWifi = NetworkUtils.isWifi();
+    private LayoutInflater mLayoutInflater;
 
     public TimelineStatusAdapter(Context context) {
         super(context, null, false);
         mContext = context;
+        mLayoutInflater = LayoutInflater.from(context);
         try{
             mOnLoadMoreListener = (OnLoadMoreListener) context;
         }catch (ClassCastException e){
@@ -61,40 +58,39 @@ public class TimelineStatusAdapter extends CursorAdapter{
     }
 
     @Override
+    protected void onContentChanged() {
+        mIsWifi = NetworkUtils.isWifi();
+        super.onContentChanged();
+    }
+
+    @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         View view;
         NoRepostNoPicViewHolder viewHolder;
-        Status status = null;
-        try {
-            status = Status.fromCursor(cursor);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        switch (getItemViewType(status)){
-            case TYPE_NO_REPOST_NO_PIC:
-                view = LayoutInflater.from(context).inflate(R.layout.view_status_item_no_repost_no_pic, null);
+        int type = getItemViewType(cursor);
+        switch (type){
+            case Status.TYPE_NO_REPOST_NO_PIC:
+                view = mLayoutInflater.inflate(R.layout.view_status_item_no_repost_no_pic, null);
                 viewHolder = new NoRepostNoPicViewHolder(view);
                 break;
-            case TYPE_NO_REPOST_ONE_PIC:
-                view = LayoutInflater.from(context).inflate(R.layout.view_status_item_no_repost_one_pic, null);
+            case Status.TYPE_NO_REPOST_ONE_PIC:
+                view = mLayoutInflater.inflate(R.layout.view_status_item_no_repost_one_pic, null);
                 viewHolder = new NoRepostOnePicViewHolder(view);
                 break;
-            case TYPE_NO_REPOST_MULTI_PICS:
-                view = LayoutInflater.from(context).inflate(R.layout.view_status_item_no_repost_multi_pics, null);
+            case Status.TYPE_NO_REPOST_MULTI_PICS:
+                view = mLayoutInflater.inflate(R.layout.view_status_item_no_repost_multi_pics, null);
                 viewHolder = new NoRepostMultiPicsViewHolder(view);
                 break;
-            case TYPE_HAS_REPOST_NO_PIC:
-                view = LayoutInflater.from(context).inflate(R.layout.view_status_item_has_repost_no_pic, null);
+            case Status.TYPE_HAS_REPOST_NO_PIC:
+                view = mLayoutInflater.inflate(R.layout.view_status_item_has_repost_no_pic, null);
                 viewHolder = new HasRepostNoPicViewHolder(view);
                 break;
-            case TYPE_HAS_REPOST_ONE_PIC:
-                view = LayoutInflater.from(context).inflate(R.layout.view_status_item_has_repost_one_pic, null);
+            case Status.TYPE_HAS_REPOST_ONE_PIC:
+                view = mLayoutInflater.inflate(R.layout.view_status_item_has_repost_one_pic, null);
                 viewHolder = new HasRepostOnePicViewHolder(view);
                 break;
-            case TYPE_HAS_REPOST_MULTI_PICS:
-                view = LayoutInflater.from(context).inflate(R.layout.view_status_item_has_repost_multi_pics, null);
+            case Status.TYPE_HAS_REPOST_MULTI_PICS:
+                view = mLayoutInflater.inflate(R.layout.view_status_item_has_repost_multi_pics, null);
                 viewHolder = new HasRepostMultiPicsViewHolder(view);
                 break;
             default:
@@ -102,6 +98,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
                 viewHolder = null;
         }
         view.setTag(viewHolder);
+        view.setTag(R.id.timeline_holder_type, type);
         return view;
     }
 
@@ -114,23 +111,24 @@ public class TimelineStatusAdapter extends CursorAdapter{
 
         try {
             Status status = Status.fromCursor(cursor);
-            switch (getItemViewType(status)){
-                case TYPE_NO_REPOST_NO_PIC:
+            int type = (Integer) view.getTag(R.id.timeline_holder_type);
+            switch (type){
+                case Status.TYPE_NO_REPOST_NO_PIC:
                     ((NoRepostNoPicViewHolder) view.getTag()).parse(status);
                     break;
-                case TYPE_NO_REPOST_ONE_PIC:
+                case Status.TYPE_NO_REPOST_ONE_PIC:
                     ((NoRepostOnePicViewHolder) view.getTag()).parse(status);
                     break;
-                case TYPE_NO_REPOST_MULTI_PICS:
+                case Status.TYPE_NO_REPOST_MULTI_PICS:
                     ((NoRepostMultiPicsViewHolder) view.getTag()).parse(status);
                     break;
-                case TYPE_HAS_REPOST_NO_PIC:
+                case Status.TYPE_HAS_REPOST_NO_PIC:
                     ((HasRepostNoPicViewHolder) view.getTag()).parse(status);
                     break;
-                case TYPE_HAS_REPOST_ONE_PIC:
+                case Status.TYPE_HAS_REPOST_ONE_PIC:
                     ((HasRepostOnePicViewHolder) view.getTag()).parse(status);
                     break;
-                case TYPE_HAS_REPOST_MULTI_PICS:
+                case Status.TYPE_HAS_REPOST_MULTI_PICS:
                     ((HasRepostMultiPicsViewHolder) view.getTag()).parse(status);
                     break;
             }
@@ -161,44 +159,15 @@ public class TimelineStatusAdapter extends CursorAdapter{
         return 6;
     }
 
-    public int getItemViewType(Status status){
-        if(status.repostStatus == null){
-            //no repost, return 0/1/2
-            if(!status.hasPic && !status.hasPics){
-                return TYPE_NO_REPOST_NO_PIC;
-            }else if(status.hasPic && !status.hasPics){
-                return TYPE_NO_REPOST_ONE_PIC;
-            }else if(status.hasPics && !status.hasPic){
-                return TYPE_NO_REPOST_MULTI_PICS;
-            }else{
-                return -1;
-            }
-        }else{
-            //has repost, return 3/4/5
-            if(!status.repostStatus.hasPic && !status.repostStatus.hasPics){
-                return TYPE_HAS_REPOST_NO_PIC;
-            }else if(status.repostStatus.hasPic && !status.repostStatus.hasPics){
-                return TYPE_HAS_REPOST_ONE_PIC;
-            }else if(status.repostStatus.hasPics && !status.repostStatus.hasPic){
-                return TYPE_HAS_REPOST_MULTI_PICS;
-            }else{
-                return -1;
-            }
-        }
-    }
-
     @Override
     public int getItemViewType(int position) {
         Cursor cursor = (Cursor) getItem(position);
-        Status status = null;
-        try {
-            status = Status.fromCursor(cursor);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return getItemViewType(status);
+        return getItemViewType(cursor);
+    }
+
+    public int getItemViewType(Cursor cursor){
+        int type = cursor.getInt(cursor.getColumnIndex(StatusDBInfo.TYPE));
+        return type;
     }
 
     private static final DisplayImageOptions HEAD_OPTIONS = new DisplayImageOptions.Builder()
@@ -301,7 +270,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public void parse(Status status) {
             super.parse(status);
             pic.setGif(TextUtils.isGifLink(status.pics[0]));
-            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.pics[0])){
+            if(!mIsWifi || TextUtils.isGifLink(status.pics[0])){
                 ImageLoader.getInstance().displayImage(status.pics[0], pic);
             }else {
                 ImageLoader.getInstance().displayImage(status.pics[0].replace("thumbnail", "bmiddle"), pic);
@@ -339,7 +308,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public void parse(Status status) {
             super.parse(status);
             pic.setGif(TextUtils.isGifLink(status.repostStatus.pics[0]));
-            if(!NetworkUtils.isWifi() || TextUtils.isGifLink(status.repostStatus.pics[0])) {
+            if(!mIsWifi || TextUtils.isGifLink(status.repostStatus.pics[0])) {
                 ImageLoader.getInstance().displayImage(status.repostStatus.pics[0], pic);
             }else{
                 ImageLoader.getInstance().displayImage(status.repostStatus.pics[0].replace("thumbnail", "bmiddle"), pic);
@@ -374,7 +343,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
         @Override
         public void parse(Status status) {
             super.parse(status);
-            pics.setAdapter(new GridPicsAdapter(mContext, status.pics));
+            pics.setAdapter(new GridPicsAdapter(mContext, status.pics, mIsWifi));
             picsUrl = status.pics;
             pics.setOnItemClickListener(this);
         }
@@ -407,7 +376,7 @@ public class TimelineStatusAdapter extends CursorAdapter{
             super.parse(status);
             repostName.setText(String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName));
             repostText.setText(status.repostStatus.text);
-            pics.setAdapter(new GridPicsAdapter(mContext, status.repostStatus.pics));
+            pics.setAdapter(new GridPicsAdapter(mContext, status.repostStatus.pics, mIsWifi));
             picsUrl = status.repostStatus.pics;
             pics.setOnItemClickListener(this);
         }

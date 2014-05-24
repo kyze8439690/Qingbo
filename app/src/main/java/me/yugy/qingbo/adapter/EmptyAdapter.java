@@ -10,7 +10,7 @@ import android.widget.BaseAdapter;
 public class EmptyAdapter extends BaseAdapter{
     @Override
     public int getCount() {
-        return 0;
+        return 1;
     }
 
     @Override
@@ -20,11 +20,11 @@ public class EmptyAdapter extends BaseAdapter{
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return null;
+        return new View(parent.getContext());
     }
 }

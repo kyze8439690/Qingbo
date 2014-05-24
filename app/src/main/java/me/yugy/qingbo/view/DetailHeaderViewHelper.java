@@ -15,8 +15,9 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import me.yugy.qingbo.R;
+import me.yugy.qingbo.activity.NoStoreDetailActivity;
 import me.yugy.qingbo.activity.PicActivity;
-import me.yugy.qingbo.activity.RepostDetailActivity;
+import me.yugy.qingbo.activity.UserActivity;
 import me.yugy.qingbo.adapter.GridPicsAdapter;
 import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.utils.NetworkUtils;
@@ -53,7 +54,8 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
     private TextView mCommentCountView;
     private TextView mRepostCountView;
 
-    private String[] picsUrl;
+    private String[] mPicsUrl;
+    private String mUsername;
 
     public DetailHeaderViewHelper(Context context){
         mContext = context;
@@ -82,6 +84,8 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
 
         //parse basic data
         ImageLoader.getInstance().displayImage(status.user.avatar, head, HEAD_OPTIONS);
+        head.setOnClickListener(this);
+        mUsername = status.user.screenName;
         name.setText(status.user.screenName);
         time.setReferenceTime(status.time);
         if(status.topics.length != 0){
@@ -108,14 +112,7 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
             LinkTextView repostText = (LinkTextView) view.findViewById(R.id.status_listitem_repost_text);
             SpannableString repostNameString = TextUtils.getClickForWholeText(
                     String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName),
-                    new TouchClickableSpan() {
-                        @Override
-                        public void onClick(View widget) {
-                            Intent intent = new Intent(widget.getContext(), RepostDetailActivity.class);
-                            intent.putExtra("repostStatus", status.repostStatus);
-                            widget.getContext().startActivity(intent);
-                        }
-                    });
+                    getTouchClickableSpan(status));
             repostName.setText(repostNameString);
             repostText.setText(status.repostStatus.text);
         }else if(type == TYPE_NO_REPOST_ONE_PIC){
@@ -126,7 +123,7 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
             }else {
                 ImageLoader.getInstance().displayImage(status.pics[0].replace("thumbnail", "bmiddle"), pic);
             }
-            picsUrl = status.pics;
+            mPicsUrl = status.pics;
             pic.setOnClickListener(this);
         }else if(type == TYPE_HAS_REPOST_ONE_PIC){
             LinkTextView repostName = (LinkTextView) view.findViewById(R.id.status_listitem_repost_name);
@@ -138,24 +135,17 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
             }else{
                 ImageLoader.getInstance().displayImage(status.repostStatus.pics[0].replace("thumbnail", "bmiddle"), pic);
             }
-            picsUrl = status.repostStatus.pics;
+            mPicsUrl = status.repostStatus.pics;
             pic.setOnClickListener(this);
             SpannableString repostNameString = TextUtils.getClickForWholeText(
                     String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName),
-                    new TouchClickableSpan() {
-                        @Override
-                        public void onClick(View widget) {
-                            Intent intent = new Intent(widget.getContext(), RepostDetailActivity.class);
-                            intent.putExtra("repostStatus", status.repostStatus);
-                            widget.getContext().startActivity(intent);
-                        }
-                    });
+                    getTouchClickableSpan(status));
             repostName.setText(repostNameString);
             repostText.setText(status.repostStatus.text);
         }else if(type == TYPE_NO_REPOST_MULTI_PICS){
             NoScrollGridView pics = (NoScrollGridView) view.findViewById(R.id.status_listitem_picgrid);
-            pics.setAdapter(new GridPicsAdapter(mContext, status.pics));
-            picsUrl = status.pics;
+            pics.setAdapter(new GridPicsAdapter(mContext, status.pics, NetworkUtils.isWifi()));
+            mPicsUrl = status.pics;
             pics.setOnItemClickListener(this);
         }else if(type == TYPE_HAS_REPOST_MULTI_PICS){
             LinkTextView repostName = (LinkTextView) view.findViewById(R.id.status_listitem_repost_name);
@@ -163,22 +153,27 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
             NoScrollGridView pics = (NoScrollGridView) view.findViewById(R.id.status_listitem_picgrid);
             SpannableString repostNameString = TextUtils.getClickForWholeText(
                     String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName),
-                    new TouchClickableSpan() {
-                        @Override
-                        public void onClick(View widget) {
-                            Intent intent = new Intent(widget.getContext(), RepostDetailActivity.class);
-                            intent.putExtra("repostStatus", status.repostStatus);
-                            widget.getContext().startActivity(intent);
-                        }
-                    });
+                    getTouchClickableSpan(status));
             repostName.setText(repostNameString);
             repostText.setText(status.repostStatus.text);
-            pics.setAdapter(new GridPicsAdapter(mContext, status.repostStatus.pics));
-            picsUrl = status.repostStatus.pics;
+            pics.setAdapter(new GridPicsAdapter(mContext, status.repostStatus.pics, NetworkUtils.isWifi()));
+            mPicsUrl = status.repostStatus.pics;
             pics.setOnItemClickListener(this);
         }
 
         return view;
+    }
+
+    private TouchClickableSpan getTouchClickableSpan(final Status status){
+        return new TouchClickableSpan() {
+            @Override
+            public void onClick(View widget) {
+                Intent intent = new Intent(widget.getContext(), NoStoreDetailActivity.class);
+                intent.putExtra("status", Status.fromRepostStatus(status.repostStatus));
+                intent.putExtra("isRepost", true);
+                widget.getContext().startActivity(intent);
+            }
+        };
     }
 
     private int getViewType(Status status){
@@ -222,6 +217,11 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
     @Override
     public void onClick(View v) {
         switch (v.getId()){
+            case R.id.status_listitem_head:
+                Intent intent = new Intent(mContext, UserActivity.class);
+                intent.putExtra("userName", mUsername);
+                mContext.startActivity(intent);
+                break;
             case R.id.status_listitem_comment_count:
 
                 break;
@@ -229,8 +229,8 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
 
                 break;
             case R.id.status_listitem_pic:
-                Intent intent = new Intent(mContext, PicActivity.class);
-                intent.putExtra("pics", picsUrl);
+                intent = new Intent(mContext, PicActivity.class);
+                intent.putExtra("pics", mPicsUrl);
                 mContext.startActivity(intent);
                 break;
         }
@@ -240,7 +240,7 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(mContext, PicActivity.class);
-        intent.putExtra("pics", picsUrl);
+        intent.putExtra("pics", mPicsUrl);
         intent.putExtra("position", position);
         mContext.startActivity(intent);
     }

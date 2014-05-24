@@ -370,7 +370,7 @@ public class CustomHeaderTransformer extends HeaderTransformer {
                             .sectionsCount(2)
                             .separatorLength(0)
                             .reversed(true)
-                            .width(strokeWidth)
+                            .strokeWidth(strokeWidth)
                             .build()
             );
 

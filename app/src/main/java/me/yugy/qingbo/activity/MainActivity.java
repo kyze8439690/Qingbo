@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         if(!PreferenceManager.getDefaultSharedPreferences(this).contains("uid")){
-            startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
+            startActivityForResult(new Intent(this, BlackMagicLoginActivity.class), REQUEST_LOGIN);
         }else{
             startActivity(new Intent(this, TimelineActivity.class));
             finish();

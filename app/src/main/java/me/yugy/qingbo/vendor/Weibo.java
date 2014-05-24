@@ -22,8 +22,12 @@ import me.yugy.qingbo.utils.DebugUtils;
 public class Weibo {
 
     public static final String WEIBO_CALLBACK_URL = "http://qingbo.com";
+
     private final static String WEIBO_APP_KEY = "2314786277";
     private final static String WEIBO_APP_SECRET = "2f1eb03ab1dbb1e403bc60d6cb016edb";
+
+    private final static String BM_WEIBO_APP_KEY = "211160679";
+    private final static String BM_WEIBO_APP_SECRET = "63b64d531b98c2dbff2443816f274dd3";
 
     private static String mAccessToken = null;
 
@@ -70,7 +74,51 @@ public class Weibo {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject errorResponse) {
-                DebugUtils.log("授权失败: " + errorResponse.toString());
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(statusCode, headers, "授权失败", e);
+                super.onFailure(statusCode, headers, e, errorResponse);
+            }
+
+        });
+    }
+
+    /**
+     * BlackMagic login
+     * @param context
+     * @param username
+     * @param password
+     * @param responseHandler
+     */
+    public static void getAccessToken(final Context context, String username, String password, final TextHttpResponseHandler responseHandler){
+        RequestParams params = new RequestParams();
+        params.put("client_id", BM_WEIBO_APP_KEY);
+        params.put("client_secret", BM_WEIBO_APP_SECRET);
+        params.put("grant_type", "password");
+        params.put("username", username);
+        params.put("password", password);
+        mClient.post(context, WeiboApiUrl.OAUTH2_ACCESS_TOKEN, params, new JsonHttpResponseHandler(){
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                DebugUtils.log("授权成功: " + response.toString());
+                try {
+                    mAccessToken = response.getString("access_token");
+                    String uid = response.getString("uid");
+                    PreferenceManager.getDefaultSharedPreferences(context).edit()
+                            .putString("access_token", mAccessToken)
+                            .putString("uid", uid)
+                            .commit();
+                    responseHandler.onSuccess(statusCode, headers, uid);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    responseHandler.onFailure(statusCode, headers, "Json解析失败", e);
+                }
+                super.onSuccess(statusCode, headers, response);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject errorResponse) {
+                DebugUtils.log(errorResponse);
                 responseHandler.onFailure(statusCode, headers, "授权失败", e);
                 super.onFailure(statusCode, headers, e, errorResponse);
             }
@@ -99,8 +147,7 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                DebugUtils.log("获取用户信息失败: " + errorResponse.toString());
-
+                DebugUtils.log(errorResponse);
                 responseHandler.onFailure(e, "获取用户信息失败");
                 super.onFailure(e, errorResponse);
             }
@@ -129,8 +176,7 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                DebugUtils.log("获取用户信息失败: " + errorResponse.toString());
-
+                DebugUtils.log(errorResponse);
                 responseHandler.onFailure(e, "获取用户信息失败");
                 super.onFailure(e, errorResponse);
             }
@@ -158,7 +204,8 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                DebugUtils.log(errorResponse.toString());
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
                 super.onFailure(e, errorResponse);
             }
         });
@@ -184,7 +231,8 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                DebugUtils.log(errorResponse.toString());
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
                 super.onFailure(e, errorResponse);
             }
         });
@@ -205,7 +253,8 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                DebugUtils.log(errorResponse.toString());
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
                 super.onFailure(e, errorResponse);
             }
         });
@@ -226,7 +275,8 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                DebugUtils.log(errorResponse.toString());
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
                 super.onFailure(e, errorResponse);
             }
         });
@@ -247,7 +297,74 @@ public class Weibo {
 
             @Override
             public void onFailure(Throwable e, JSONObject errorResponse) {
-                DebugUtils.log(errorResponse.toString());
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
+    public static void createFriendShip(Context context, String userName, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("screen_name", userName);
+        mClient.post(context, WeiboApiUrl.FRIENDSHIPS_CREATE, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log(response.toString());
+                responseHandler.onSuccess(response);
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
+    public static void destroyFriendShip(Context context, String userName, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("screen_name", userName);
+        mClient.post(context, WeiboApiUrl.FRIENDSHIPS_DESTROY, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log(response.toString());
+                responseHandler.onSuccess(response);
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
+    public static void getUserNewTimeline(Context context, String userName, long sinceId, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("screen_name", userName);
+        params.put("since_id", String.valueOf(sinceId));
+        DebugUtils.log("SinceId: " + sinceId);
+        mClient.get(context, WeiboApiUrl.STATUS_USER_TIMELINE, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log(response);
+                try {
+                    responseHandler.onSuccess(response.getJSONArray("statuses"));
+                } catch (JSONException e) {
+                    responseHandler.onFailure(e, "获取Timeline失败");
+                    e.printStackTrace();
+                }
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                DebugUtils.log(errorResponse);
                 responseHandler.onFailure(e, errorResponse);
                 super.onFailure(e, errorResponse);
             }
@@ -286,12 +403,15 @@ public class Weibo {
 
     public final static class WeiboApiUrl{
         public static final String STATUS_HOME_TIMELINE = "https://api.weibo.com/2/statuses/home_timeline.json";
+        public static final String STATUS_USER_TIMELINE = "https://api.weibo.com/2/statuses/user_timeline.json";
         public static final String USER_SHOW = "https://api.weibo.com/2/users/show.json";
         public static final String OAUTH2_ACCESS_TOKEN = "https://api.weibo.com/oauth2/access_token";
         public static final String OAUTH2_AUTHORIZE = "https://api.weibo.com/oauth2/authorize";
         public static final String COMMENTS_SHOW = "https://api.weibo.com/2/comments/show.json";
-        public static final String REPOSTS_SHOW = "https://api.weibo.com/2/statuses/repost_timeline.json";
         public static final String COMMENTS_CREATE = "https://api.weibo.com/2/comments/create.json";
+        public static final String REPOSTS_SHOW = "https://api.weibo.com/2/statuses/repost_timeline.json";
+        public static final String FRIENDSHIPS_CREATE = "https://api.weibo.com/2/friendships/create.json";
+        public static final String FRIENDSHIPS_DESTROY = "https://api.weibo.com/2/friendships/destroy.json";
     }
 
 }

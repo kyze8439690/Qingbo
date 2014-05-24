@@ -25,6 +25,8 @@
         </activity>
         <activity android:name=".activity.LoginActivity"
                   android:label="@string/login_title"/>
+        <activity android:name=".activity.BlackMagicLoginActivity"
+                  android:label="@string/login_title"/>
         <activity android:name=".activity.TimelineActivity"/>
         <activity android:name=".activity.PicActivity"
                   android:theme="@style/AppTheme.PicActivity"/>
@@ -34,7 +36,7 @@
                   android:parentActivityName=".activity.MainActivity"
                   android:windowSoftInputMode="stateHidden"
                   />
-        <activity android:name=".activity.RepostDetailActivity"
+        <activity android:name=".activity.NoStoreDetailActivity"
                   android:label=""
                   android:theme="@style/AppTheme.DetailActivity"
                   android:windowSoftInputMode="stateHidden"

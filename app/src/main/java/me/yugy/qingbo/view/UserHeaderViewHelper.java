@@ -15,17 +15,21 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import me.yugy.qingbo.R;
+import me.yugy.qingbo.tasker.FriendShipTasker;
 import me.yugy.qingbo.type.UserInfo;
 import me.yugy.qingbo.utils.ScreenUtils;
 
 /**
  * Created by yugy on 2014/4/26.
  */
-public class UserHeaderViewHelper {
+public class UserHeaderViewHelper implements View.OnClickListener, FriendShipTasker.OnFriendShipListener {
 
     private Context mContext;
     private AbsListView.OnScrollListener mOnScrollListener;
     private CoverImageView mCover = null;
+    private Button mFollowButton;
+    private String mUserName;
+    private boolean mIsFollowing;
 
     private static final DisplayImageOptions HEAD_OPTIONS = new DisplayImageOptions.Builder()
             .bitmapConfig(Bitmap.Config.ARGB_8888)
@@ -63,13 +67,14 @@ public class UserHeaderViewHelper {
     }
 
     public View getHeaderView(UserInfo userInfo){
+        mUserName = userInfo.screenName;
         View view = LayoutInflater.from(mContext).inflate(R.layout.view_user_header, null);
         TextView name = (TextView) view.findViewById(R.id.name);
         RoundedImageView head  = (RoundedImageView) view.findViewById(R.id.head);
         mCover = (CoverImageView) view.findViewById(R.id.cover_image);
         TextView description = (TextView) view.findViewById(R.id.description);
         TextView location = (TextView) view.findViewById(R.id.location);
-        Button followButton = (Button) view.findViewById(R.id.follow_button);
+        mFollowButton = (Button) view.findViewById(R.id.follow_button);
         TextView followerCount = (TextView) view.findViewById(R.id.follower_count);
 
         name.setText(userInfo.screenName);
@@ -86,24 +91,56 @@ public class UserHeaderViewHelper {
         }
         long uid = Long.decode(PreferenceManager.getDefaultSharedPreferences(mContext).getString("uid", "-1"));
         if(uid == userInfo.uid){
-            followButton.setVisibility(View.GONE);
-        }else if(!userInfo.following){
-            followButton.setBackgroundResource(R.drawable.btn_30_red);
-            int vPadding = ScreenUtils.dp(mContext, 37.5f);
-            int hPadding = ScreenUtils.dp(mContext, 16);
-            followButton.setPadding(vPadding, hPadding, vPadding, hPadding);
-            followButton.setText("Follow him/her");
+            mFollowButton.setVisibility(View.GONE);
+        }else{
+            updateFollowState(userInfo);
+            mFollowButton.setOnClickListener(this);
         }
         followerCount.setText(String.format("Has %s followers ● Following %s peoples", userInfo.followersCount, userInfo.friendsCount));
 
         if(!userInfo.cover.equals("")){
             ImageLoader.getInstance().displayImage(userInfo.cover, mCover, COVER_OPTIONS);
         }
-
         return view;
     }
 
     public AbsListView.OnScrollListener getOnScrollListener() {
         return mOnScrollListener;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int action;
+        if(mIsFollowing){
+            action = FriendShipTasker.ACTION_DESTROY_FRIENDSHIP;
+        }else{
+            action = FriendShipTasker.ACTION_CREATE_FRIENDSHIP;
+        }
+        new FriendShipTasker(mContext, this)
+                .setTarget(mUserName)
+                .setAction(action)
+                .execute();
+    }
+
+    @Override
+    public void onSuccess(UserInfo userInfo) {
+        updateFollowState(userInfo);
+    }
+
+    private void updateFollowState(UserInfo userInfo){
+        if(userInfo.following){
+            mFollowButton.setBackgroundResource(R.drawable.btn_30_blue);
+            int vPadding = ScreenUtils.dp(mContext, 37.5f);
+            int hPadding = ScreenUtils.dp(mContext, 16);
+            mFollowButton.setPadding(vPadding, hPadding, vPadding, hPadding);
+            mFollowButton.setText("Following");
+        }else{
+            mFollowButton.setBackgroundResource(R.drawable.btn_30_red);
+            int vPadding = ScreenUtils.dp(mContext, 37.5f);
+            int hPadding = ScreenUtils.dp(mContext, 16);
+            mFollowButton.setPadding(vPadding, hPadding, vPadding, hPadding);
+            mFollowButton.setText("Follow him/her");
+        }
+        mIsFollowing = userInfo.following;
     }
 }

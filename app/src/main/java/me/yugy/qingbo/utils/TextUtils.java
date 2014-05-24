@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.yugy.qingbo.R;
+import me.yugy.qingbo.activity.UserActivity;
 import me.yugy.qingbo.view.text.TouchClickableSpan;
 
 /**
@@ -42,7 +43,7 @@ public class TextUtils {
     public static CharSequence getRelativeTimeDisplayString(Context context, long referenceTime) {
         long now = System.currentTimeMillis();
         long difference = now - referenceTime;
-        return (difference >= 0 &&  difference<= DateUtils.MINUTE_IN_MILLIS) ?
+        return (difference >= 0 &&  difference <= DateUtils.MINUTE_IN_MILLIS) ?
                 context.getResources().getString(R.string.just_now):
                 DateUtils.getRelativeTimeSpanString(
                         referenceTime,
@@ -78,7 +79,9 @@ public class TextUtils {
             parseString.setSpan(new TouchClickableSpan() {
                 @Override
                 public void onClick(View widget) {
-                    MessageUtils.toast(widget.getContext(), name);
+                    Intent intent = new Intent(widget.getContext(), UserActivity.class);
+                    intent.putExtra("userName", name.substring(1));
+                    widget.getContext().startActivity(intent);
                 }
             }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
