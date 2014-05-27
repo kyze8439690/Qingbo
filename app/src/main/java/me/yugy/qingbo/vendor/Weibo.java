@@ -1,6 +1,7 @@
 package me.yugy.qingbo.vendor;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -371,6 +372,33 @@ public class Weibo {
         });
     }
 
+    public static void getUserOldTimeline(Context context, String userName, long maxId, final JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("screen_name", userName);
+        params.put("max_id", String.valueOf(maxId));
+        DebugUtils.log("MaxId: " + maxId);
+        mClient.get(context, WeiboApiUrl.STATUS_USER_TIMELINE, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log(response);
+                try {
+                    responseHandler.onSuccess(response.getJSONArray("statuses"));
+                } catch (JSONException e) {
+                    responseHandler.onFailure(e, "获取Timeline失败");
+                    e.printStackTrace();
+                }
+                super.onSuccess(response);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                DebugUtils.log(errorResponse);
+                responseHandler.onFailure(e, errorResponse);
+                super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
     public static void getReposts(Context context, String statusId, String sinceId, final JsonHttpResponseHandler responseHandler){
         RequestParams params = getParamsWithAccessToken(context);
         params.put("id", statusId);
@@ -388,6 +416,24 @@ public class Weibo {
             public void onFailure(Throwable e, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse.toString());
                 super.onFailure(e, errorResponse);
+            }
+        });
+    }
+
+    public static void getShortUrl(Context context, String longUrl, final TextHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("url_long", longUrl);
+        mClient.get(context, WeiboApiUrl.SHORTURL_SHORTEN, params, new JsonHttpResponseHandler(){
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                DebugUtils.log(response);
+                try {
+                    responseHandler.onSuccess(statusCode, headers, response.getJSONArray("urls").getJSONObject(0).getString("url_short"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }
@@ -412,6 +458,7 @@ public class Weibo {
         public static final String REPOSTS_SHOW = "https://api.weibo.com/2/statuses/repost_timeline.json";
         public static final String FRIENDSHIPS_CREATE = "https://api.weibo.com/2/friendships/create.json";
         public static final String FRIENDSHIPS_DESTROY = "https://api.weibo.com/2/friendships/destroy.json";
+        public static final String SHORTURL_SHORTEN = "https://api.weibo.com/2/short_url/shorten.json";
     }
 
 }

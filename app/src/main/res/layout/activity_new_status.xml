@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minWidth="400dp"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.makeramen.RoundedImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/new_status_head"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            app:corner_radius="40dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_head"
+            />
+
+        <TextView
+            android:id="@+id/new_status_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/new_status_head"
+            android:text="杨辉"
+            android:textStyle="bold"
+            android:layout_alignTop="@id/new_status_head"
+            android:layout_marginLeft="12dp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/new_status_head"
+            android:layout_alignBottom="@id/new_status_head"
+            android:layout_alignLeft="@id/new_status_name"
+            android:text="To Sina Weibo"
+            />
+
+        <TextView
+            android:id="@+id/new_status_limit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="140"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/new_status_name"
+            android:layout_marginRight="16dp"
+            android:textColor="#ff808080"
+            />
+
+        <RelativeLayout
+            android:id="@+id/new_status_bottombar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_alignParentBottom="true"
+            >
+
+            <ImageButton
+                android:id="@+id/new_status_photo_btn"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/ic_camera_less_darkgrey_20"
+                style="?android:borderlessButtonStyle"
+                />
+            <ImageButton
+                android:id="@+id/new_status_mood_btn"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/ic_mood_darkgrey_20"
+                android:layout_alignParentBottom="true"
+                style="?android:borderlessButtonStyle"
+                android:layout_toRightOf="@id/new_status_photo_btn"
+                />
+            <ImageButton
+                android:id="@+id/new_status_link_btn"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/ic_link_darkgrey_20"
+                android:layout_alignParentBottom="true"
+                style="?android:borderlessButtonStyle"
+                android:layout_toRightOf="@id/new_status_mood_btn"
+                />
+
+            <ImageButton
+                android:id="@+id/new_status_send_btn"
+                android:layout_width="64dp"
+                android:layout_height="56dp"
+                style="?android:borderlessButtonStyle"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/ic_send"
+                />
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/new_status_location_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add your location"
+            android:textColor="#ff808080"
+            android:layout_above="@id/new_status_bottombar"
+            android:drawableLeft="@drawable/ic_location_grey_16"
+            android:drawablePadding="8dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="16dp"
+            />
+
+        <EditText
+            android:id="@+id/new_status_edittext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/new_status_head"
+            android:layout_above="@id/new_status_location_txt"
+            android:layout_margin="16dp"
+            android:hint="Write something ..."
+            android:minHeight="80dp"
+            android:gravity="left|top"
+            android:textSize="14sp"
+            android:background="@android:color/transparent"
+            />
+
+    </RelativeLayout>
+
+</LinearLayout>

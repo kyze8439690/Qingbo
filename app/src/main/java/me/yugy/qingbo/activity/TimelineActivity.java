@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.widget.DrawerLayout;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +27,7 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
+import me.yugy.qingbo.BuildConfig;
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.adapter.TimelineStatusAdapter;
 import me.yugy.qingbo.dao.datahelper.StatusesDataHelper;
@@ -64,7 +66,10 @@ public class TimelineActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        ViewServer.get(this).addWindow(this);
+        if(BuildConfig.DEBUG) {
+            ViewServer.get(this).addWindow(this);
+//            StrictMode.enableDefaults();
+        }
         setContentView(R.layout.activity_timeline);
 
         getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
@@ -108,7 +113,11 @@ public class TimelineActivity extends Activity implements
         mListView.setAdapter(mTimelineStatusAdapter);
         mListView.setOnItemClickListener(this);
 
+        mBottomBar.findViewById(R.id.btn_bottombar_photo).setOnClickListener(this);
+        mBottomBar.findViewById(R.id.btn_bottombar_location).setOnClickListener(this);
+        mBottomBar.findViewById(R.id.btn_bottombar_text).setOnClickListener(this);
         mBottomBar.findViewById(R.id.btn_bottombar_refresh).setOnClickListener(this);
+
 
         ActionBarPullToRefresh.from(this)
                 .allChildrenArePullable()
@@ -246,6 +255,15 @@ public class TimelineActivity extends Activity implements
     @Override
     public void onClick(View v) {
         switch (v.getId()){
+            case R.id.btn_bottombar_photo:
+
+                break;
+            case R.id.btn_bottombar_location:
+
+                break;
+            case R.id.btn_bottombar_text:
+                startActivity(new Intent(this, NewStatusActivity.class));
+                break;
             case R.id.btn_bottombar_refresh:
                 mListView.setSelectionAfterHeaderView();
                 getNewData();
@@ -275,11 +293,15 @@ public class TimelineActivity extends Activity implements
 
     public void onDestroy() {
         super.onDestroy();
-        ViewServer.get(this).removeWindow(this);
+        if(BuildConfig.DEBUG) {
+            ViewServer.get(this).removeWindow(this);
+        }
     }
 
     public void onResume() {
         super.onResume();
-        ViewServer.get(this).setFocusedWindow(this);
+        if(BuildConfig.DEBUG) {
+            ViewServer.get(this).setFocusedWindow(this);
+        }
     }
 }

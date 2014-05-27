@@ -30,6 +30,8 @@ public class MainActivity extends Activity {
         if(requestCode == REQUEST_LOGIN && resultCode == RESULT_OK){
             startActivity(new Intent(this, TimelineActivity.class));
             finish();
+        }else{
+            finish();
         }
     }
 }

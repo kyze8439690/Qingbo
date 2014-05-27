@@ -126,15 +126,15 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
                         status.parse(response.getJSONObject(i));
                         statuses.add(status);
                     }
-                    if(mSinceId == 0){
-                        mTimelineStatusAdapter = new NoStoreTimelineStatusAdapter(UserActivity.this, statuses);
-                        mListView.setAdapter(mTimelineStatusAdapter);
-                        if(statuses.size() != 0){
-                            mMaxId = statuses.get(statuses.size() - 1).id;
+                    if(statuses.size() != 0){
+                        if(mSinceId == 0){
+                            mTimelineStatusAdapter = new NoStoreTimelineStatusAdapter(UserActivity.this, statuses);
+                            mListView.setAdapter(mTimelineStatusAdapter);
+                        }else {
+                            mTimelineStatusAdapter.addNewStatuses(statuses);
                         }
-                    }else if(statuses.size() != 0){
-                        mTimelineStatusAdapter.addNewStatuses(statuses);
                         mSinceId = statuses.get(0).id;
+                        mMaxId = statuses.get(statuses.size() - 1).id;
                     }
                 }catch (JSONException e){
                     e.printStackTrace();
@@ -153,13 +153,13 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
         DebugUtils.log("getUserOldTimeline");
         mIsLoading = true;
         setProgressBarIndeterminateVisibility(true);
-        Weibo.getUserNewTimeline(this, mUserInfo.screenName, mMaxId, new JsonHttpResponseHandler(){
+        Weibo.getUserOldTimeline(this, mUserInfo.screenName, mMaxId, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(JSONArray response) {
                 try {
                     ArrayList<Status> statuses = new ArrayList<Status>();
                     int size = response.length();
-                    for (int i = 0; i < size; i++) {
+                    for (int i = 1                               ; i < size; i++) {
                         Status status = new Status();
                         status.parse(response.getJSONObject(i));
                         statuses.add(status);
@@ -210,7 +210,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(parent.getContext(), NoStoreDetailActivity.class);
-        intent.putExtra("status", mTimelineStatusAdapter.getItem(position));
+        intent.putExtra("status", mTimelineStatusAdapter.getItem(position - mListView.getHeaderViewsCount()));
         parent.getContext().startActivity(intent);
     }
 }

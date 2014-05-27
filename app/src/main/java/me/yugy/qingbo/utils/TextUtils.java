@@ -8,6 +8,9 @@ import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.view.View;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -101,6 +104,24 @@ public class TextUtils {
         String[] topics = new String[topicsList.size()];
         topicsList.toArray(topics);
         return topics;
+    }
+
+    public static long calculateTextLength(CharSequence charSequence){
+        double len = 0;
+        for (int i = 0; i < charSequence.length(); i++) {
+            int tmp = (int) charSequence.charAt(i);
+            if (tmp > 0 && tmp < 127) {
+                len += 0.5;
+            } else {
+                len++;
+            }
+        }
+        return Math.round(len);
+    }
+
+    public static String md5(String s) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        byte[] bytes = MessageDigest.getInstance("MD5").digest(s.getBytes("UTF-8"));
+        return new String(bytes, "UTF-8");
     }
 
 }

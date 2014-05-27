@@ -19,6 +19,10 @@
         <item name="android:windowBackground">@color/detail_window_background</item>
     </style>
 
+    <style name="AppTheme.NewStatusActivity" parent="android:Theme.Holo.Light.Dialog.NoActionBar">
+
+    </style>
+
     <style name="ActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid">
         <item name="android:indeterminateProgressStyle">@style/ActionBar.Progress</item>
     </style>
