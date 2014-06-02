@@ -49,6 +49,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
     private ImageButton mPhoto;
     private ImageButton mMood;
     private ImageButton mLink;
+    private ImageButton mAt;
     private ImageButton mSend;
     private MentionListPopupWindow mMentionWindow;
 
@@ -77,6 +78,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         mPhoto = (ImageButton) findViewById(R.id.new_status_photo_btn);
         mMood = (ImageButton) findViewById(R.id.new_status_mood_btn);
         mLink = (ImageButton) findViewById(R.id.new_status_link_btn);
+        mAt = (ImageButton) findViewById(R.id.new_status_at_btn);
         mSend = (ImageButton) findViewById(R.id.new_status_send_btn);
 
         //load user info
@@ -97,6 +99,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         mPhoto.setOnClickListener(this);
         mMood.setOnClickListener(this);
         mLink.setOnClickListener(this);
+        mAt.setOnClickListener(this);
         mSend.setOnClickListener(this);
 
         //init send button state
@@ -119,6 +122,13 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
                 break;
             case R.id.new_status_link_btn:
                 new ConvertLinkDialogFragment().show(getFragmentManager(), "convertLinkDialog");
+                break;
+            case R.id.new_status_at_btn:
+                if(mEditText.length() == 0 || mEditText.getText().toString().endsWith(" ")){
+                    mEditText.append("@");
+                }else{
+                    mEditText.append(" @");
+                }
                 break;
             case R.id.new_status_send_btn:
                 NewStatusIntent intent = new NewStatusIntent.Builder(this)
@@ -222,11 +232,11 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
     public void OnMentionStarted(String sequence) {
         if(mMentionWindow != null && mMentionWindow.isShowing()){
             //update existed mention list
-            mMentionWindow.setKeyword(sequence);
+            mMentionWindow.setKeyword(sequence.toLowerCase());
         }else{
             //show new mention list
             int textHeight = ScreenUtils.sp(this, 28);
-            mMentionWindow = new MentionListPopupWindow(this, sequence);
+            mMentionWindow = new MentionListPopupWindow(this, sequence.toLowerCase());
             mMentionWindow.setAnchorView(findViewById(R.id.new_status_anchor));
             mMentionWindow.setVerticalOffset(mEditText.getCurrentLineTop() + textHeight);
             mMentionWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
@@ -242,6 +252,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
                 public boolean onBackPressed() {
                     if(mMentionWindow.isShowing()){
                         mMentionWindow.dismiss();
+                        mMentionWindow.setKeyword("");
                         return true;
                     }
                     return false;

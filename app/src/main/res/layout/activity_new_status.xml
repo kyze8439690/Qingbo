@@ -86,6 +86,15 @@
                 style="?android:borderlessButtonStyle"
                 android:layout_toRightOf="@id/new_status_mood_btn"
                 />
+            <ImageButton
+                android:id="@+id/new_status_at_btn"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/ic_at_darkgrey_20"
+                android:layout_alignParentBottom="true"
+                style="?android:borderlessButtonStyle"
+                android:layout_toRightOf="@id/new_status_link_btn"
+                />
 
             <ImageButton
                 android:id="@+id/new_status_send_btn"

@@ -119,6 +119,8 @@ public class MentionListPopupWindow extends ListPopupWindow implements AdapterVi
                 UserIndex userIndex = UserIndex.fromCursor((Cursor) mMentionAdapter.getItem(position));
                 mOnMentionSelectListener.onMentionSelect(userIndex.screenName);
             }
+            mKeyword = "";
+            ((Activity)mContext).getLoaderManager().restartLoader(0, null, this);
             dismiss();
         }
     }
