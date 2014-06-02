@@ -1,17 +1,42 @@
 package me.yugy.qingbo.vendor;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.SyncHttpClient;
 import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
 import me.yugy.qingbo.type.UserInfo;
@@ -372,6 +397,46 @@ public class Weibo {
         });
     }
 
+    public static void getFriends(final Context context, final JsonHttpResponseHandler responseHandler){
+        final JSONArray result = new JSONArray();
+        final long uid = Long.decode(PreferenceManager.getDefaultSharedPreferences(context).getString("uid", "-1"));
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("count", "200");
+        params.put("trim_status", "1");
+        params.put("uid", String.valueOf(uid));
+        mClient.get(context, WeiboApiUrl.FRIENDSHIPS_FRIENDS, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(JSONObject response) {
+                DebugUtils.log(response);
+                try {
+                    JSONArray jsonArray = response.getJSONArray("users");
+                    int length = jsonArray.length();
+                    for (int i = 0; i < length; i++) {
+                        result.put(jsonArray.getJSONObject(i));
+                    }
+                    int cursor;
+                    if((cursor = response.getInt("next_cursor")) != 0){
+                        getFriends(context, uid, cursor, this);
+                    }else{
+                        responseHandler.onSuccess(result);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                super.onSuccess(response);
+            }
+        });
+    }
+
+    private static void getFriends(Context context, long uid, int nextCursor, JsonHttpResponseHandler responseHandler){
+        RequestParams params = getParamsWithAccessToken(context);
+        params.put("count", "200");
+        params.put("cursor", String.valueOf(nextCursor));
+        params.put("trim_status", "1");
+        params.put("uid", String.valueOf(uid));
+        mClient.get(context, WeiboApiUrl.FRIENDSHIPS_FRIENDS, params, responseHandler);
+    }
+
     public static void getUserOldTimeline(Context context, String userName, long maxId, final JsonHttpResponseHandler responseHandler){
         RequestParams params = getParamsWithAccessToken(context);
         params.put("screen_name", userName);
@@ -435,21 +500,73 @@ public class Weibo {
                 }
                 super.onSuccess(statusCode, headers, response);
             }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                responseHandler.onFailure(errorResponse.toString(), e);
+                super.onFailure(e, errorResponse);
+            }
         });
     }
 
+    public static JSONObject syncNewStatusOnlyText(Context context, String status) throws IOException {
+        try {
+            URL url = new URL(WeiboApiUrl.STATUS_UPDATE);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setRequestMethod("POST");
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+
+            RequestParams params = getParamsWithAccessToken(context);
+            params.put("status", URLEncoder.encode(status, "utf-8"));
+
+            DataOutputStream out = new DataOutputStream(conn.getOutputStream());
+            out.writeBytes(params.toString());
+            out.flush();
+            out.close();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            StringBuffer result = new StringBuffer();
+
+            while((inputLine = in.readLine()) != null){
+                result.append(inputLine);
+            }
+            in.close();
+
+            DebugUtils.log(result.toString());
+
+            try {
+                JSONObject json = new JSONObject(result.toString());
+                return json;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private static RequestParams getParamsWithAccessToken(Context context){
+        RequestParams params = new RequestParams();
+        params.put("access_token", getAccessToken(context));
+        return params;
+    }
+
+    private static String getAccessToken(Context context){
         if(mAccessToken == null){
             mAccessToken = PreferenceManager.getDefaultSharedPreferences(context).getString("access_token", null);
         }
-        RequestParams params = new RequestParams();
-        params.put("access_token", mAccessToken);
-        return params;
+        return mAccessToken;
     }
 
     public final static class WeiboApiUrl{
         public static final String STATUS_HOME_TIMELINE = "https://api.weibo.com/2/statuses/home_timeline.json";
         public static final String STATUS_USER_TIMELINE = "https://api.weibo.com/2/statuses/user_timeline.json";
+        public static final String STATUS_UPDATE = "https://api.weibo.com/2/statuses/update.json";
         public static final String USER_SHOW = "https://api.weibo.com/2/users/show.json";
         public static final String OAUTH2_ACCESS_TOKEN = "https://api.weibo.com/oauth2/access_token";
         public static final String OAUTH2_AUTHORIZE = "https://api.weibo.com/oauth2/authorize";
@@ -458,6 +575,7 @@ public class Weibo {
         public static final String REPOSTS_SHOW = "https://api.weibo.com/2/statuses/repost_timeline.json";
         public static final String FRIENDSHIPS_CREATE = "https://api.weibo.com/2/friendships/create.json";
         public static final String FRIENDSHIPS_DESTROY = "https://api.weibo.com/2/friendships/destroy.json";
+        public static final String FRIENDSHIPS_FRIENDS = "https://api.weibo.com/2/friendships/friends.json";
         public static final String SHORTURL_SHORTEN = "https://api.weibo.com/2/short_url/shorten.json";
     }
 

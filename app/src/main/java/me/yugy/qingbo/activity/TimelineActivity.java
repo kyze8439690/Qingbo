@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import me.yugy.qingbo.BuildConfig;
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.adapter.TimelineStatusAdapter;
+import me.yugy.qingbo.broadcast.RefreshTimelineBroadcastReceiver;
 import me.yugy.qingbo.dao.datahelper.StatusesDataHelper;
 import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
 import me.yugy.qingbo.debug.ViewServer;
@@ -61,6 +63,9 @@ public class TimelineActivity extends Activity implements
     private StatusesDataHelper mStatusesDataHelper;
     private TimelineStatusAdapter mTimelineStatusAdapter;
     private OnListViewScrollListener mOnListViewScrollListener;
+    private RefreshTimelineBroadcastReceiver mBroadcastReceiver;
+
+    private boolean mIsBroadcastReceiverRegistered = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +117,12 @@ public class TimelineActivity extends Activity implements
         mTimelineStatusAdapter = new TimelineStatusAdapter(this);
         mListView.setAdapter(mTimelineStatusAdapter);
         mListView.setOnItemClickListener(this);
+        mBroadcastReceiver = new RefreshTimelineBroadcastReceiver() {
+            @Override
+            public void onRefresh() {
+                getNewData();
+            }
+        };
 
         mBottomBar.findViewById(R.id.btn_bottombar_photo).setOnClickListener(this);
         mBottomBar.findViewById(R.id.btn_bottombar_location).setOnClickListener(this);
@@ -302,6 +313,19 @@ public class TimelineActivity extends Activity implements
         super.onResume();
         if(BuildConfig.DEBUG) {
             ViewServer.get(this).setFocusedWindow(this);
+        }
+        if(!mIsBroadcastReceiverRegistered){
+            registerReceiver(mBroadcastReceiver, new IntentFilter(RefreshTimelineBroadcastReceiver.ACTION_REFRESH_TIMELINE));
+            mIsBroadcastReceiverRegistered = true;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(mIsBroadcastReceiverRegistered){
+            unregisterReceiver(mBroadcastReceiver);
+            mIsBroadcastReceiverRegistered = false;
         }
     }
 }

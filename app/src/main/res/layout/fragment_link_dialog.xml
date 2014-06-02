@@ -9,6 +9,7 @@
     >
 
     <EditText
+        android:id="@+id/link_dialog_edittext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -17,6 +18,7 @@
         />
 
     <ImageButton
+        android:id="@+id/link_dialog_clear_btn"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/ic_close_cancel"

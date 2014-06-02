@@ -19,6 +19,18 @@
 
 ----------
 
+### UserIndex ###
+好友信息生成的索引
+
+数据项
+
+- uid
+- screen_name
+- avatar
+- index
+
+----------
+
 ### Statuses ###
 好友发布的微博
 

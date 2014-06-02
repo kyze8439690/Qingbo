@@ -4,44 +4,53 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListPopupWindow;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.makeramen.RoundedImageView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
-import org.json.JSONObject;
-
 import me.yugy.qingbo.R;
+import me.yugy.qingbo.adapter.TestAdapter;
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
 import me.yugy.qingbo.fragment.ConvertLinkDialogFragment;
+import me.yugy.qingbo.intent.NewStatusIntent;
 import me.yugy.qingbo.type.UserInfo;
+import me.yugy.qingbo.utils.DebugUtils;
+import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
-import me.yugy.qingbo.vendor.Weibo;
+import me.yugy.qingbo.view.MentionEditText;
+import me.yugy.qingbo.view.MentionListPopupWindow;
+
+import static me.yugy.qingbo.fragment.ConvertLinkDialogFragment.OnConvertListener;
 
 /**
  * Created by yugy on 2014/5/25.
  */
-public class NewStatusActivity extends Activity implements View.OnClickListener, TextWatcher {
+public class NewStatusActivity extends Activity implements View.OnClickListener, TextWatcher, OnConvertListener,
+        MentionEditText.OnMentionListener, MentionListPopupWindow.OnMentionSelectListener {
 
     private RoundedImageView mHead;
     private TextView mName;
     private TextView mLimit;
-    private EditText mEditText;
+    private MentionEditText mEditText;
     private TextView mLocation;
     private ImageButton mPhoto;
     private ImageButton mMood;
     private ImageButton mLink;
     private ImageButton mSend;
+    private MentionListPopupWindow mMentionWindow;
 
     private static final DisplayImageOptions HEAD_OPTIONS = new DisplayImageOptions.Builder()
             .bitmapConfig(Bitmap.Config.ARGB_8888)
@@ -63,7 +72,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         mHead = (RoundedImageView) findViewById(R.id.new_status_head);
         mName = (TextView) findViewById(R.id.new_status_name);
         mLimit = (TextView) findViewById(R.id.new_status_limit);
-        mEditText = (EditText) findViewById(R.id.new_status_edittext);
+        mEditText = (MentionEditText) findViewById(R.id.new_status_edittext);
         mLocation = (TextView) findViewById(R.id.new_status_location_txt);
         mPhoto = (ImageButton) findViewById(R.id.new_status_photo_btn);
         mMood = (ImageButton) findViewById(R.id.new_status_mood_btn);
@@ -82,6 +91,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
 
         //set edittext watcher
         mEditText.addTextChangedListener(this);
+        mEditText.setOnMentionListener(this);
 
         //set button click listener
         mPhoto.setOnClickListener(this);
@@ -111,61 +121,25 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
                 new ConvertLinkDialogFragment().show(getFragmentManager(), "convertLinkDialog");
                 break;
             case R.id.new_status_send_btn:
-
+                NewStatusIntent intent = new NewStatusIntent.Builder(this)
+                        .setText(mEditText.getText().toString())
+                        .create();
+                startService(intent);
+                finishWithoutNotify();
                 break;
         }
     }
 
-    /**
-     * This method is called to notify you that, within <code>s</code>,
-     * the <code>count</code> characters beginning at <code>start</code>
-     * are about to be replaced by new text with length <code>after</code>.
-     * It is an error to attempt to make changes to <code>s</code> from
-     * this callback.
-     *
-     * @param s
-     * @param start
-     * @param count
-     * @param after
-     */
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
     }
 
-    /**
-     * This method is called to notify you that, within <code>s</code>,
-     * the <code>count</code> characters beginning at <code>start</code>
-     * have just replaced old text that had length <code>before</code>.
-     * It is an error to attempt to make changes to <code>s</code> from
-     * this callback.
-     *
-     * @param s
-     * @param start
-     * @param before
-     * @param count
-     */
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
 
     }
 
-    /**
-     * This method is called to notify you that, somewhere within
-     * <code>s</code>, the text has been changed.
-     * It is legitimate to make further changes to <code>s</code> from
-     * this callback, but be careful not to get yourself into an infinite
-     * loop, because any changes you make will cause this method to be
-     * called again recursively.
-     * (You are not told where the change took place because other
-     * afterTextChanged() methods may already have made other changes
-     * and invalidated the offsets.  But if you need to know here,
-     * you can use Spannable.setSpan in {@link #onTextChanged}
-     * to mark your place and then look up from here where the span
-     * ended up.
-     *
-     * @param s
-     */
     @Override
     public void afterTextChanged(Editable s) {
 
@@ -210,5 +184,82 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         }else {
             super.finish();
         }
+    }
+
+    public void finishWithoutNotify(){
+        super.finish();
+    }
+
+    /**
+     * call when link convert is successful.
+     * @param shortUrl the converted short url.
+     */
+    @Override
+    public void onUrlConvertSuccess(String shortUrl) {
+        if(mEditText.length() == 0 || mEditText.getText().charAt(mEditText.length() - 1) == ' '){
+            mEditText.append(shortUrl + " ");
+        }else{
+            mEditText.append(" " + shortUrl + " ");
+        }
+
+    }
+
+    /**
+     * call when link convert is failed.
+     * @param originUrl the original url which fail to be converted.
+     */
+    @Override
+    public void onUrlConvertFailure(String originUrl) {
+        ConvertLinkDialogFragment convertLinkDialogFragment = new ConvertLinkDialogFragment();
+        Bundle argument = new Bundle();
+        argument.putBoolean("invalid url", true);
+        argument.putString("url", originUrl);
+        convertLinkDialogFragment.setArguments(argument);
+        convertLinkDialogFragment.show(getFragmentManager(), "convertLinkDialog");
+    }
+
+    @Override
+    public void OnMentionStarted(String sequence) {
+        if(mMentionWindow != null && mMentionWindow.isShowing()){
+            //update existed mention list
+            mMentionWindow.setKeyword(sequence);
+        }else{
+            //show new mention list
+            int textHeight = ScreenUtils.sp(this, 28);
+            mMentionWindow = new MentionListPopupWindow(this, sequence);
+            mMentionWindow.setAnchorView(findViewById(R.id.new_status_anchor));
+            mMentionWindow.setVerticalOffset(mEditText.getCurrentLineTop() + textHeight);
+            mMentionWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                @Override
+                public void onDismiss() {
+                    DebugUtils.log("listPopupWindow dismiss.");
+                }
+            });
+            mMentionWindow.setOnMentionSelectListener(this);
+            mMentionWindow.show();
+            mEditText.setOnBackPressedListener(new MentionEditText.OnBackPressedListener() {
+                @Override
+                public boolean onBackPressed() {
+                    if(mMentionWindow.isShowing()){
+                        mMentionWindow.dismiss();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+    }
+
+    @Override
+    public void OnMentionFinished() {
+        DebugUtils.log("Mention finished.");
+        if(mMentionWindow != null && mMentionWindow.isShowing()){
+            mMentionWindow.dismiss();
+        }
+    }
+
+    @Override
+    public void onMentionSelect(String name) {
+        mEditText.setSelectedMention(name);
     }
 }

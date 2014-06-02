@@ -6,9 +6,12 @@ import android.net.Uri;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.format.DateUtils;
+import android.util.Patterns;
 import android.view.View;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
@@ -33,7 +36,7 @@ public class TextUtils {
      */
     private static SimpleDateFormat decodeDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
 
-    private static final Pattern URL_PATTERN = Pattern.compile("http://t\\.cn/[0-9a-zA-Z]+");
+    private static final Pattern WEIBO_SHORT_URL_PATTERN = Pattern.compile("http://t\\.cn/[0-9a-zA-Z]+");
     private static final Pattern AT_PATTERN = Pattern.compile("@([0-9a-zA-Z\\u4e00-\\u9fa5_-]+)");
     private static final Pattern TOPIC_PATTERN = Pattern.compile("#[^#]+#");
 
@@ -62,7 +65,7 @@ public class TextUtils {
 
     public static SpannableString parseStatusText(String text){
         SpannableString parseString = new SpannableString(text);
-        Matcher urlMatcher = URL_PATTERN.matcher(text);
+        Matcher urlMatcher = WEIBO_SHORT_URL_PATTERN.matcher(text);
         Matcher atMatcher = AT_PATTERN.matcher(text);
         while(urlMatcher.find()){
             final String url = urlMatcher.group();
@@ -122,6 +125,10 @@ public class TextUtils {
     public static String md5(String s) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         byte[] bytes = MessageDigest.getInstance("MD5").digest(s.getBytes("UTF-8"));
         return new String(bytes, "UTF-8");
+    }
+
+    public static boolean isUrl(String urlString){
+        return Patterns.WEB_URL.matcher(urlString).find();
     }
 
 }

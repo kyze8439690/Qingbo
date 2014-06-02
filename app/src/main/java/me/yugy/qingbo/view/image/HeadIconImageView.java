@@ -15,14 +15,12 @@ public class HeadIconImageView extends RoundedImageView {
 
     private Drawable mForegroundSelector;
 
-    public HeadIconImageView(Context context) {
-        super(context);
-        init();
+    public HeadIconImageView(Context context){
+        this(context, null);
     }
 
     public HeadIconImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public HeadIconImageView(Context context, AttributeSet attrs, int defStyle) {

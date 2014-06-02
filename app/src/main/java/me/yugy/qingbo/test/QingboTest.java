@@ -9,14 +9,17 @@ import org.apache.http.Header;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import me.yugy.qingbo.utils.DebugUtils;
+import me.yugy.qingbo.utils.PinyinUtils;
+import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.vendor.Weibo;
 
 /**
  * Created by yugy on 2014/5/26.
  */
-public class WeiboTest extends InstrumentationTestCase {
+public class QingboTest extends InstrumentationTestCase {
 
-    public void testShortenUrl() throws Throwable{
+    public void testWeiboShortenUrl() throws Throwable{
         final CountDownLatch signal = new CountDownLatch(1);
         runTestOnUiThread(new Runnable() {
             @Override
@@ -35,5 +38,11 @@ public class WeiboTest extends InstrumentationTestCase {
             }
         });
         signal.await(30, TimeUnit.SECONDS);
+    }
+
+    public void testPinyinConvert() throws Throwable{
+        String chinese = "杨辉";
+        String pinyin = PinyinUtils.toPinyin(getInstrumentation().getTargetContext(), chinese);
+        assertEquals(pinyin, "yanghui");
     }
 }

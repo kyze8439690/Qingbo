@@ -29,7 +29,10 @@
                   android:label="@string/login_title"/>
         <activity android:name=".activity.BlackMagicLoginActivity"
                   android:label="@string/login_title"/>
-        <activity android:name=".activity.TimelineActivity"/>
+        <activity android:name=".activity.TimelineActivity"
+                  android:launchMode="singleTop"
+                  android:windowSoftInputMode="stateAlwaysHidden"
+                  />
         <activity android:name=".activity.PicActivity"
                   android:theme="@style/AppTheme.PicActivity"/>
         <activity android:name=".activity.DetailActivity"
@@ -48,7 +51,7 @@
                   />
         <activity android:name=".activity.NewStatusActivity"
                   android:theme="@style/AppTheme.NewStatusActivity"
-                  android:windowSoftInputMode="adjustResize"
+                  android:windowSoftInputMode="adjustResize|stateAlwaysVisible"
                   />
 
         <provider
@@ -57,5 +60,10 @@
             android:exported="false" >
             <grant-uri-permission android:pathPattern=".*"/>
         </provider>
+
+        <service
+            android:name=".service.WeiboQueueService"
+            android:exported="false"
+            />
     </application>
 </manifest>

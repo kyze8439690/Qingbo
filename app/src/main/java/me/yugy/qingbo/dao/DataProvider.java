@@ -17,10 +17,12 @@ import me.yugy.qingbo.Application;
 import me.yugy.qingbo.dao.datahelper.CommentsDataHelper;
 import me.yugy.qingbo.dao.datahelper.RepostStatusesDataHelper;
 import me.yugy.qingbo.dao.datahelper.StatusesDataHelper;
+import me.yugy.qingbo.dao.datahelper.UserIndexDataHelper;
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
 import me.yugy.qingbo.dao.dbinfo.CommentDBInfo;
 import me.yugy.qingbo.dao.dbinfo.RepostStatusDBInfo;
 import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
+import me.yugy.qingbo.dao.dbinfo.UserIndexDBInfo;
 import me.yugy.qingbo.dao.dbinfo.UserInfoDBInfo;
 
 /**
@@ -36,27 +38,32 @@ public class DataProvider extends ContentProvider {
     private static final String PATH_STATUSES = "/statuses";
     private static final String PATH_COMMENTS = "/comments";
     private static final String PATH_REPOST_STATUSES = "/repostStatuses";
+    private static final String PATH_USER_INDEX = "/userIndex";
 
     public static final Uri USERINFO_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_USER_INFO);
     public static final Uri STATUSES_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_STATUSES);
     public static final Uri COMMENTS_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_COMMENTS);
     public static final Uri REPOST_STATUSES_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_REPOST_STATUSES);
+    public static final Uri USERINDEX_CONTENT_URI = Uri.parse(SCHEME + AUTHORITY + PATH_USER_INDEX);
 
     private static final int USER_INFO = 0;
     private static final int STATUSES = 1;
     private static final int COMMENTS = 2;
     private static final int REPOST_STATUSES = 3;
+    private static final int USER_INDEX = 4;
 
     private static final String USER_INFO_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.userinfo";
     private static final String STATUSES_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.statuses";
     private static final String COMMENTS_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.comments";
-    public static final String REPOST_STATUSES_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.repost.statuses";
+    private static final String REPOST_STATUSES_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.repost.statuses";
+    private static final String USER_INDEX_CONTENT_TYPE = "vnd.android.cursor.dir/vnd.yugy.userindex";
 
     private static final UriMatcher sUriMATCHER = new UriMatcher(UriMatcher.NO_MATCH){{
         addURI(AUTHORITY, "userInfo", USER_INFO);
         addURI(AUTHORITY, "statuses", STATUSES);
         addURI(AUTHORITY, "comments", COMMENTS);
         addURI(AUTHORITY, "repostStatuses", REPOST_STATUSES);
+        addURI(AUTHORITY, "userIndex", USER_INDEX);
     }};
 
     private static DBHelper mDBHelper;
@@ -102,6 +109,8 @@ public class DataProvider extends ContentProvider {
                 return CommentsDataHelper.TABLE_NAME;
             case REPOST_STATUSES:
                 return RepostStatusesDataHelper.TABLE_NAME;
+            case USER_INDEX:
+                return UserIndexDataHelper.TABLE_NAME;
             default:
                 throw new IllegalArgumentException("Unknown Uri" + uri);
         }
@@ -118,6 +127,8 @@ public class DataProvider extends ContentProvider {
                 return COMMENTS_CONTENT_TYPE;
             case REPOST_STATUSES:
                 return REPOST_STATUSES_CONTENT_TYPE;
+            case USER_INDEX:
+                return USER_INDEX_CONTENT_TYPE;
             default:
                 throw new IllegalArgumentException("Unknown Uri" + uri);
         }
@@ -217,11 +228,13 @@ public class DataProvider extends ContentProvider {
             StatusDBInfo.TABLE.create(db);
             CommentDBInfo.TABLE.create(db);
             RepostStatusDBInfo.TABLE.create(db);
+            UserIndexDBInfo.TABLE.create(db);
 
             db.execSQL("CREATE UNIQUE INDEX index_userinfo_id ON " + UserInfoDBInfo.TABLE.getTableName() + "(" + UserInfoDBInfo.UID + ")");
             db.execSQL("CREATE UNIQUE INDEX index_status_id ON " + StatusDBInfo.TABLE.getTableName() + "(" + StatusDBInfo.ID + ")");
             db.execSQL("CREATE UNIQUE INDEX index_comment_id ON " + CommentDBInfo.TABLE.getTableName() + "(" + CommentDBInfo.ID + ")");
             db.execSQL("CREATE UNIQUE INDEX index_repost_status_id ON " + RepostStatusDBInfo.TABLE.getTableName() + "(" + RepostStatusDBInfo.ID + ")");
+            db.execSQL("CREATE UNIQUE INDEX index_userindex_id ON " + UserIndexDBInfo.TABLE.getTableName() + "(" + UserIndexDBInfo.UID + ")");
 
         }
 
