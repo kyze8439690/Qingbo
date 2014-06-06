@@ -20,6 +20,8 @@ public class NewStatusIntent extends Intent{
     public static class Builder{
 
         private NewStatusIntent mIntent;
+        private double mLatitude = -1;
+        private double mLongitude = -1;
 
         public Builder(Context context){
             mIntent = new NewStatusIntent(context, WeiboQueueService.class);
@@ -31,7 +33,21 @@ public class NewStatusIntent extends Intent{
             return this;
         }
 
+        public Builder setLocation(double latitude, double longitude){
+            mLatitude = latitude;
+            mLongitude = longitude;
+            return this;
+        }
+
+        public Builder setImage(String path){
+            mIntent.putExtra("image", path);
+            mIntent.setAction(ACTION_SEND_WEIBO_WITH_IMAGE);
+            return this;
+        }
+
         public NewStatusIntent create(){
+            mIntent.putExtra("latitude", mLatitude);
+            mIntent.putExtra("longitude", mLongitude);
             return mIntent;
         }
 

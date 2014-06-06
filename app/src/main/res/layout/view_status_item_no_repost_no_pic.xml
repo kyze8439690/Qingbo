@@ -42,6 +42,12 @@
         />
 
     <TextView
+        android:id="@+id/status_listitem_location"
+        style="@style/TimelineLocationText"
+        android:layout_below="@id/status_listitem_text"
+        />
+
+    <TextView
         android:id="@+id/status_listitem_topic"
         style="@style/TopicButtonStyle"
         />
@@ -64,7 +70,7 @@
     <TextView
         android:id="@+id/status_listitem_comment_count"
         style="@style/ActionButtonStyle"
-        android:layout_below="@id/status_listitem_text"
+        android:layout_below="@id/status_listitem_location"
         android:layout_marginTop="16dp"
         android:layout_marginRight="14dp"
         android:drawableLeft="@drawable/timeline_listitem_comment_icon"

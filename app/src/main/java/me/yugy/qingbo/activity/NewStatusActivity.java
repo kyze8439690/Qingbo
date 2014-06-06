@@ -3,33 +3,54 @@ package me.yugy.qingbo.activity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ListPopupWindow;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.amap.api.location.AMapLocation;
+import com.amap.api.location.AMapLocationListener;
+import com.amap.api.location.LocationManagerProxy;
+import com.amap.api.location.LocationProviderProxy;
 import com.makeramen.RoundedImageView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.utils.ImageSizeUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import me.yugy.qingbo.R;
-import me.yugy.qingbo.adapter.TestAdapter;
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
 import me.yugy.qingbo.fragment.ConvertLinkDialogFragment;
 import me.yugy.qingbo.intent.NewStatusIntent;
 import me.yugy.qingbo.type.UserInfo;
 import me.yugy.qingbo.utils.DebugUtils;
+import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.utils.ScreenUtils;
 import me.yugy.qingbo.utils.TextUtils;
+import me.yugy.qingbo.view.DragToDeleteRelativeLayout;
 import me.yugy.qingbo.view.MentionEditText;
 import me.yugy.qingbo.view.MentionListPopupWindow;
 
@@ -39,8 +60,12 @@ import static me.yugy.qingbo.fragment.ConvertLinkDialogFragment.OnConvertListene
  * Created by yugy on 2014/5/25.
  */
 public class NewStatusActivity extends Activity implements View.OnClickListener, TextWatcher, OnConvertListener,
-        MentionEditText.OnMentionListener, MentionListPopupWindow.OnMentionSelectListener {
+        MentionEditText.OnMentionListener, MentionListPopupWindow.OnMentionSelectListener, DragToDeleteRelativeLayout.OnSwipeToDeleteListener,
+        AMapLocationListener{
 
+    public static final int REQUEST_PICK_IMAGE = 773295428;
+
+    private DragToDeleteRelativeLayout mDragToDeleteLayout;
     private RoundedImageView mHead;
     private TextView mName;
     private TextView mLimit;
@@ -50,8 +75,17 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
     private ImageButton mMood;
     private ImageButton mLink;
     private ImageButton mAt;
+    private ImageView mThumbnail;
     private ImageButton mSend;
     private MentionListPopupWindow mMentionWindow;
+
+    private LocationManagerProxy mLocationManagerProxy;
+
+    private boolean mHasPicture = false;
+    private boolean mHasLocation = false;
+    private String mImagePath;
+    private double mLatitude = -1;
+    private double mLongitude = -1;
 
     private static final DisplayImageOptions HEAD_OPTIONS = new DisplayImageOptions.Builder()
             .bitmapConfig(Bitmap.Config.ARGB_8888)
@@ -70,6 +104,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         setContentView(R.layout.activity_new_status);
 
         //init views
+        mDragToDeleteLayout = (DragToDeleteRelativeLayout) findViewById(R.id.new_status_drag_layout);
         mHead = (RoundedImageView) findViewById(R.id.new_status_head);
         mName = (TextView) findViewById(R.id.new_status_name);
         mLimit = (TextView) findViewById(R.id.new_status_limit);
@@ -79,6 +114,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         mMood = (ImageButton) findViewById(R.id.new_status_mood_btn);
         mLink = (ImageButton) findViewById(R.id.new_status_link_btn);
         mAt = (ImageButton) findViewById(R.id.new_status_at_btn);
+        mThumbnail = (ImageView) findViewById(R.id.new_status_thumbnail);
         mSend = (ImageButton) findViewById(R.id.new_status_send_btn);
 
         //load user info
@@ -91,6 +127,8 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
             mName.setText("Error");
         }
 
+        mDragToDeleteLayout.setOnSwipeToDeleteListener(this);
+
         //set edittext watcher
         mEditText.addTextChangedListener(this);
         mEditText.setOnMentionListener(this);
@@ -101,9 +139,22 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         mLink.setOnClickListener(this);
         mAt.setOnClickListener(this);
         mSend.setOnClickListener(this);
+        mLocation.setOnClickListener(this);
 
         //init send button state
         mSend.setEnabled(mEditText.length() > 0);
+
+        //check whether there is a photo
+        if((mImagePath = getIntent().getStringExtra("imagePath")) != null){
+            showThumbnail();
+        }
+
+        mLocationManagerProxy = LocationManagerProxy.getInstance(this);
+        mLocationManagerProxy.setGpsEnable(false);
+
+        if(getIntent().getBooleanExtra("getLocation", false)){
+            locate();
+        }
     }
 
     /**
@@ -115,7 +166,11 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.new_status_photo_btn:
-
+                if(mHasPicture){
+                    showDeleteImageDialog();
+                }else{
+                    startActivityForResult(new Intent(this, PickPhotoSourceActivity.class), REQUEST_PICK_IMAGE);
+                }
                 break;
             case R.id.new_status_mood_btn:
 
@@ -131,24 +186,84 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
                 }
                 break;
             case R.id.new_status_send_btn:
-                NewStatusIntent intent = new NewStatusIntent.Builder(this)
+                NewStatusIntent.Builder builder = new NewStatusIntent.Builder(this)
                         .setText(mEditText.getText().toString())
-                        .create();
-                startService(intent);
+                        .setLocation(mLatitude, mLongitude);
+                if(mHasPicture){
+                    builder.setImage(mImagePath);
+                }
+                startService(builder.create());
                 finishWithoutNotify();
+                break;
+            case R.id.new_status_location_txt:
+                if(mHasLocation){
+                    removeLocation();
+                }else{
+                    locate();
+                }
                 break;
         }
     }
 
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+    private void locate(){
+        mLocation.setText("Locating...");
+        mLocationManagerProxy.requestLocationUpdates(LocationProviderProxy.AMapNetwork, 5000, 10, this);
+        mLocation.setOnClickListener(null);
+    }
 
+    private void removeLocation(){
+        mHasLocation = false;
+        mLocation.setText("Add your location");
+        mLatitude = -1;
+        mLongitude = -1;
+        mLocationManagerProxy.removeUpdates(this);
+    }
+
+    private void showDeleteImageDialog(){
+        new AlertDialog.Builder(this)
+                .setMessage("Delete existed image?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mHasPicture = false;
+                        mDragToDeleteLayout.delete();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private static final DisplayImageOptions THUMBNAIL_OPTIONS = new DisplayImageOptions.Builder()
+            .bitmapConfig(Bitmap.Config.RGB_565)
+            .showImageOnLoading(R.drawable.ic_image_loading)
+            .showImageOnFail(R.drawable.ic_image_fail)
+            .considerExifParams(true)
+            .build();
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == NewStatusActivity.REQUEST_PICK_IMAGE && resultCode == RESULT_OK){
+            mImagePath = data.getStringExtra("imagePath");
+            showThumbnail();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void showThumbnail(){
+        ImageLoader.getInstance().displayImage("file://" + mImagePath, mThumbnail, THUMBNAIL_OPTIONS);
+        mDragToDeleteLayout.show();
+        mHasPicture = true;
+        if(mEditText.length() == 0){
+            mEditText.setText("分享图片");
+            mEditText.setSelection(0, mEditText.length());
+        }
     }
 
     @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-    }
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
     @Override
     public void afterTextChanged(Editable s) {
@@ -230,9 +345,12 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
 
     @Override
     public void OnMentionStarted(String sequence) {
-        if(mMentionWindow != null && mMentionWindow.isShowing()){
+        if(mMentionWindow != null){
             //update existed mention list
             mMentionWindow.setKeyword(sequence.toLowerCase());
+            if(!mMentionWindow.isShowing()){
+                mMentionWindow.show();
+            }
         }else{
             //show new mention list
             int textHeight = ScreenUtils.sp(this, 28);
@@ -263,7 +381,6 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
 
     @Override
     public void OnMentionFinished() {
-        DebugUtils.log("Mention finished.");
         if(mMentionWindow != null && mMentionWindow.isShowing()){
             mMentionWindow.dismiss();
         }
@@ -272,5 +389,46 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
     @Override
     public void onMentionSelect(String name) {
         mEditText.setSelectedMention(name);
+    }
+
+    @Override
+    public void onSwipeToDelete() {
+        mHasPicture = false;
+        if (mEditText.getText().toString().equals("分享图片")) {
+            mEditText.setText("");
+        }
+    }
+
+    @Override
+    public void onLocationChanged(AMapLocation aMapLocation) {
+        mHasLocation = true;
+        mLocation.setOnClickListener(this);
+        mLocation.setText(aMapLocation.getExtras().getString("desc"));
+        mLatitude = aMapLocation.getLatitude();
+        mLongitude = aMapLocation.getLongitude();
+        if(mEditText.length() == 0){
+            mEditText.setText("我在这里");
+            mEditText.setSelection(0, mEditText.length());
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 }

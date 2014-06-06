@@ -104,9 +104,15 @@
         />
 
     <TextView
+        android:id="@+id/status_listitem_location"
+        style="@style/TimelineLocationText"
+        android:layout_below="@id/status_listitem_pic"
+        />
+
+    <TextView
         android:id="@+id/status_listitem_comment_count"
         style="@style/ActionButtonStyle"
-        android:layout_below="@id/status_listitem_pic"
+        android:layout_below="@id/status_listitem_location"
         android:layout_marginTop="16dp"
         android:layout_marginRight="14dp"
         android:drawableLeft="@drawable/timeline_listitem_comment_icon"

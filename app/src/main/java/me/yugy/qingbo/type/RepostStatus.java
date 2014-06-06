@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 import me.yugy.qingbo.Application;
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
+import me.yugy.qingbo.dao.dbinfo.RepostStatusDBInfo;
 import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
 import me.yugy.qingbo.utils.ArrayUtils;
 import me.yugy.qingbo.utils.TextUtils;
@@ -32,6 +33,8 @@ public class RepostStatus implements Parcelable, BaseStatus{
     public boolean hasPic = false;
     public boolean hasPics = false;
     public String[] pics;
+    public double latitude = -1;
+    public double longitude = -1;
 
     @Override
     public void parse(JSONObject json) throws JSONException, ParseException {
@@ -58,6 +61,10 @@ public class RepostStatus implements Parcelable, BaseStatus{
                 hasPic = false;
             } else {//no pic
                 hasPics = hasPic = false;
+            }
+            if(json.optJSONObject("geo") != null){
+                latitude = json.getJSONObject("geo").getJSONArray("coordinates").getDouble(0);
+                longitude = json.getJSONObject("geo").getJSONArray("coordinates").getDouble(1);
             }
         }
     }
@@ -89,6 +96,11 @@ public class RepostStatus implements Parcelable, BaseStatus{
         dest.writeList(stringArrayData);
 
         dest.writeParcelable(user, flags);
+
+        dest.writeDoubleArray(new double[]{
+                latitude,
+                longitude
+        });
     }
 
     public static final Creator<RepostStatus> CREATOR = new Creator<RepostStatus>() {
@@ -118,6 +130,11 @@ public class RepostStatus implements Parcelable, BaseStatus{
             repostStatus.pics = stringArrayData.get(1);
 
             repostStatus.user = source.readParcelable(UserInfo.class.getClassLoader());
+
+            double[] doubles = new double[2];
+            source.readDoubleArray(doubles);
+            repostStatus.latitude = doubles[0];
+            repostStatus.longitude = doubles[1];
 
             return repostStatus;
         }
@@ -154,6 +171,9 @@ public class RepostStatus implements Parcelable, BaseStatus{
             repostStatus.hasPics = repostStatus.hasPic = false;
         }
 
+        repostStatus.latitude = cursor.getDouble(cursor.getColumnIndex(RepostStatusDBInfo.LAT));
+        repostStatus.longitude = cursor.getDouble(cursor.getColumnIndex(RepostStatusDBInfo.LONG));
+
         return repostStatus;
     }
 
@@ -169,6 +189,8 @@ public class RepostStatus implements Parcelable, BaseStatus{
         repostStatus.hasPic = status.hasPic;
         repostStatus.hasPics = status.hasPics;
         repostStatus.pics = status.pics;
+        repostStatus.latitude = status.latitude;
+        repostStatus.longitude = status.longitude;
         return repostStatus;
     }
 }

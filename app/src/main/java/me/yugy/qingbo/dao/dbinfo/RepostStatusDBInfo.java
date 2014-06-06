@@ -19,6 +19,8 @@ public class RepostStatusDBInfo implements BaseColumns {
     public static final String COMMENT_COUNT = "comment_count";
     public static final String REPOST_COUNT = "repost_count";
     public static final String PICS = "pics";
+    public static final String LAT = "lat";
+    public static final String LONG = "long";
 
     public static final SQLiteTable TABLE = new SQLiteTable(RepostStatusesDataHelper.TABLE_NAME)
             .addColumn(ID, Column.Constraint.UNIQUE, Column.DataType.INTEGER)
@@ -28,6 +30,8 @@ public class RepostStatusDBInfo implements BaseColumns {
             .addColumn(TIME, Column.DataType.INTEGER)
             .addColumn(COMMENT_COUNT, Column.DataType.INTEGER)
             .addColumn(REPOST_COUNT, Column.DataType.INTEGER)
-            .addColumn(PICS, Column.DataType.TEXT);
+            .addColumn(PICS, Column.DataType.TEXT)
+            .addColumn(LAT, Column.DataType.REAL)
+            .addColumn(LONG, Column.DataType.REAL);
 
 }

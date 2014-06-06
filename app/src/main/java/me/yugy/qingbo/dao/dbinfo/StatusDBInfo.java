@@ -21,6 +21,8 @@ public class StatusDBInfo implements BaseColumns {
     public static final String PICS = "pics";
     public static final String REPOST_STATUS_ID = "repost_json";
     public static final String TYPE = "type";
+    public static final String LAT = "lat";
+    public static final String LONG = "long";
 
     public static final SQLiteTable TABLE = new SQLiteTable(StatusesDataHelper.TABLE_NAME)
             .addColumn(ID, Column.Constraint.UNIQUE, Column.DataType.INTEGER)
@@ -32,6 +34,8 @@ public class StatusDBInfo implements BaseColumns {
             .addColumn(REPOST_COUNT, Column.DataType.INTEGER)
             .addColumn(PICS, Column.DataType.TEXT)
             .addColumn(REPOST_STATUS_ID, Column.DataType.INTEGER)
-            .addColumn(TYPE, Column.DataType.INTEGER);
+            .addColumn(TYPE, Column.DataType.INTEGER)
+            .addColumn(LAT, Column.DataType.REAL)
+            .addColumn(LONG, Column.DataType.REAL);
 
 }

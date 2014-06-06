@@ -11,14 +11,9 @@ import me.yugy.qingbo.R;
  * Created by yugy on 13-11-7.
  */
 public class SelectorImageView extends GifIconImageView{
-    public SelectorImageView(Context context) {
-        super(context);
-        init();
-    }
 
     public SelectorImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public SelectorImageView(Context context, AttributeSet attrs, int defStyle) {

@@ -1,4 +1,4 @@
-package me.yugy.qingbo.view;
+package me.yugy.qingbo.view.image;
 
 import android.content.Context;
 import android.graphics.Canvas;

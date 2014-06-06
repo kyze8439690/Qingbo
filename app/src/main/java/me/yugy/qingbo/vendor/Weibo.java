@@ -21,6 +21,8 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -39,8 +41,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
+import me.yugy.qingbo.service.WeiboQueueService;
 import me.yugy.qingbo.type.UserInfo;
 import me.yugy.qingbo.utils.DebugUtils;
+
+import static me.yugy.qingbo.service.WeiboQueueService.*;
 
 /**
  * Created by yugy on 2014/3/29.
@@ -509,23 +514,135 @@ public class Weibo {
         });
     }
 
-    public static JSONObject syncNewStatusOnlyText(Context context, String status) throws IOException {
+    public static JSONObject syncNewStatusOnlyText(Context context, String status, double latitude, double longitude) throws IOException {
         try {
             URL url = new URL(WeiboApiUrl.STATUS_UPDATE);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(10000);
             conn.setRequestMethod("POST");
+            conn.setUseCaches(false);
             conn.setDoInput(true);
             conn.setDoOutput(true);
 
             RequestParams params = getParamsWithAccessToken(context);
             params.put("status", URLEncoder.encode(status, "utf-8"));
+            if(latitude != -1 && longitude != -1) {
+                params.put("lat", String.valueOf(latitude));
+                params.put("long", String.valueOf(longitude));
+            }
 
             DataOutputStream out = new DataOutputStream(conn.getOutputStream());
             out.writeBytes(params.toString());
             out.flush();
             out.close();
 
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            StringBuffer result = new StringBuffer();
+
+            while((inputLine = in.readLine()) != null){
+                result.append(inputLine);
+            }
+            in.close();
+
+            DebugUtils.log(result.toString());
+
+            try {
+                JSONObject json = new JSONObject(result.toString());
+                return json;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static JSONObject syncNewStatusWithImage(Context context, String status, String imagePath,
+                                                    double latitude, double longitude,
+                                                    OnProgressListener onProgressListener) throws IOException {
+        try {
+            String twoHyphens = "--";
+            String boundary =  "*****kyze8439690*****";
+            String lineEnd = "\r\n";
+
+            int bytesRead, bytesAvailable, bufferSize, bytesWrite;
+            byte[] buffer;
+            int maxBufferSize = 10 * 1024;
+
+            File file = new File(imagePath);
+            FileInputStream fileInputStream = new FileInputStream(file);
+
+            URL url = new URL(WeiboApiUrl.STATUS_UPLOAD);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setRequestMethod("POST");
+            conn.setUseCaches(false);
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+
+            StringBuilder headBuilder = new StringBuilder();
+            if(latitude != -1 && longitude != -1){
+                headBuilder.append(twoHyphens + boundary + lineEnd);
+                headBuilder.append("Content-Disposition: form-data; name=\"lat\"" + lineEnd + lineEnd);
+                headBuilder.append(URLEncoder.encode(String.valueOf(latitude), "utf-8") + lineEnd);
+
+                headBuilder.append(twoHyphens + boundary + lineEnd);
+                headBuilder.append("Content-Disposition: form-data; name=\"long\"" + lineEnd + lineEnd);
+                headBuilder.append(URLEncoder.encode(String.valueOf(longitude), "utf-8") + lineEnd);
+            }
+
+            headBuilder.append(twoHyphens + boundary + lineEnd);
+            headBuilder.append("Content-Disposition: form-data; name=\"access_token\"" + lineEnd + lineEnd);
+            headBuilder.append(URLEncoder.encode(getAccessToken(context), "utf-8") + lineEnd);
+
+            headBuilder.append(twoHyphens + boundary + lineEnd);
+            headBuilder.append("Content-Disposition: form-data; name=\"status\"" + lineEnd + lineEnd);
+            headBuilder.append(URLEncoder.encode(status, "utf-8") + lineEnd);
+
+            headBuilder.append(twoHyphens + boundary + lineEnd);
+            headBuilder.append("Content-Disposition: form-data; name=\"pic\"; filename=\"" + file.getName() +"\"" + lineEnd);
+            headBuilder.append("Content-Type: image/jpeg" + lineEnd + lineEnd);
+
+            StringBuilder tailBuilder = new StringBuilder(lineEnd + lineEnd);
+            tailBuilder.append(twoHyphens + boundary + twoHyphens + lineEnd);
+
+            long length = headBuilder.length() + file.length() + tailBuilder.length();
+            conn.setRequestProperty("Content-length", String.valueOf(length));
+            conn.setFixedLengthStreamingMode((int)length);
+
+            DataOutputStream outputStream = new DataOutputStream(conn.getOutputStream());
+
+            outputStream.writeBytes(headBuilder.toString());
+
+            bytesWrite = 0;
+            bytesAvailable = fileInputStream.available();
+            bufferSize = Math.min(bytesAvailable, maxBufferSize);
+            buffer = new byte[bufferSize];
+            //write file
+            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            while(bytesRead > 0) {
+                bytesWrite += bytesRead;
+                outputStream.write(buffer, 0, bufferSize);
+                int progress = (int) (bytesWrite * 100 / file.length());
+                onProgressListener.onProgressChange(progress);
+                bytesAvailable = fileInputStream.available();
+                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            }
+
+            outputStream.writeBytes(tailBuilder.toString());
+
+            outputStream.flush();
+            outputStream.close();
+
+            onProgressListener.onProgressChange(100);
+
+            //read response
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String inputLine;
             StringBuffer result = new StringBuffer();
@@ -567,6 +684,7 @@ public class Weibo {
         public static final String STATUS_HOME_TIMELINE = "https://api.weibo.com/2/statuses/home_timeline.json";
         public static final String STATUS_USER_TIMELINE = "https://api.weibo.com/2/statuses/user_timeline.json";
         public static final String STATUS_UPDATE = "https://api.weibo.com/2/statuses/update.json";
+        public static final String STATUS_UPLOAD = "https://upload.api.weibo.com/2/statuses/upload.json";
         public static final String USER_SHOW = "https://api.weibo.com/2/users/show.json";
         public static final String OAUTH2_ACCESS_TOKEN = "https://api.weibo.com/oauth2/access_token";
         public static final String OAUTH2_AUTHORIZE = "https://api.weibo.com/oauth2/authorize";

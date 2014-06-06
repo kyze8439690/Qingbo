@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -14,7 +13,6 @@ import android.widget.BaseAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 
-import com.google.analytics.containertag.common.Key;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
@@ -70,6 +68,12 @@ public class MentionListPopupWindow extends ListPopupWindow implements AdapterVi
 
     public void setOnMentionSelectListener(OnMentionSelectListener onMentionSelectListener) {
         mOnMentionSelectListener = onMentionSelectListener;
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        getListView().setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), false, true));
     }
 
     public interface OnMentionSelectListener{
@@ -133,6 +137,9 @@ public class MentionListPopupWindow extends ListPopupWindow implements AdapterVi
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if(data.getCount() == 0){
+            dismiss();
+        }
         mMentionAdapter.changeCursor(data);
     }
 

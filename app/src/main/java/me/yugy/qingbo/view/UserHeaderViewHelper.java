@@ -18,6 +18,7 @@ import me.yugy.qingbo.R;
 import me.yugy.qingbo.tasker.FriendShipTasker;
 import me.yugy.qingbo.type.UserInfo;
 import me.yugy.qingbo.utils.ScreenUtils;
+import me.yugy.qingbo.view.image.CoverImageView;
 
 /**
  * Created by yugy on 2014/4/26.

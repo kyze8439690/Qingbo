@@ -52,6 +52,9 @@ public class RepostStatusesDataHelper extends BaseDataHelper implements BaseStat
 
         values.put(RepostStatusDBInfo.PICS, ArrayUtils.convertArrayToString(repostStatus.pics));
         values.put(RepostStatusDBInfo.PICS, ArrayUtils.convertArrayToString(repostStatus.pics));
+
+        values.put(RepostStatusDBInfo.LAT, repostStatus.latitude);
+        values.put(RepostStatusDBInfo.LONG, repostStatus.longitude);
         return values;
     }
 

@@ -82,4 +82,19 @@
         <item name="android:src">@drawable/default_head</item>
     </style>
 
+    <style name="TimelineLocationText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:text">I am here...</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#ff427fed</item>
+        <item name="android:background">@drawable/list_selector_holo</item>
+        <item name="android:drawableLeft">@drawable/ic_location_red_12</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
 </resources>

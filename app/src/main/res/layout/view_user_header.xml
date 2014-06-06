@@ -4,7 +4,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <me.yugy.qingbo.view.CoverImageView
+    <me.yugy.qingbo.view.image.CoverImageView
         android:id="@+id/cover_image"
         android:layout_width="match_parent"
         android:layout_height="225dp"

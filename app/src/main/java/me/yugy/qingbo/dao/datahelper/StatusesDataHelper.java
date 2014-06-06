@@ -61,6 +61,9 @@ public class StatusesDataHelper extends BaseDataHelper implements BaseStatusesDa
 
         values.put(StatusDBInfo.TYPE, status.type);
 
+        values.put(StatusDBInfo.LAT, status.latitude);
+        values.put(StatusDBInfo.LONG, status.longitude);
+
         return values;
     }
 

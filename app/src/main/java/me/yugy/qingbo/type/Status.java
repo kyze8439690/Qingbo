@@ -35,6 +35,8 @@ public class Status implements Parcelable, BaseStatus{
     public String[] pics;
     public RepostStatus repostStatus = null;
     public int type = -1;
+    public double latitude = -1;
+    public double longitude = -1;
 
     public void parse(JSONObject json) throws JSONException, ParseException {
         id = json.getLong("id");
@@ -68,6 +70,10 @@ public class Status implements Parcelable, BaseStatus{
             } else {
                 repostStatus = null;
             }
+            if(json.optJSONObject("geo") != null){
+                latitude = json.getJSONObject("geo").getJSONArray("coordinates").getDouble(0);
+                longitude = json.getJSONObject("geo").getJSONArray("coordinates").getDouble(1);
+            }
         }
         type = getType();
     }
@@ -86,6 +92,8 @@ public class Status implements Parcelable, BaseStatus{
         status.pics = repostStatus.pics;
         status.repostStatus = null;
         status.type = getType(repostStatus);
+        status.latitude = repostStatus.latitude;
+        status.longitude = repostStatus.longitude;
         return status;
     }
 
@@ -159,6 +167,11 @@ public class Status implements Parcelable, BaseStatus{
 
         dest.writeParcelable(user, flags);
         dest.writeParcelable(repostStatus, flags);
+
+        dest.writeDoubleArray(new double[]{
+                latitude,
+                longitude
+        });
     }
 
     public static final Creator<Status> CREATOR = new Creator<Status>() {
@@ -190,6 +203,11 @@ public class Status implements Parcelable, BaseStatus{
 
             status.user = source.readParcelable(UserInfo.class.getClassLoader());
             status.repostStatus = source.readParcelable(RepostStatus.class.getClassLoader());
+
+            double[] doubles = new double[2];
+            source.readDoubleArray(doubles);
+            status.latitude = doubles[0];
+            status.longitude = doubles[1];
 
             return status;
         }
@@ -234,6 +252,9 @@ public class Status implements Parcelable, BaseStatus{
         }
 
         status.type = cursor.getInt(cursor.getColumnIndex(StatusDBInfo.TYPE));
+
+        status.latitude = cursor.getDouble(cursor.getColumnIndex(StatusDBInfo.LAT));
+        status.longitude = cursor.getDouble(cursor.getColumnIndex(StatusDBInfo.LONG));
 
         return status;
     }

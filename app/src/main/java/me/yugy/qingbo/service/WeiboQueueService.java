@@ -7,23 +7,16 @@ import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.SyncHttpClient;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.broadcast.RefreshTimelineBroadcastReceiver;
-import me.yugy.qingbo.dao.datahelper.StatusesDataHelper;
 import me.yugy.qingbo.intent.NewStatusIntent;
-import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.vendor.Weibo;
@@ -76,10 +69,16 @@ public class WeiboQueueService extends IntentService{
      */
     @Override
     protected void onHandleIntent(Intent intent) {
-        if(intent.getAction().equals(NewStatusIntent.ACTION_SEND_WEIBO_ONLY_TEXT)
-                || intent.getAction().equals(NewStatusIntent.ACTION_SEND_WEIBO_WITH_IMAGE)){
+        if(intent.getAction().equals(NewStatusIntent.ACTION_SEND_WEIBO_ONLY_TEXT)){
             try {
-                newWeibo(intent);
+                newWeiboOnlyText(intent);
+            } catch (Exception e) {
+                e.printStackTrace();
+                showToast("Send weibo failed.");
+            }
+        }else if(intent.getAction().equals(NewStatusIntent.ACTION_SEND_WEIBO_WITH_IMAGE)){
+            try {
+                newWeiboWithImage(intent);
             } catch (Exception e) {
                 e.printStackTrace();
                 showToast("Send weibo failed.");
@@ -108,19 +107,51 @@ public class WeiboQueueService extends IntentService{
         mNotificationManager.notify(NEW_WEIBO_NOTIFY_ID, notification);
     }
 
-    private void newWeibo(Intent intent) throws InterruptedException, ExecutionException, JSONException, IOException, ParseException {
+    private void updateNewWeiboNotification(int progress){
+        boolean indeterminate = progress == 100;
+        Notification notification = new NotificationCompat.Builder(this)
+                .setContentTitle("Sending New Weibo...")
+                .setContentText(String.format("There is %d weibo sending in the background", mNewWeiboQueueNum))
+                .setOngoing(true)
+                .setProgress(100, progress, indeterminate)
+                .setNumber(mNewWeiboQueueNum)
+                .setSmallIcon(R.drawable.ic_stat_upload)
+                .build();
+        mNotificationManager.notify(NEW_WEIBO_NOTIFY_ID, notification);
+    }
+
+    private void newWeiboOnlyText(Intent intent) throws InterruptedException, ExecutionException, JSONException, IOException, ParseException {
 
         //send new weibo synchronously
-        JSONObject result = Weibo.syncNewStatusOnlyText(this, intent.getStringExtra("text"));
+        JSONObject result = Weibo.syncNewStatusOnlyText(this, intent.getStringExtra("text"),
+                intent.getDoubleExtra("latitude", -1), intent.getDoubleExtra("longitude", -1));
+
         handleNewWeiboResult(result);
-
         mNewWeiboQueueNum--;
-
         if(mNewWeiboQueueNum == 0){
             mNotificationManager.cancel(NEW_WEIBO_NOTIFY_ID);
         }else{
             newOrUpdateNewWeiboNotification();
         }
+    }
+
+    private void newWeiboWithImage(Intent intent) throws IOException {
+        JSONObject result = Weibo.syncNewStatusWithImage(this, intent.getStringExtra("text"), intent.getStringExtra("image"),
+                intent.getDoubleExtra("latitude", -1), intent.getDoubleExtra("longitude", -1), new OnProgressListener(){
+                    @Override
+                    public void onProgressChange(int progress) {
+                        DebugUtils.log("update upload progress: " + progress);
+                        updateNewWeiboNotification(progress);
+                    }});
+
+        handleNewWeiboResult(result);
+        mNewWeiboQueueNum--;
+        if(mNewWeiboQueueNum == 0){
+            mNotificationManager.cancel(NEW_WEIBO_NOTIFY_ID);
+        }else{
+            newOrUpdateNewWeiboNotification();
+        }
+
     }
 
     private void handleNewWeiboResult(JSONObject result) {
@@ -141,5 +172,9 @@ public class WeiboQueueService extends IntentService{
     public void onDestroy() {
         DebugUtils.log("WeiboQueueService onDestroy");
         super.onDestroy();
+    }
+
+    public interface OnProgressListener{
+        public void onProgressChange(int progress);
     }
 }

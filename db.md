@@ -27,7 +27,7 @@
 - uid
 - screen_name
 - avatar
-- index
+- index (中文 + 拼音 + 首字母组合 ：' 杨辉 yanghui yh ')
 
 ----------
 

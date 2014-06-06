@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ import me.yugy.qingbo.dao.dbinfo.StatusDBInfo;
 import me.yugy.qingbo.listener.OnLoadMoreListener;
 import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.utils.DebugUtils;
+import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.NoScrollGridView;
@@ -189,8 +191,11 @@ public class TimelineStatusAdapter extends CursorAdapter{
         public LinkTextView text;
         public TextView commentCount;
         public TextView repostCount;
+        public TextView location;
 
         private String mUserName;
+
+        protected double mLatitude, mLongitude = -1;
 
         public NoRepostNoPicViewHolder(View view){
             head = (HeadIconImageView) view.findViewById(R.id.status_listitem_head);
@@ -200,6 +205,9 @@ public class TimelineStatusAdapter extends CursorAdapter{
             text = (LinkTextView) view.findViewById(R.id.status_listitem_text);
             commentCount = (TextView) view.findViewById(R.id.status_listitem_comment_count);
             repostCount = (TextView) view.findViewById(R.id.status_listitem_repost_count);
+            location = (TextView) view.findViewById(R.id.status_listitem_location);
+            head.setOnClickListener(this);
+            location.setOnClickListener(this);
         }
 
         public void parse(Status status){
@@ -224,7 +232,19 @@ public class TimelineStatusAdapter extends CursorAdapter{
             }else {
                 repostCount.setText(String.valueOf(status.repostCount));
             }
-            head.setOnClickListener(this);
+            checkAndShowLocation(status);
+        }
+
+        public void checkAndShowLocation(Status status){
+            if(status.latitude != -1 && status.longitude != -1){
+                //show status location
+                mLatitude = status.latitude;
+                mLongitude = status.longitude;
+                location.setVisibility(View.VISIBLE);
+            }else{
+                //hide location
+                location.setVisibility(View.GONE);
+            }
         }
 
         @Override
@@ -233,6 +253,14 @@ public class TimelineStatusAdapter extends CursorAdapter{
                 Intent intent = new Intent(mContext, UserActivity.class);
                 intent.putExtra("userName", mUserName);
                 mContext.startActivity(intent);
+            }else if(v.getId() == R.id.status_listitem_location){
+                String uri = "geo:" + mLatitude + "," + mLongitude;
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                if(intent.resolveActivity(mContext.getPackageManager()) != null){
+                    mContext.startActivity(intent);
+                }else{
+                    MessageUtils.toast(mContext, "There is no map application in the device.");
+                }
             }
         }
     }
@@ -253,6 +281,34 @@ public class TimelineStatusAdapter extends CursorAdapter{
             super.parse(status);
             repostName.setText(String.format("此微博最初是由@%s 分享的", status.repostStatus.user.screenName));
             repostText.setText(status.repostStatus.text);
+        }
+
+        @Override
+        public void checkAndShowLocation(Status status) {
+            if(status.repostStatus != null){
+                if(status.repostStatus.latitude != -1 && status.repostStatus.longitude != -1){
+                    //show repost status location
+                    mLatitude = status.repostStatus.latitude;
+                    mLongitude = status.repostStatus.longitude;
+                    location.setVisibility(View.VISIBLE);
+                }else if(status.latitude != -1 && status.longitude != -1){
+                    //show status location
+                    mLatitude = status.latitude;
+                    mLongitude = status.longitude;
+                    location.setVisibility(View.VISIBLE);
+                }else{
+                    //hide location
+                    location.setVisibility(View.GONE);
+                }
+            }else if(status.latitude != -1 && status.longitude != -1){
+                //show status location
+                mLatitude = status.latitude;
+                mLongitude = status.longitude;
+                location.setVisibility(View.VISIBLE);
+            }else{
+                //hide location
+                location.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -328,6 +384,34 @@ public class TimelineStatusAdapter extends CursorAdapter{
                 mContext.startActivity(intent);
             }
         }
+
+        @Override
+        public void checkAndShowLocation(Status status) {
+            if(status.repostStatus != null){
+                if(status.repostStatus.latitude != -1 && status.repostStatus.longitude != -1){
+                    //show repost status location
+                    mLatitude = status.repostStatus.latitude;
+                    mLongitude = status.repostStatus.longitude;
+                    location.setVisibility(View.VISIBLE);
+                }else if(status.latitude != -1 && status.longitude != -1){
+                    //show status location
+                    mLatitude = status.latitude;
+                    mLongitude = status.longitude;
+                    location.setVisibility(View.VISIBLE);
+                }else{
+                    //hide location
+                    location.setVisibility(View.GONE);
+                }
+            }else if(status.latitude != -1 && status.longitude != -1){
+                //show status location
+                mLatitude = status.latitude;
+                mLongitude = status.longitude;
+                location.setVisibility(View.VISIBLE);
+            }else{
+                //hide location
+                location.setVisibility(View.GONE);
+            }
+        }
     }
 
     private class NoRepostMultiPicsViewHolder extends NoRepostNoPicViewHolder implements AdapterView.OnItemClickListener{
@@ -387,6 +471,34 @@ public class TimelineStatusAdapter extends CursorAdapter{
             intent.putExtra("pics", picsUrl);
             intent.putExtra("position", position);
             view.getContext().startActivity(intent);
+        }
+
+        @Override
+        public void checkAndShowLocation(Status status) {
+            if(status.repostStatus != null){
+                if(status.repostStatus.latitude != -1 && status.repostStatus.longitude != -1){
+                    //show repost status location
+                    mLatitude = status.repostStatus.latitude;
+                    mLongitude = status.repostStatus.longitude;
+                    location.setVisibility(View.VISIBLE);
+                }else if(status.latitude != -1 && status.longitude != -1){
+                    //show status location
+                    mLatitude = status.latitude;
+                    mLongitude = status.longitude;
+                    location.setVisibility(View.VISIBLE);
+                }else{
+                    //hide location
+                    location.setVisibility(View.GONE);
+                }
+            }else if(status.latitude != -1 && status.longitude != -1){
+                //show status location
+                mLatitude = status.latitude;
+                mLongitude = status.longitude;
+                location.setVisibility(View.VISIBLE);
+            }else{
+                //hide location
+                location.setVisibility(View.GONE);
+            }
         }
     }
 }

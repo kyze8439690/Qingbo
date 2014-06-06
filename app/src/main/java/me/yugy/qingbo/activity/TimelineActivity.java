@@ -9,7 +9,6 @@ import android.content.Loader;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v4.widget.DrawerLayout;
 import android.view.MenuItem;
 import android.view.View;
@@ -66,6 +65,8 @@ public class TimelineActivity extends Activity implements
     private RefreshTimelineBroadcastReceiver mBroadcastReceiver;
 
     private boolean mIsBroadcastReceiverRegistered = false;
+
+    private String mImagePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,7 +155,7 @@ public class TimelineActivity extends Activity implements
                 DebugUtils.log("解析微博数据");
                 ArrayList<Status> statuses = new ArrayList<Status>();
                 int statusesSize = response.length();
-                if(statusesSize == 20){
+                if(statusesSize >= 20){
                     mStatusesDataHelper.deleteAll();
                 }
                 try {
@@ -267,10 +268,12 @@ public class TimelineActivity extends Activity implements
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_bottombar_photo:
-
+                startActivityForResult(new Intent(this, PickPhotoSourceActivity.class), NewStatusActivity.REQUEST_PICK_IMAGE);
                 break;
             case R.id.btn_bottombar_location:
-
+                Intent intent = new Intent(this, NewStatusActivity.class);
+                intent.putExtra("getLocation", true);
+                startActivity(intent);
                 break;
             case R.id.btn_bottombar_text:
                 startActivity(new Intent(this, NewStatusActivity.class));
@@ -280,6 +283,21 @@ public class TimelineActivity extends Activity implements
                 getNewData();
                 break;
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == NewStatusActivity.REQUEST_PICK_IMAGE && resultCode == RESULT_OK){
+            mImagePath = data.getStringExtra("imagePath");
+            newPhotoStatus();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void newPhotoStatus(){
+        Intent intent = new Intent(this, NewStatusActivity.class);
+        intent.putExtra("imagePath", mImagePath);
+        startActivity(intent);
     }
 
     @Override
