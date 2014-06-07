@@ -8,6 +8,9 @@ import android.content.Loader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -31,27 +34,33 @@ import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.gif.GifDrawable;
-import me.yugy.qingbo.view.image.ScaleImageView;
+import me.yugy.qingbo.view.image.SubsamplingScaleImageView;
 
 /**
  * Created by yugy on 2014/4/18.
  */
-public class PicFragment extends Fragment implements LoaderManager.LoaderCallbacks<File>{
+public class PicFragment extends Fragment implements LoaderManager.LoaderCallbacks<File>, View.OnClickListener {
 
-    private static final DisplayImageOptions OPTIONS = new DisplayImageOptions.Builder()
-            .cacheInMemory(false)
-            .cacheOnDisc(true)
-            .showImageOnFail(R.drawable.ic_image_fail)
-            .displayer(new FadeInBitmapDisplayer(600))
-            .build();
-
-    private ScaleImageView mScaleImageView;
+    private SubsamplingScaleImageView mScaleImageView;
     private ImageView mImageView;
     private ProgressBar mProgressBar;
     private String mPicUrl;
 
-    public PicFragment(String picUrl){
-        mPicUrl = picUrl;
+    private int mRotateOrientation = 0;
+
+    public static PicFragment getInstance(String picUrl){
+        PicFragment picFragment = new PicFragment();
+        Bundle argument = new Bundle();
+        argument.putString("picUrl", picUrl);
+        picFragment.setArguments(argument);
+        return picFragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mPicUrl = getArguments().getString("picUrl");
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -60,9 +69,11 @@ public class PicFragment extends Fragment implements LoaderManager.LoaderCallbac
         if(TextUtils.isGifLink(mPicUrl)){
             rootView = inflater.inflate(R.layout.fragment_gif, container, false);
             mImageView = (ImageView) rootView.findViewById(R.id.image);
+            mImageView.setOnClickListener(this);
         }else {
             rootView = inflater.inflate(R.layout.fragment_pic, container, false);
-            mScaleImageView = (ScaleImageView) rootView.findViewById(R.id.image);
+            mScaleImageView = (SubsamplingScaleImageView) rootView.findViewById(R.id.image);
+            mScaleImageView.setOnClickListener(this);
         }
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress);
         return rootView;
@@ -71,46 +82,28 @@ public class PicFragment extends Fragment implements LoaderManager.LoaderCallbac
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         getLoaderManager().initLoader(0, null, this);
-//        ImageLoader.getInstance().loadImage(mPicUrl, new ImageSize(0, 0), OPTIONS, new SimpleImageLoadingListener(){
-//            @Override
-//            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                super.onLoadingComplete(imageUri, view, loadedImage);
-//
-//                if(mProgressBar.isShown()){
-//                    mProgressBar.setProgress(100);
-//                    mProgressBar.setVisibility(View.INVISIBLE);
-//                }
-//
-//                File file = ImageLoader.getInstance().getDiscCache().get(imageUri);
-//                try {
-//                    if (TextUtils.isGifLink(mPicUrl)) {
-//                        GifDrawable gifDrawable = new GifDrawable(file);
-//                        mImageView.setImageDrawable(gifDrawable);
-//                        gifDrawable.start();
-//                    } else {
-//                        mScaleImageView.setImageFile(file.getAbsolutePath());
-//                    }
-//                }catch (IOException e){
-//                    e.printStackTrace();
-//                    MessageUtils.toast(getActivity(), "IO error");
-//                }
-//            }
-//        }, new ImageLoadingProgressListener() {
-//            @Override
-//            public void onProgressUpdate(String imageUri, View view, int current, int total) {
-//                DebugUtils.log("Progress: " + current + ", total: " + total);
-//                if(current == total){
-//                    mProgressBar.setVisibility(View.INVISIBLE);
-//                }else{
-//                    if(!mProgressBar.isShown()){
-//                        mProgressBar.setVisibility(View.VISIBLE);
-//                    }
-//                    mProgressBar.setProgress(current * 100 / total);
-//                }
-//            }
-//        });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.pic, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.rotate){
+            if(mScaleImageView != null) {
+                if (mRotateOrientation == 270) {
+                    mRotateOrientation = 0;
+                } else {
+                    mRotateOrientation += 90;
+                }
+                mScaleImageView.setOrientation(mRotateOrientation);
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -150,6 +143,11 @@ public class PicFragment extends Fragment implements LoaderManager.LoaderCallbac
     @Override
     public void onLoaderReset(Loader<File> loader) {
 
+    }
+
+    @Override
+    public void onClick(View v) {
+        getActivity().finish();
     }
 
     private abstract static class PicDownLoadTaskLoader extends AsyncTaskLoader<File>{

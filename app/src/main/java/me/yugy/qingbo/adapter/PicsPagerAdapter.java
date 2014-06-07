@@ -20,7 +20,7 @@ public class PicsPagerAdapter extends FragmentStatePagerAdapter{
 
     @Override
     public Fragment getItem(int position) {
-        return new PicFragment(mPics[position].replace("thumbnail", "large"));
+        return PicFragment.getInstance(mPics[position].replace("thumbnail", "large"));
     }
 
     @Override
