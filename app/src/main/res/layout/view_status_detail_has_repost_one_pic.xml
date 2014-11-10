@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingRight="0dp"
+                android:paddingTop="14dp"
+                android:paddingLeft="14dp"
+                android:paddingBottom="14dp"
+                android:background="#FFF"
+                android:descendantFocusability="blocksDescendants"
+    >
+
+    <me.yugy.qingbo.view.image.HeadIconImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/head"
+        app:corner_radius="50dp"
+        style="@style/RoundHeadIconStyle"
+        />
+
+    <me.yugy.qingbo.view.text.RelativeTimeTextView
+        android:id="@+id/status_listitem_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#CCC"
+        android:textSize="12sp"
+        android:layout_toRightOf="@id/head"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_alignBottom="@id/head"
+        android:text="@string/just_now"
+        />
+
+    <me.yugy.qingbo.view.text.LinkTextView
+        android:id="@+id/status_listitem_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/head"
+        android:layout_marginRight="14dp"
+        android:layout_marginTop="10dp"
+        android:text="text"
+        />
+
+    <TextView
+        android:id="@+id/status_listitem_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:layout_toRightOf="@id/head"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:text="name"
+        />
+
+    <View
+        android:id="@+id/status_listitem_line"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#CDCDCD"
+        android:layout_below="@id/status_listitem_text"
+        android:layout_marginTop="14dp"
+        android:layout_marginRight="14dp"
+        />
+
+    <me.yugy.qingbo.view.text.LinkTextView
+        android:id="@+id/status_listitem_repost_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/status_listitem_line"
+        android:layout_marginTop="14dp"
+        android:layout_marginRight="14dp"
+        android:text="this status is originally post by repost_name"
+        />
+
+    <me.yugy.qingbo.view.text.LinkTextView
+        android:id="@+id/status_listitem_repost_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/status_listitem_repost_name"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="14dp"
+        android:text="repost text"
+        />
+
+    <me.yugy.qingbo.view.image.SelectorImageView
+        android:id="@+id/status_listitem_pic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="50dp"
+        android:maxWidth="250dp"
+        android:maxHeight="200dp"
+        android:layout_below="@id/status_listitem_repost_text"
+        android:layout_marginTop="14dp"
+        android:layout_marginRight="14dp"
+        />
+
+    <TextView
+        android:id="@+id/status_listitem_location"
+        style="@style/TimelineLocationText"
+        android:layout_below="@id/status_listitem_pic"
+        />
+
+    <TextView
+        android:id="@+id/status_listitem_comment_count"
+        style="@style/ActionButtonStyle"
+        android:layout_below="@id/status_listitem_location"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="14dp"
+        android:drawableLeft="@drawable/timeline_listitem_comment_icon"
+        />
+
+    <TextView
+        android:id="@+id/status_listitem_repost_count"
+        style="@style/ActionButtonStyle"
+        android:layout_toRightOf="@id/status_listitem_comment_count"
+        android:layout_alignTop="@id/status_listitem_comment_count"
+        android:drawableLeft="@drawable/timeline_listitem_repost_icon"
+        />
+
+</RelativeLayout>

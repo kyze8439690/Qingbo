@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="actionbar_height">56dp</dimen>
     <dimen name="bottom_height">64dp</dimen>
+    <dimen name="ptr_progress_bar_separator_length">8dp</dimen>
+    <dimen name="loading_stroke_width">4dp</dimen>
 </resources>

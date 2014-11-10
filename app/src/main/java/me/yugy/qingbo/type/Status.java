@@ -26,7 +26,6 @@ public class Status implements Parcelable, BaseStatus{
     public long id;
     public SpannableString text;
     public UserInfo user = new UserInfo();
-    public String[] topics;
     public long time;
     public int commentCount= 0;
     public int repostCount = 0;
@@ -37,20 +36,19 @@ public class Status implements Parcelable, BaseStatus{
     public int type = -1;
     public double latitude = -1;
     public double longitude = -1;
+    public double[] location = null;
 
     public void parse(JSONObject json) throws JSONException, ParseException {
         id = json.getLong("id");
         text = TextUtils.parseStatusText(json.getString("text"));
         time = TextUtils.parseDate(json.getString("created_at"));
         if(json.has("deleted")){
-            topics = new String[0];
             pics = new String[0];
             commentCount = 0;
             repostCount = 0;
             hasPic = hasPics = false;
         }else {
             user.parse(json.getJSONObject("user"));
-            topics = TextUtils.getTopic(json.getString("text"));
             commentCount = json.getInt("comments_count");
             repostCount = json.getInt("reposts_count");
             pics = ArrayUtils.getWeiboPicArray(json.getJSONArray("pic_urls"));
@@ -66,13 +64,13 @@ public class Status implements Parcelable, BaseStatus{
             if (json.has("retweeted_status")) {
                 repostStatus = new RepostStatus();
                 repostStatus.parse(json.getJSONObject("retweeted_status"));
-                topics = ArrayUtils.concatenate(topics, repostStatus.topics);
             } else {
                 repostStatus = null;
             }
             if(json.optJSONObject("geo") != null){
                 latitude = json.getJSONObject("geo").getJSONArray("coordinates").getDouble(0);
                 longitude = json.getJSONObject("geo").getJSONArray("coordinates").getDouble(1);
+                addLocation();
             }
         }
         type = getType();
@@ -84,7 +82,6 @@ public class Status implements Parcelable, BaseStatus{
         status.text = repostStatus.text;
         status.time = repostStatus.time;
         status.user = repostStatus.user;
-        status.topics = repostStatus.topics;
         status.commentCount = repostStatus.commentCount;
         status.repostCount = repostStatus.repostCount;
         status.hasPic = repostStatus.hasPic;
@@ -94,7 +91,26 @@ public class Status implements Parcelable, BaseStatus{
         status.type = getType(repostStatus);
         status.latitude = repostStatus.latitude;
         status.longitude = repostStatus.longitude;
+        status.addLocation();
         return status;
+    }
+
+    private void addLocation(){
+        if(repostStatus != null){
+            if(repostStatus.latitude != -1 && repostStatus.longitude != -1){
+                location = new double[2];
+                location[0] = repostStatus.latitude;
+                location[1] = repostStatus.longitude;
+            }else if(latitude != -1 && longitude != -1){
+                location = new double[2];
+                location[0] = latitude;
+                location[1] = longitude;
+            }
+        }else if(latitude != -1 && longitude != -1){
+            location = new double[2];
+            location[0] = latitude;
+            location[1] = longitude;
+        }
     }
 
     public int getType(){
@@ -143,72 +159,43 @@ public class Status implements Parcelable, BaseStatus{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-
-        dest.writeLongArray(new long[]{
-                id,
-                time
-        });
-        dest.writeIntArray(new int[]{
-                commentCount,
-                repostCount,
-                type
-        });
-        dest.writeBooleanArray(new boolean[]{
-                hasPic,
-                hasPics
-        });
-
+        dest.writeLong(id);
+        dest.writeLong(time);
+        dest.writeInt(commentCount);
+        dest.writeInt(repostCount);
+        dest.writeInt(type);
+        dest.writeByte((byte) (hasPic ? 1 : 0));
+        dest.writeByte((byte) (hasPics ? 1 : 0));
         dest.writeString(text.toString());
-
-        ArrayList<String[]> stringArrayData = new ArrayList<String[]>();
-        stringArrayData.add(topics);
-        stringArrayData.add(pics);
-        dest.writeList(stringArrayData);
-
+        dest.writeStringArray(pics);
         dest.writeParcelable(user, flags);
         dest.writeParcelable(repostStatus, flags);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+    }
 
-        dest.writeDoubleArray(new double[]{
-                latitude,
-                longitude
-        });
+    public double[] getLocation() {
+        return location;
     }
 
     public static final Creator<Status> CREATOR = new Creator<Status>() {
         @Override
         public Status createFromParcel(Parcel source) {
             Status status = new Status();
-
-            long[] longs = new long[2];
-            source.readLongArray(longs);
-            status.id = longs[0];
-            status.time = longs[1];
-
-            int[] ints = new int[3];
-            source.readIntArray(ints);
-            status.commentCount = ints[0];
-            status.repostCount = ints[1];
-            status.type = ints[2];
-
-            boolean[] booleans = new boolean[2];
-            source.readBooleanArray(booleans);
-            status.hasPic = booleans[0];
-            status.hasPics = booleans[1];
-
+            status.id = source.readLong();
+            status.time = source.readLong();
+            status.commentCount = source.readInt();
+            status.repostCount = source.readInt();
+            status.type = source.readInt();
+            status.hasPic = source.readByte() != 0;
+            status.hasPics = source.readByte() != 0;
             status.text = TextUtils.parseStatusText(source.readString());
-
-            ArrayList<String[]> stringArrayData = source.readArrayList(String[].class.getClassLoader());
-            status.topics = stringArrayData.get(0);
-            status.pics = stringArrayData.get(1);
-
+            status.pics = source.createStringArray();
             status.user = source.readParcelable(UserInfo.class.getClassLoader());
             status.repostStatus = source.readParcelable(RepostStatus.class.getClassLoader());
-
-            double[] doubles = new double[2];
-            source.readDoubleArray(doubles);
-            status.latitude = doubles[0];
-            status.longitude = doubles[1];
-
+            status.latitude = source.readDouble();
+            status.longitude = source.readDouble();
+            status.addLocation();
             return status;
         }
 
@@ -224,9 +211,6 @@ public class Status implements Parcelable, BaseStatus{
         status.text = TextUtils.parseStatusText(cursor.getString(cursor.getColumnIndex(StatusDBInfo.TEXT)));
         UserInfoDataHelper userInfoDataHelper = new UserInfoDataHelper(Application.getContext());
         status.user = userInfoDataHelper.select(cursor.getLong(cursor.getColumnIndex(StatusDBInfo.UID)));
-
-        String topicString = cursor.getString(cursor.getColumnIndex(StatusDBInfo.TOPICS));
-        status.topics = ArrayUtils.convertStringToArray(topicString);
 
         status.time = cursor.getLong(cursor.getColumnIndex(StatusDBInfo.TIME));
         status.commentCount = cursor.getInt(cursor.getColumnIndex(StatusDBInfo.COMMENT_COUNT));
@@ -255,6 +239,7 @@ public class Status implements Parcelable, BaseStatus{
 
         status.latitude = cursor.getDouble(cursor.getColumnIndex(StatusDBInfo.LAT));
         status.longitude = cursor.getDouble(cursor.getColumnIndex(StatusDBInfo.LONG));
+        status.addLocation();
 
         return status;
     }

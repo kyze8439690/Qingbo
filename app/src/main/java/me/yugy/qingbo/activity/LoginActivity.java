@@ -70,24 +70,23 @@ public class LoginActivity extends Activity {
                         public void onSuccess(int statusCode, Header[] headers, String uid) {
                             Weibo.getUserInfo(progressDialog.getContext(), Long.decode(uid), new JsonHttpResponseHandler() {
                                 @Override
-                                public void onSuccess(JSONObject response) {
+                                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                                     progressDialog.dismiss();
                                     MessageUtils.toast(LoginActivity.this, "授权成功");
                                     setResult(RESULT_OK);
                                     finish();
-                                    super.onSuccess(response);
+                                    super.onSuccess(statusCode, headers, response);
                                 }
 
                                 @Override
-                                public void onFailure(Throwable e, String content) {
+                                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                                     progressDialog.dismiss();
-                                    MessageUtils.toast(LoginActivity.this, content);
+                                    MessageUtils.toast(LoginActivity.this, responseString);
                                     setResult(RESULT_CANCELED);
                                     finish();
-                                    super.onFailure(e, content);
+                                    super.onFailure(statusCode, headers, responseString, throwable);
                                 }
                             });
-                            super.onSuccess(statusCode, headers, uid);
                         }
 
                         @Override
@@ -95,7 +94,6 @@ public class LoginActivity extends Activity {
                             progressDialog.dismiss();
                             MessageUtils.toast(LoginActivity.this, responseBody);
                             finish();
-                            super.onFailure(statusCode, headers, responseBody, error);
                         }
                     });
                 } else {

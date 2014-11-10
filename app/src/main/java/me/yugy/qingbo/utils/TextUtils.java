@@ -1,5 +1,6 @@
 package me.yugy.qingbo.utils;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -8,6 +9,12 @@ import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Patterns;
 import android.view.View;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.TextHttpResponseHandler;
+
+import org.apache.http.Header;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -74,7 +81,31 @@ public class TextUtils {
             parseString.setSpan(new TouchClickableSpan() {
                 @Override
                 public void onClick(View widget) {
-                    widget.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    final Context context = widget.getContext();
+                    final ProgressDialog progressDialog = new ProgressDialog(context);
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.setMessage("Unwrap url...");
+                    progressDialog.show();
+                    AsyncHttpClient httpClient = new AsyncHttpClient();
+                    httpClient.setEnableRedirects(false);
+                    httpClient.get(context, url, new TextHttpResponseHandler(){
+                        @Override
+                        public void onFailure(int statusCode, Header[] headers, String responseBody, Throwable error) {
+                            if(progressDialog.isShowing()) {
+                                for (Header header : headers) {
+                                    if (header.getName().equals("Location")) {
+                                        String url = header.getValue();
+                                        context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                                        progressDialog.dismiss();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onSuccess(int statusCode, Header[] headers, String responseString) {}
+                    });
                 }
             }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }

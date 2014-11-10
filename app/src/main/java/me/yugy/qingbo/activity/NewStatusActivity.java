@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import me.yugy.qingbo.R;
 import me.yugy.qingbo.dao.datahelper.UserInfoDataHelper;
@@ -64,6 +67,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         AMapLocationListener{
 
     public static final int REQUEST_PICK_IMAGE = 773295428;
+    public static final int REQUEST_EDIT_IMAGE = 88439690;
 
     private DragToDeleteRelativeLayout mDragToDeleteLayout;
     private RoundedImageView mHead;
@@ -140,6 +144,7 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         mAt.setOnClickListener(this);
         mSend.setOnClickListener(this);
         mLocation.setOnClickListener(this);
+        mThumbnail.setOnClickListener(this);
 
         //init send button state
         mSend.setEnabled(mEditText.length() > 0);
@@ -202,7 +207,36 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
                     locate();
                 }
                 break;
+            case R.id.new_status_thumbnail:
+                if(isAviaryInstalled()){
+                    Intent intent = new Intent( "aviary.intent.action.EDIT" );
+                    Uri uri = Uri.parse(mImagePath);
+                    intent.setDataAndType(uri, "image/*"); // required
+                    intent.putExtra("app-id", getPackageName()); // required ( it's your app unique package name )
+                    startActivityForResult(intent, REQUEST_EDIT_IMAGE);
+                }else{
+                    new AlertDialog.Builder(this)
+                            .setMessage("You have to install Aviary to edit the photo.Do you want to install it?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent( Intent.ACTION_VIEW );
+                                    intent.setData( Uri.parse( "market://details?id=com.aviary.android.feather" ) );
+                                    startActivity(intent);
+                                }
+                            }).setNegativeButton("Cancel", null)
+                            .show();
+                }
+                break;
         }
+    }
+
+    private boolean isAviaryInstalled(){
+        Intent intent = new Intent( "aviary.intent.action.EDIT" );
+        intent.setType( "image/*" );
+        List<ResolveInfo> list = getPackageManager()
+                .queryIntentActivities( intent, PackageManager.MATCH_DEFAULT_ONLY );
+        return list.size() > 0;
     }
 
     private void locate(){
@@ -217,6 +251,9 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
         mLatitude = -1;
         mLongitude = -1;
         mLocationManagerProxy.removeUpdates(this);
+        if(mEditText.getText().toString().equals("我在这里")){
+            mEditText.setText("");
+        }
     }
 
     private void showDeleteImageDialog(){
@@ -242,8 +279,11 @@ public class NewStatusActivity extends Activity implements View.OnClickListener,
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == NewStatusActivity.REQUEST_PICK_IMAGE && resultCode == RESULT_OK){
+        if(requestCode == REQUEST_PICK_IMAGE && resultCode == RESULT_OK){
             mImagePath = data.getStringExtra("imagePath");
+            showThumbnail();
+        }else if(requestCode == REQUEST_EDIT_IMAGE && resultCode == RESULT_OK){
+            mImagePath = data.getData().toString();
             showThumbnail();
         }
         super.onActivityResult(requestCode, resultCode, data);

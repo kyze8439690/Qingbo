@@ -44,8 +44,6 @@ public class RepostStatusesDataHelper extends BaseDataHelper implements BaseStat
         values.put(RepostStatusDBInfo.TEXT, repostStatus.text.toString());
         values.put(RepostStatusDBInfo.UID, repostStatus.user.uid);
 
-        values.put(RepostStatusDBInfo.TOPICS, ArrayUtils.convertArrayToString(repostStatus.topics));
-
         values.put(RepostStatusDBInfo.TIME, repostStatus.time);
         values.put(RepostStatusDBInfo.COMMENT_COUNT, repostStatus.commentCount);
         values.put(RepostStatusDBInfo.REPOST_COUNT, repostStatus.repostCount);

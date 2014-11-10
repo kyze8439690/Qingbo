@@ -3,7 +3,7 @@ package me.yugy.qingbo.view;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.net.Uri;
 import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +20,7 @@ import me.yugy.qingbo.activity.PicActivity;
 import me.yugy.qingbo.activity.UserActivity;
 import me.yugy.qingbo.adapter.GridPicsAdapter;
 import me.yugy.qingbo.type.Status;
+import me.yugy.qingbo.utils.MessageUtils;
 import me.yugy.qingbo.utils.NetworkUtils;
 import me.yugy.qingbo.utils.TextUtils;
 import me.yugy.qingbo.view.image.HeadIconImageView;
@@ -56,6 +57,8 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
 
     private String[] mPicsUrl;
     private String mUsername;
+    private double mLatitude;
+    private double mLongitude;
 
     public DetailHeaderViewHelper(Context context){
         mContext = context;
@@ -72,15 +75,14 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
     public View getHeaderView(final Status status){
         int type = getViewType(status);
         View view = LayoutInflater.from(mContext).inflate(getLayoutResourceId(type), null);
-        view.setBackgroundColor(Color.WHITE);
 
-        HeadIconImageView head = (HeadIconImageView) view.findViewById(R.id.status_listitem_head);
+        HeadIconImageView head = (HeadIconImageView) view.findViewById(R.id.head);
         TextView name = (TextView) view.findViewById(R.id.status_listitem_name);
         RelativeTimeTextView time = (RelativeTimeTextView) view.findViewById(R.id.status_listitem_time);
-        TextView topics = (TextView) view.findViewById(R.id.status_listitem_topic);
         LinkTextView text = (LinkTextView) view.findViewById(R.id.status_listitem_text);
         mCommentCountView = (TextView) view.findViewById(R.id.status_listitem_comment_count);
         mRepostCountView = (TextView) view.findViewById(R.id.status_listitem_repost_count);
+        TextView location = (TextView) view.findViewById(R.id.status_listitem_location);
 
         //parse basic data
         ImageLoader.getInstance().displayImage(status.user.avatar, head, HEAD_OPTIONS);
@@ -88,12 +90,6 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
         mUsername = status.user.screenName;
         name.setText(status.user.screenName);
         time.setReferenceTime(status.time);
-        if(status.topics.length != 0){
-            topics.setVisibility(View.VISIBLE);
-            topics.setText(status.topics[0]);
-        }else{
-            topics.setVisibility(View.INVISIBLE);
-        }
         text.setText(status.text);
         if(status.commentCount == 0){
             mCommentCountView.setText("");
@@ -104,6 +100,12 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
             mRepostCountView.setText("");
         }else {
             mRepostCountView.setText(String.valueOf(status.repostCount));
+        }
+        location.setOnClickListener(this);
+        if(status.getLocation() != null){
+            location.setVisibility(View.VISIBLE);
+            mLatitude = status.getLocation()[0];
+            mLongitude = status.getLocation()[1];
         }
 
         //parse different data
@@ -204,12 +206,12 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
 
     private int getLayoutResourceId(int type){
         switch (type){
-            case TYPE_NO_REPOST_NO_PIC: return R.layout.view_status_item_no_repost_no_pic;
-            case TYPE_NO_REPOST_ONE_PIC: return R.layout.view_status_item_no_repost_one_pic;
-            case TYPE_NO_REPOST_MULTI_PICS: return R.layout.view_status_item_no_repost_multi_pics;
-            case TYPE_HAS_REPOST_NO_PIC: return R.layout.view_status_item_has_repost_no_pic;
-            case TYPE_HAS_REPOST_ONE_PIC: return R.layout.view_status_item_has_repost_one_pic;
-            case TYPE_HAS_REPOST_MULTI_PICS: return R.layout.view_status_item_has_repost_multi_pics;
+            case TYPE_NO_REPOST_NO_PIC: return R.layout.view_status_detail_no_repost_no_pic;
+            case TYPE_NO_REPOST_ONE_PIC: return R.layout.view_status_detail_no_repost_one_pic;
+            case TYPE_NO_REPOST_MULTI_PICS: return R.layout.view_status_detail_no_repost_multi_pics;
+            case TYPE_HAS_REPOST_NO_PIC: return R.layout.view_status_detail_has_repost_no_pic;
+            case TYPE_HAS_REPOST_ONE_PIC: return R.layout.view_status_detail_has_repost_one_pic;
+            case TYPE_HAS_REPOST_MULTI_PICS: return R.layout.view_status_detail_has_repost_multi_pics;
             default: return 0;
         }
     }
@@ -217,7 +219,7 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.status_listitem_head:
+            case R.id.head:
                 Intent intent = new Intent(mContext, UserActivity.class);
                 intent.putExtra("userName", mUsername);
                 mContext.startActivity(intent);
@@ -232,6 +234,15 @@ public class DetailHeaderViewHelper implements View.OnClickListener, AdapterView
                 intent = new Intent(mContext, PicActivity.class);
                 intent.putExtra("pics", mPicsUrl);
                 mContext.startActivity(intent);
+                break;
+            case R.id.status_listitem_location:
+                String uri = "geo:0,0?q=" + Uri.encode(mLatitude + "," + mLongitude + "(" + mUsername + " is here.)");
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                if(intent.resolveActivity(mContext.getPackageManager()) != null){
+                    mContext.startActivity(intent);
+                }else{
+                    MessageUtils.toast(mContext, "There is no map application in the device.");
+                }
                 break;
         }
     }

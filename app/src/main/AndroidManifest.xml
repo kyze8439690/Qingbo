@@ -45,6 +45,7 @@
         <activity android:name=".activity.TimelineActivity"
                   android:launchMode="singleTop"
                   android:windowSoftInputMode="stateAlwaysHidden"
+                  android:theme="@style/AppTheme.TimelineActivity"
                   />
         <activity android:name=".activity.PicActivity"
                   android:theme="@style/AppTheme.PicActivity"/>
@@ -60,7 +61,7 @@
                   android:windowSoftInputMode="stateHidden"
                   />
         <activity android:name=".activity.UserActivity"
-                  android:theme="@style/AppTheme.DetailActivity"
+                  android:theme="@style/AppTheme.UserActivity"
                   />
         <activity android:name=".activity.NewStatusActivity"
                   android:theme="@style/AppTheme.NewStatusActivity"

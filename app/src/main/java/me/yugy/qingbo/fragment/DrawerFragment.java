@@ -17,6 +17,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
+import org.apache.http.Header;
 import org.json.JSONObject;
 
 import me.yugy.qingbo.R;
@@ -79,14 +80,14 @@ public class DrawerFragment extends Fragment implements View.OnClickListener {
             }else{
                 Weibo.getUserInfo(getActivity(), uid, new JsonHttpResponseHandler(){
                     @Override
-                    public void onSuccess(JSONObject response) {
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         UserInfo userInfo = new UserInfoDataHelper(getActivity()).select(uid);
                         if(userInfo != null){
                             if(!userInfo.cover.equals("")){
                                 ImageLoader.getInstance().displayImage(userInfo.cover, mCoverImage, COVER_OPTIONS);
                             }
                         }
-                        super.onSuccess(response);
+                        super.onSuccess(statusCode, headers, response);
                     }
                 });
             }

@@ -13,6 +13,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +30,7 @@ import me.yugy.qingbo.type.Status;
 import me.yugy.qingbo.type.UserInfo;
 import me.yugy.qingbo.utils.DebugUtils;
 import me.yugy.qingbo.vendor.Weibo;
-import me.yugy.qingbo.view.CustomHeaderTransformer;
+import me.yugy.qingbo.view.HomeFragmentHeaderTransformer;
 import me.yugy.qingbo.view.UserHeaderViewHelper;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.Options;
@@ -56,6 +57,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        overridePendingTransition(R.anim.activity_open_translate, R.anim.activity_close_scale);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_user);
 
@@ -68,7 +70,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
                 .allChildrenArePullable()
                 .listener(this)
                 .options(Options.create()
-                        .headerTransformer(new CustomHeaderTransformer())
+                        .headerTransformer(new HomeFragmentHeaderTransformer())
                         .build())
                 .setup(mPullToRefreshLayout);
 
@@ -76,7 +78,6 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
         mUserHeaderViewHelper = new UserHeaderViewHelper(this);
         String userName = getIntent().getStringExtra("userName");
         DebugUtils.log("Username:" + userName);
-        getActionBar().setTitle(userName);
         mUserInfo = mUserInfoDataHelper.select(userName);
 
         if(mUserInfo == null){
@@ -90,7 +91,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
         mIsLoading = true;
         Weibo.getUserInfo(this, userName, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
                     mUserInfo = new UserInfo();
                     mUserInfo.parse(response);
@@ -99,7 +100,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
                     e.printStackTrace();
                 }
                 mIsLoading = false;
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }
@@ -117,7 +118,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
         setProgressBarIndeterminateVisibility(true);
         Weibo.getUserNewTimeline(this, mUserInfo.screenName, mSinceId, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONArray response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 try {
                     ArrayList<Status> statuses = new ArrayList<Status>();
                     int size = response.length();
@@ -144,7 +145,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
                 mPullToRefreshLayout.setRefreshComplete();
                 setProgressBarIndeterminateVisibility(false);
                 mIsLoading = false;
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }
@@ -155,7 +156,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
         setProgressBarIndeterminateVisibility(true);
         Weibo.getUserOldTimeline(this, mUserInfo.screenName, mMaxId, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONArray response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 try {
                     ArrayList<Status> statuses = new ArrayList<Status>();
                     int size = response.length();
@@ -175,7 +176,7 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
                 }
                 mIsLoading = false;
                 setProgressBarIndeterminateVisibility(false);
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }
@@ -212,5 +213,11 @@ public class UserActivity extends Activity implements OnRefreshListener, OnLoadM
         Intent intent = new Intent(parent.getContext(), NoStoreDetailActivity.class);
         intent.putExtra("status", mTimelineStatusAdapter.getItem(position - mListView.getHeaderViewsCount()));
         parent.getContext().startActivity(intent);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overridePendingTransition(R.anim.activity_open_scale,R.anim.activity_close_translate);
     }
 }

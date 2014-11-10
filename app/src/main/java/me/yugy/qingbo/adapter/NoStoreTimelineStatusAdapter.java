@@ -94,27 +94,27 @@ public class NoStoreTimelineStatusAdapter extends BaseAdapter{
             ((FrameLayout)view).setForeground(mContext.getResources().getDrawable(R.drawable.user_listitem_selector));
             switch (type) {
                 case Status.TYPE_NO_REPOST_NO_PIC:
-                    mLayoutInflater.inflate(R.layout.view_status_item_no_repost_no_pic, (ViewGroup) view);
+                    mLayoutInflater.inflate(R.layout.view_status_detail_no_repost_no_pic, (ViewGroup) view);
                     viewHolder = new NoRepostNoPicViewHolder(view);
                     break;
                 case Status.TYPE_NO_REPOST_ONE_PIC:
-                    mLayoutInflater.inflate(R.layout.view_status_item_no_repost_one_pic, (ViewGroup) view);
+                    mLayoutInflater.inflate(R.layout.view_status_detail_no_repost_one_pic, (ViewGroup) view);
                     viewHolder = new NoRepostOnePicViewHolder(view);
                     break;
                 case Status.TYPE_NO_REPOST_MULTI_PICS:
-                    mLayoutInflater.inflate(R.layout.view_status_item_no_repost_multi_pics, (ViewGroup) view);
+                    mLayoutInflater.inflate(R.layout.view_status_detail_no_repost_multi_pics, (ViewGroup) view);
                     viewHolder = new NoRepostMultiPicsViewHolder(view);
                     break;
                 case Status.TYPE_HAS_REPOST_NO_PIC:
-                    mLayoutInflater.inflate(R.layout.view_status_item_has_repost_no_pic, (ViewGroup) view);
+                    mLayoutInflater.inflate(R.layout.view_status_detail_has_repost_no_pic, (ViewGroup) view);
                     viewHolder = new HasRepostNoPicViewHolder(view);
                     break;
                 case Status.TYPE_HAS_REPOST_ONE_PIC:
-                    mLayoutInflater.inflate(R.layout.view_status_item_has_repost_one_pic, (ViewGroup) view);
+                    mLayoutInflater.inflate(R.layout.view_status_detail_has_repost_one_pic, (ViewGroup) view);
                     viewHolder = new HasRepostOnePicViewHolder(view);
                     break;
                 case Status.TYPE_HAS_REPOST_MULTI_PICS:
-                    mLayoutInflater.inflate(R.layout.view_status_item_has_repost_multi_pics, (ViewGroup) view);
+                    mLayoutInflater.inflate(R.layout.view_status_detail_has_repost_multi_pics, (ViewGroup) view);
                     viewHolder = new HasRepostMultiPicsViewHolder(view);
                     break;
                 default:
@@ -179,7 +179,6 @@ public class NoStoreTimelineStatusAdapter extends BaseAdapter{
         public HeadIconImageView head;
         public TextView name;
         public RelativeTimeTextView time;
-        public TextView topics;
         public LinkTextView text;
         public TextView commentCount;
         public TextView repostCount;
@@ -187,10 +186,9 @@ public class NoStoreTimelineStatusAdapter extends BaseAdapter{
         private String mUserName;
 
         public NoRepostNoPicViewHolder(View view){
-            head = (HeadIconImageView) view.findViewById(R.id.status_listitem_head);
+            head = (HeadIconImageView) view.findViewById(R.id.head);
             name = (TextView) view.findViewById(R.id.status_listitem_name);
             time = (RelativeTimeTextView) view.findViewById(R.id.status_listitem_time);
-            topics = (TextView) view.findViewById(R.id.status_listitem_topic);
             text = (LinkTextView) view.findViewById(R.id.status_listitem_text);
             commentCount = (TextView) view.findViewById(R.id.status_listitem_comment_count);
             repostCount = (TextView) view.findViewById(R.id.status_listitem_repost_count);
@@ -201,12 +199,6 @@ public class NoStoreTimelineStatusAdapter extends BaseAdapter{
             ImageLoader.getInstance().displayImage(status.user.avatar, head, HEAD_OPTIONS);
             name.setText(status.user.screenName);
             time.setReferenceTime(status.time);
-            if(status.topics.length != 0){
-                topics.setVisibility(View.VISIBLE);
-                topics.setText(status.topics[0]);
-            }else{
-                topics.setVisibility(View.INVISIBLE);
-            }
             text.setText(status.text);
             if(status.commentCount == 0){
                 commentCount.setText("");
@@ -223,7 +215,7 @@ public class NoStoreTimelineStatusAdapter extends BaseAdapter{
 
         @Override
         public void onClick(View v) {
-            if(v.getId() == R.id.status_listitem_head){
+            if(v.getId() == R.id.head){
                 Intent intent = new Intent(mContext, UserActivity.class);
                 intent.putExtra("userName", mUserName);
                 mContext.startActivity(intent);

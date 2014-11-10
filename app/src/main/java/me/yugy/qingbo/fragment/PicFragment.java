@@ -60,7 +60,6 @@ public class PicFragment extends Fragment implements LoaderManager.LoaderCallbac
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPicUrl = getArguments().getString("picUrl");
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -74,6 +73,7 @@ public class PicFragment extends Fragment implements LoaderManager.LoaderCallbac
             rootView = inflater.inflate(R.layout.fragment_pic, container, false);
             mScaleImageView = (SubsamplingScaleImageView) rootView.findViewById(R.id.image);
             mScaleImageView.setOnClickListener(this);
+            setHasOptionsMenu(true);
         }
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progress);
         return rootView;

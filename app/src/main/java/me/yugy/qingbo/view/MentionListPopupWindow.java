@@ -17,6 +17,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -83,7 +84,7 @@ public class MentionListPopupWindow extends ListPopupWindow implements AdapterVi
     private void getFriendData(){
         Weibo.getFriends(mContext, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONArray response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 try {
                     int length = response.length();
                     ArrayList<UserInfo> userInfos = new ArrayList<UserInfo>();
@@ -101,7 +102,7 @@ public class MentionListPopupWindow extends ListPopupWindow implements AdapterVi
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }

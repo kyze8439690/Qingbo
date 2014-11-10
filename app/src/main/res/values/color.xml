@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="gplus_color_1">#3e802f</color>
-    <color name="gplus_color_2">#f4b400</color>
-    <color name="gplus_color_3">#427fed</color>
-    <color name="gplus_color_4">#b23424</color>
-
-    <color name="window_background">#e5e5e5</color>
+    <color name="window_background">#ffececec</color>
     <color name="detail_window_background">#f5f5f5</color>
     <color name="pic_window_background">#232323</color>
+
+    <color name="main_color_dark">#279160</color>
+    <color name="main_color_normal">#32b67a</color>
 </resources>

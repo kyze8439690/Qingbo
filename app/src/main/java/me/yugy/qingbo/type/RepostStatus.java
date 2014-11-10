@@ -26,7 +26,6 @@ public class RepostStatus implements Parcelable, BaseStatus{
     public long id;
     public SpannableString text;
     public UserInfo user = new UserInfo();
-    public String[] topics;
     public long time;
     public int commentCount= 0;
     public int repostCount = 0;
@@ -42,14 +41,12 @@ public class RepostStatus implements Parcelable, BaseStatus{
         text = TextUtils.parseStatusText(json.getString("text"));
         time = TextUtils.parseDate(json.getString("created_at"));
         if(json.has("deleted")){
-            topics = new String[0];
             pics = new String[0];
             commentCount = 0;
             repostCount = 0;
             hasPic = hasPics = false;
         }else {
             user.parse(json.getJSONObject("user"));
-            topics = TextUtils.getTopic(json.getString("text"));
             commentCount = json.getInt("comments_count");
             repostCount = json.getInt("reposts_count");
             pics = ArrayUtils.getWeiboPicArray(json.getJSONArray("pic_urls"));
@@ -77,65 +74,34 @@ public class RepostStatus implements Parcelable, BaseStatus{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLongArray(new long[]{
-                id,
-                time
-        });
-        dest.writeIntArray(new int[]{
-                commentCount,
-                repostCount
-        });
-        dest.writeBooleanArray(new boolean[]{
-                hasPic,
-                hasPics
-        });
+        dest.writeLong(id);
+        dest.writeLong(time);
+        dest.writeInt(commentCount);
+        dest.writeInt(repostCount);
+        dest.writeByte((byte) (hasPic ? 1 : 0));
+        dest.writeByte((byte) (hasPics ? 1 : 0));
         dest.writeString(text.toString());
-        ArrayList<String[]> stringArrayData = new ArrayList<String[]>();
-        stringArrayData.add(topics);
-        stringArrayData.add(pics);
-        dest.writeList(stringArrayData);
-
+        dest.writeStringArray(pics);
         dest.writeParcelable(user, flags);
-
-        dest.writeDoubleArray(new double[]{
-                latitude,
-                longitude
-        });
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
     }
 
     public static final Creator<RepostStatus> CREATOR = new Creator<RepostStatus>() {
         @Override
         public RepostStatus createFromParcel(Parcel source) {
             RepostStatus repostStatus = new RepostStatus();
-
-            long[] longs = new long[2];
-            source.readLongArray(longs);
-            repostStatus.id = longs[0];
-            repostStatus.time = longs[1];
-
-            int[] ints = new int[2];
-            source.readIntArray(ints);
-            repostStatus.commentCount = ints[0];
-            repostStatus.repostCount = ints[1];
-
-            boolean[] booleans = new boolean[2];
-            source.readBooleanArray(booleans);
-            repostStatus.hasPic = booleans[0];
-            repostStatus.hasPics = booleans[1];
-
+            repostStatus.id = source.readLong();
+            repostStatus.time = source.readLong();
+            repostStatus.commentCount = source.readInt();
+            repostStatus.repostCount = source.readInt();
+            repostStatus.hasPic = source.readByte() != 0;
+            repostStatus.hasPics = source.readByte() != 0;
             repostStatus.text = TextUtils.parseStatusText(source.readString());
-
-            ArrayList<String[]> stringArrayData = source.readArrayList(String[].class.getClassLoader());
-            repostStatus.topics = stringArrayData.get(0);
-            repostStatus.pics = stringArrayData.get(1);
-
+            repostStatus.pics = source.createStringArray();
             repostStatus.user = source.readParcelable(UserInfo.class.getClassLoader());
-
-            double[] doubles = new double[2];
-            source.readDoubleArray(doubles);
-            repostStatus.latitude = doubles[0];
-            repostStatus.longitude = doubles[1];
-
+            repostStatus.latitude = source.readDouble();
+            repostStatus.longitude = source.readDouble();
             return repostStatus;
         }
 
@@ -151,9 +117,6 @@ public class RepostStatus implements Parcelable, BaseStatus{
         repostStatus.text = TextUtils.parseStatusText(cursor.getString(cursor.getColumnIndex(StatusDBInfo.TEXT)));
         UserInfoDataHelper userInfoDataHelper = new UserInfoDataHelper(Application.getContext());
         repostStatus.user = userInfoDataHelper.select(cursor.getLong(cursor.getColumnIndex(StatusDBInfo.UID)));
-
-        String topicString = cursor.getString(cursor.getColumnIndex(StatusDBInfo.TOPICS));
-        repostStatus.topics = ArrayUtils.convertStringToArray(topicString);
 
         repostStatus.time = cursor.getLong(cursor.getColumnIndex(StatusDBInfo.TIME));
         repostStatus.commentCount = cursor.getInt(cursor.getColumnIndex(StatusDBInfo.COMMENT_COUNT));
@@ -183,7 +146,6 @@ public class RepostStatus implements Parcelable, BaseStatus{
         repostStatus.text = status.text;
         repostStatus.time = status.time;
         repostStatus.user = status.user;
-        repostStatus.topics = status.topics;
         repostStatus.commentCount = status.commentCount;
         repostStatus.repostCount = status.repostCount;
         repostStatus.hasPic = status.hasPic;

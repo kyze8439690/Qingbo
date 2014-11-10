@@ -116,19 +116,18 @@ public class ConvertLinkDialogFragment extends DialogFragment implements View.On
         dismiss();
         progressDialog.show();
         Weibo.getShortUrl(getActivity(), url, new TextHttpResponseHandler(){
+
             @Override
             public void onSuccess(int statusCode, Header[] headers, String responseBody) {
                 progressDialog.dismiss();
                 mOnConvertListener.onUrlConvertSuccess(responseBody);
-                super.onSuccess(statusCode, headers, responseBody);
             }
 
             @Override
-            public void onFailure(String responseBody, Throwable error) {
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 //not valid url
                 progressDialog.dismiss();
                 mOnConvertListener.onUrlConvertFailure(url);
-                super.onFailure(responseBody, error);
             }
         });
     }

@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 
+import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,7 +56,7 @@ public class FriendShipTasker {
         mProgressDialog.show();
         JsonHttpResponseHandler handler = new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
                     UserInfo userInfo = new UserInfo();
                     userInfo.parse(response);
@@ -70,7 +71,7 @@ public class FriendShipTasker {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         };
         if(mAction == ACTION_CREATE_FRIENDSHIP){

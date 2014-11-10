@@ -42,11 +42,9 @@ public class Comment implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLongArray(new long[]{
-                id,
-                statusId,
-                time
-        });
+        dest.writeLong(id);
+        dest.writeLong(statusId);
+        dest.writeLong(time);
         dest.writeString(text.toString());
         dest.writeParcelable(user, flags);
     }
@@ -55,11 +53,9 @@ public class Comment implements Parcelable{
         @Override
         public Comment createFromParcel(Parcel source) {
             Comment comment = new Comment();
-            long[] longs = new long[3];
-            source.readLongArray(longs);
-            comment.id = longs[0];
-            comment.statusId = longs[1];
-            comment.time = longs[2];
+            comment.id = source.readLong();
+            comment.statusId = source.readLong();
+            comment.time = source.readLong();
             comment.text = TextUtils.parseStatusText(source.readString());
             comment.user = source.readParcelable(UserInfo.class.getClassLoader());
             return comment;

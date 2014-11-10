@@ -52,20 +52,16 @@ public class UserInfo implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(uid);
-        dest.writeBooleanArray(new boolean[]{
-                following,
-                followMe
-        });
-        dest.writeStringArray(new String[]{
-                screenName,
-                location,
-                statusesCount,
-                description,
-                followersCount,
-                avatar,
-                cover,
-                friendsCount
-        });
+        dest.writeByte((byte) (following ? 1 : 0));
+        dest.writeByte((byte) (followMe ? 1 : 0));
+        dest.writeString(screenName);
+        dest.writeString(location);
+        dest.writeString(statusesCount);
+        dest.writeString(description);
+        dest.writeString(followersCount);
+        dest.writeString(avatar);
+        dest.writeString(cover);
+        dest.writeString(friendsCount);
     }
 
     public static final Creator<UserInfo> CREATOR = new Creator<UserInfo>() {
@@ -73,20 +69,16 @@ public class UserInfo implements Parcelable {
         public UserInfo createFromParcel(Parcel source) {
             UserInfo userInfo = new UserInfo();
             userInfo.uid = source.readLong();
-            boolean[] booleans = new boolean[2];
-            source.readBooleanArray(booleans);
-            userInfo.following = booleans[0];
-            userInfo.followMe = booleans[1];
-            String[] strings = new String[8];
-            source.readStringArray(strings);
-            userInfo.screenName = strings[0];
-            userInfo.location = strings[1];
-            userInfo.statusesCount = strings[2];
-            userInfo.description = strings[3];
-            userInfo.followersCount = strings[4];
-            userInfo.avatar = strings[5];
-            userInfo.cover = strings[6];
-            userInfo.friendsCount = strings[7];
+            userInfo.following = source.readByte() != 0;
+            userInfo.followMe = source.readByte() != 0;
+            userInfo.screenName = source.readString();
+            userInfo.location = source.readString();
+            userInfo.statusesCount = source.readString();
+            userInfo.description = source.readString();
+            userInfo.followersCount = source.readString();
+            userInfo.avatar = source.readString();
+            userInfo.cover = source.readString();
+            userInfo.friendsCount = source.readString();
             return userInfo;
         }
 

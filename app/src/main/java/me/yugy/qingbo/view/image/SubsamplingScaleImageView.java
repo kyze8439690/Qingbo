@@ -15,7 +15,6 @@ package me.yugy.qingbo.view.image;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
@@ -471,11 +470,11 @@ public class SubsamplingScaleImageView extends View {
                             vTranslate.y = vTranslateStart.y + (event.getY() - vCenterStart.y);
 
                             float lastX = vTranslate.x;
-//                            float lastY = vTranslate.y;
+                            float lastY = vTranslate.y;
                             fitToBounds(true);
-                            if (lastX == vTranslate.x || isPanning) {
-//                                isPanning = true;
-                            } else {
+                            if (lastX == vTranslate.x || (lastY == vTranslate.y && dy > 10)) {
+                                isPanning = true;
+                            }else{
                                 // Haven't panned the image, and we're at the left or right edge. Switch to page swipe.
                                 maxTouchCount = 0;
                                 handler.removeMessages(MESSAGE_LONG_CLICK);

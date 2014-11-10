@@ -68,10 +68,9 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
         View view = LayoutInflater.from(mContext).inflate(getLayoutResourceId(type), null);
         view.setBackgroundColor(Color.WHITE);
 
-        HeadIconImageView head = (HeadIconImageView) view.findViewById(R.id.status_listitem_head);
+        HeadIconImageView head = (HeadIconImageView) view.findViewById(R.id.head);
         TextView name = (TextView) view.findViewById(R.id.status_listitem_name);
         RelativeTimeTextView time = (RelativeTimeTextView) view.findViewById(R.id.status_listitem_time);
-        TextView topics = (TextView) view.findViewById(R.id.status_listitem_topic);
         LinkTextView text = (LinkTextView) view.findViewById(R.id.status_listitem_text);
         mCommentCountView = (TextView) view.findViewById(R.id.status_listitem_comment_count);
         mRepostCountView = (TextView) view.findViewById(R.id.status_listitem_repost_count);
@@ -82,12 +81,6 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
         mUsername = repostStatus.user.screenName;
         name.setText(repostStatus.user.screenName);
         time.setReferenceTime(repostStatus.time);
-        if(repostStatus.topics.length != 0){
-            topics.setVisibility(View.VISIBLE);
-            topics.setText(repostStatus.topics[0]);
-        }else{
-            topics.setVisibility(View.INVISIBLE);
-        }
         text.setText(repostStatus.text);
         if(repostStatus.commentCount == 0){
             mCommentCountView.setText("");
@@ -133,9 +126,9 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
 
     private int getLayoutResourceId(int type){
         switch (type){
-            case TYPE_NO_PIC: return R.layout.view_status_item_no_repost_no_pic;
-            case TYPE_ONE_PIC: return R.layout.view_status_item_no_repost_one_pic;
-            case TYPE_MULTI_PICS: return R.layout.view_status_item_no_repost_multi_pics;
+            case TYPE_NO_PIC: return R.layout.view_status_detail_no_repost_no_pic;
+            case TYPE_ONE_PIC: return R.layout.view_status_detail_no_repost_one_pic;
+            case TYPE_MULTI_PICS: return R.layout.view_status_detail_no_repost_multi_pics;
             default: return 0;
         }
     }
@@ -143,7 +136,7 @@ public class RepostDetailHeaderViewHelper implements View.OnClickListener, Adapt
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.status_listitem_head:
+            case R.id.head:
                 Intent intent = new Intent(mContext, UserActivity.class);
                 intent.putExtra("userName", mUsername);
                 mContext.startActivity(intent);

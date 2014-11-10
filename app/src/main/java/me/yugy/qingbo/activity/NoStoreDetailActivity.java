@@ -20,6 +20,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -106,7 +107,7 @@ public class NoStoreDetailActivity extends Activity implements TextWatcher, View
     private void getNewCommentData(){
         Weibo.getNewComments(this, mStatus.id, mNewestCommentId, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
                     mStatus.commentCount = response.getInt("total_number");
                     updateStatusData();
@@ -143,8 +144,7 @@ public class NoStoreDetailActivity extends Activity implements TextWatcher, View
                     e.printStackTrace();
                 }
                 setLoading(false);
-
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }
@@ -152,7 +152,7 @@ public class NoStoreDetailActivity extends Activity implements TextWatcher, View
     private void getOldCommentData(){
         Weibo.getOldComments(this, mStatus.id, mOldestCommentId, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
                     mStatus.commentCount = response.getInt("total_number");
                     updateStatusData();
@@ -176,7 +176,7 @@ public class NoStoreDetailActivity extends Activity implements TextWatcher, View
                     e.printStackTrace();
                 }
                 setLoading(false);
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }

@@ -24,5 +24,11 @@
         android:layout_gravity="center"
         android:visibility="gone"
         />
+    
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:background="#66000000"
+        />
 
 </uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout>

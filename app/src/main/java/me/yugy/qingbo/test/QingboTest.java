@@ -26,8 +26,12 @@ public class QingboTest extends InstrumentationTestCase {
             public void run() {
                 Weibo.getShortUrl(getInstrumentation().getTargetContext(), "http://yanghui.name", new TextHttpResponseHandler(){
                     @Override
+                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+
+                    }
+
+                    @Override
                     public void onSuccess(int statusCode, Header[] headers, String responseBody) {
-                        super.onSuccess(statusCode, headers, responseBody);
                         try{
                             assertEquals("http://t.cn/8sJEZjp", responseBody);
                         }finally {

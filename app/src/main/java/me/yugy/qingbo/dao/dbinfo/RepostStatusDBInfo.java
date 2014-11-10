@@ -14,7 +14,6 @@ public class RepostStatusDBInfo implements BaseColumns {
     public static final String ID = "id";
     public static final String TEXT = "text";
     public static final String UID = "uid";
-    public static final String TOPICS = "topics";
     public static final String TIME = "time";
     public static final String COMMENT_COUNT = "comment_count";
     public static final String REPOST_COUNT = "repost_count";
@@ -26,7 +25,6 @@ public class RepostStatusDBInfo implements BaseColumns {
             .addColumn(ID, Column.Constraint.UNIQUE, Column.DataType.INTEGER)
             .addColumn(TEXT, Column.DataType.TEXT)
             .addColumn(UID, Column.DataType.TEXT)
-            .addColumn(TOPICS, Column.DataType.TEXT)
             .addColumn(TIME, Column.DataType.INTEGER)
             .addColumn(COMMENT_COUNT, Column.DataType.INTEGER)
             .addColumn(REPOST_COUNT, Column.DataType.INTEGER)

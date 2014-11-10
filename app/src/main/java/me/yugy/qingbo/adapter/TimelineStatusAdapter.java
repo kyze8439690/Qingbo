@@ -34,7 +34,6 @@ import me.yugy.qingbo.view.NoScrollGridView;
 import me.yugy.qingbo.view.image.HeadIconImageView;
 import me.yugy.qingbo.view.image.SelectorImageView;
 import me.yugy.qingbo.view.text.LinkTextView;
-import me.yugy.qingbo.view.text.RelativeTimeTextView;
 
 import static android.view.View.OnClickListener;
 
@@ -48,15 +47,11 @@ public class TimelineStatusAdapter extends CursorAdapter{
     private boolean mIsWifi = NetworkUtils.isWifi();
     private LayoutInflater mLayoutInflater;
 
-    public TimelineStatusAdapter(Context context) {
+    public TimelineStatusAdapter(Context context, OnLoadMoreListener onLoadMoreListener) {
         super(context, null, false);
         mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
-        try{
-            mOnLoadMoreListener = (OnLoadMoreListener) context;
-        }catch (ClassCastException e){
-            throw new ClassCastException("Activity should implement the OnLoadMoreListener interface.");
-        }
+        mOnLoadMoreListener = onLoadMoreListener;
     }
 
     @Override
@@ -182,15 +177,11 @@ public class TimelineStatusAdapter extends CursorAdapter{
             .displayer(new FadeInBitmapDisplayer(200))
             .build();
 
-    private class NoRepostNoPicViewHolder implements OnClickListener{
+    private class NoRepostNoPicViewHolder implements OnClickListener, View.OnLongClickListener{
 
         public HeadIconImageView head;
         public TextView name;
-        public RelativeTimeTextView time;
-        public TextView topics;
         public LinkTextView text;
-        public TextView commentCount;
-        public TextView repostCount;
         public TextView location;
 
         private String mUserName;
@@ -198,15 +189,12 @@ public class TimelineStatusAdapter extends CursorAdapter{
         protected double mLatitude, mLongitude = -1;
 
         public NoRepostNoPicViewHolder(View view){
-            head = (HeadIconImageView) view.findViewById(R.id.status_listitem_head);
+            head = (HeadIconImageView) view.findViewById(R.id.head);
             name = (TextView) view.findViewById(R.id.status_listitem_name);
-            time = (RelativeTimeTextView) view.findViewById(R.id.status_listitem_time);
-            topics = (TextView) view.findViewById(R.id.status_listitem_topic);
             text = (LinkTextView) view.findViewById(R.id.status_listitem_text);
-            commentCount = (TextView) view.findViewById(R.id.status_listitem_comment_count);
-            repostCount = (TextView) view.findViewById(R.id.status_listitem_repost_count);
             location = (TextView) view.findViewById(R.id.status_listitem_location);
             head.setOnClickListener(this);
+            head.setOnLongClickListener(this);
             location.setOnClickListener(this);
         }
 
@@ -214,47 +202,24 @@ public class TimelineStatusAdapter extends CursorAdapter{
             mUserName = status.user.screenName;
             ImageLoader.getInstance().displayImage(status.user.avatar, head, HEAD_OPTIONS);
             name.setText(status.user.screenName);
-            time.setReferenceTime(status.time);
-            if(status.topics.length != 0){
-                topics.setVisibility(View.VISIBLE);
-                topics.setText(status.topics[0]);
-            }else{
-                topics.setVisibility(View.INVISIBLE);
-            }
             text.setText(status.text);
-            if(status.commentCount == 0){
-                commentCount.setText("");
-            }else {
-                commentCount.setText(String.valueOf(status.commentCount));
-            }
-            if(status.repostCount == 0){
-                repostCount.setText("");
-            }else {
-                repostCount.setText(String.valueOf(status.repostCount));
-            }
-            checkAndShowLocation(status);
-        }
-
-        public void checkAndShowLocation(Status status){
-            if(status.latitude != -1 && status.longitude != -1){
-                //show status location
-                mLatitude = status.latitude;
-                mLongitude = status.longitude;
+            if(status.getLocation() != null){
+                mLatitude = status.getLocation()[0];
+                mLongitude = status.getLocation()[1];
                 location.setVisibility(View.VISIBLE);
             }else{
-                //hide location
                 location.setVisibility(View.GONE);
             }
         }
 
         @Override
         public void onClick(View v) {
-            if(v.getId() == R.id.status_listitem_head){
+            if(v.getId() == R.id.head){
                 Intent intent = new Intent(mContext, UserActivity.class);
                 intent.putExtra("userName", mUserName);
                 mContext.startActivity(intent);
             }else if(v.getId() == R.id.status_listitem_location){
-                String uri = "geo:" + mLatitude + "," + mLongitude;
+                String uri = "geo:0,0?q=" + Uri.encode(mLatitude + "," + mLongitude + "(" + mUserName + " is here.)");
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                 if(intent.resolveActivity(mContext.getPackageManager()) != null){
                     mContext.startActivity(intent);
@@ -262,6 +227,17 @@ public class TimelineStatusAdapter extends CursorAdapter{
                     MessageUtils.toast(mContext, "There is no map application in the device.");
                 }
             }
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+//            Toast toast = Toast.makeText(v.getContext(), mUserName, Toast.LENGTH_SHORT);
+//            int[] location = new int[2];
+//            v.getLocationOnScreen(location);
+//            toast.setGravity(Gravity.TOP | Gravity.LEFT, v.getRight(), location[1]);
+//            toast.show();
+//            return true;
+            return false;
         }
     }
 
@@ -283,33 +259,6 @@ public class TimelineStatusAdapter extends CursorAdapter{
             repostText.setText(status.repostStatus.text);
         }
 
-        @Override
-        public void checkAndShowLocation(Status status) {
-            if(status.repostStatus != null){
-                if(status.repostStatus.latitude != -1 && status.repostStatus.longitude != -1){
-                    //show repost status location
-                    mLatitude = status.repostStatus.latitude;
-                    mLongitude = status.repostStatus.longitude;
-                    location.setVisibility(View.VISIBLE);
-                }else if(status.latitude != -1 && status.longitude != -1){
-                    //show status location
-                    mLatitude = status.latitude;
-                    mLongitude = status.longitude;
-                    location.setVisibility(View.VISIBLE);
-                }else{
-                    //hide location
-                    location.setVisibility(View.GONE);
-                }
-            }else if(status.latitude != -1 && status.longitude != -1){
-                //show status location
-                mLatitude = status.latitude;
-                mLongitude = status.longitude;
-                location.setVisibility(View.VISIBLE);
-            }else{
-                //hide location
-                location.setVisibility(View.GONE);
-            }
-        }
     }
 
     private class NoRepostOnePicViewHolder extends NoRepostNoPicViewHolder{
@@ -384,34 +333,6 @@ public class TimelineStatusAdapter extends CursorAdapter{
                 mContext.startActivity(intent);
             }
         }
-
-        @Override
-        public void checkAndShowLocation(Status status) {
-            if(status.repostStatus != null){
-                if(status.repostStatus.latitude != -1 && status.repostStatus.longitude != -1){
-                    //show repost status location
-                    mLatitude = status.repostStatus.latitude;
-                    mLongitude = status.repostStatus.longitude;
-                    location.setVisibility(View.VISIBLE);
-                }else if(status.latitude != -1 && status.longitude != -1){
-                    //show status location
-                    mLatitude = status.latitude;
-                    mLongitude = status.longitude;
-                    location.setVisibility(View.VISIBLE);
-                }else{
-                    //hide location
-                    location.setVisibility(View.GONE);
-                }
-            }else if(status.latitude != -1 && status.longitude != -1){
-                //show status location
-                mLatitude = status.latitude;
-                mLongitude = status.longitude;
-                location.setVisibility(View.VISIBLE);
-            }else{
-                //hide location
-                location.setVisibility(View.GONE);
-            }
-        }
     }
 
     private class NoRepostMultiPicsViewHolder extends NoRepostNoPicViewHolder implements AdapterView.OnItemClickListener{
@@ -471,34 +392,6 @@ public class TimelineStatusAdapter extends CursorAdapter{
             intent.putExtra("pics", picsUrl);
             intent.putExtra("position", position);
             view.getContext().startActivity(intent);
-        }
-
-        @Override
-        public void checkAndShowLocation(Status status) {
-            if(status.repostStatus != null){
-                if(status.repostStatus.latitude != -1 && status.repostStatus.longitude != -1){
-                    //show repost status location
-                    mLatitude = status.repostStatus.latitude;
-                    mLongitude = status.repostStatus.longitude;
-                    location.setVisibility(View.VISIBLE);
-                }else if(status.latitude != -1 && status.longitude != -1){
-                    //show status location
-                    mLatitude = status.latitude;
-                    mLongitude = status.longitude;
-                    location.setVisibility(View.VISIBLE);
-                }else{
-                    //hide location
-                    location.setVisibility(View.GONE);
-                }
-            }else if(status.latitude != -1 && status.longitude != -1){
-                //show status location
-                mLatitude = status.latitude;
-                mLongitude = status.longitude;
-                location.setVisibility(View.VISIBLE);
-            }else{
-                //hide location
-                location.setVisibility(View.GONE);
-            }
         }
     }
 }

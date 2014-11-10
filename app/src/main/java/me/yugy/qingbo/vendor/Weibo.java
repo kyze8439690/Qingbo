@@ -161,8 +161,9 @@ public class Weibo {
         RequestParams params = getParamsWithAccessToken(context);
         params.put("uid", String.valueOf(userId));
         mClient.get(context, WeiboApiUrl.USER_SHOW, params, new JsonHttpResponseHandler() {
+
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log("获取用户信息成功: " + response.toString());
                 UserInfoDataHelper dataHelper = new UserInfoDataHelper(context);
                 UserInfo userInfo = new UserInfo();
@@ -172,15 +173,15 @@ public class Weibo {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, "获取用户信息失败");
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, "获取用户信息失败", throwable);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
 
@@ -191,7 +192,7 @@ public class Weibo {
         params.put("screen_name", userName);
         mClient.get(context, WeiboApiUrl.USER_SHOW, params, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log("获取用户信息成功: " + response.toString());
                 UserInfoDataHelper dataHelper = new UserInfoDataHelper(context);
                 UserInfo userInfo = new UserInfo();
@@ -201,15 +202,15 @@ public class Weibo {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, "获取用户信息失败");
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, "获取用户信息失败", throwable);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
 
@@ -222,22 +223,22 @@ public class Weibo {
         DebugUtils.log("firstStatusId: " + firstStatusId);
         mClient.get(context, WeiboApiUrl.STATUS_HOME_TIMELINE, params, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
                 try {
-                    responseHandler.onSuccess(response.getJSONArray("statuses"));
+                    responseHandler.onSuccess(statusCode, headers, response.getJSONArray("statuses"));
                 } catch (JSONException e) {
-                    responseHandler.onFailure(e, "获取Timeline失败");
+                    responseHandler.onFailure(statusCode, headers, "获取Timeline失败", e);
                     e.printStackTrace();
                 }
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -249,22 +250,22 @@ public class Weibo {
         DebugUtils.log("firstStatusId: " + lastStatusId);
         mClient.get(context, WeiboApiUrl.STATUS_HOME_TIMELINE, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
                 try {
-                    responseHandler.onSuccess(response.getJSONArray("statuses"));
+                    responseHandler.onSuccess(statusCode, headers, response.getJSONArray("statuses"));
                 } catch (JSONException e) {
-                    responseHandler.onFailure(e, "获取用户信息失败");
+                    responseHandler.onFailure(statusCode, headers, "获取用户信息失败", e);
                     e.printStackTrace();
                 }
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -276,17 +277,17 @@ public class Weibo {
         DebugUtils.log("newestCommentId:" + sinceId);
         mClient.get(context, WeiboApiUrl.COMMENTS_SHOW, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -298,17 +299,17 @@ public class Weibo {
         DebugUtils.log("oldestCommentId:" + lastCommentId);
         mClient.get(context, WeiboApiUrl.COMMENTS_SHOW, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable,  errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -320,17 +321,17 @@ public class Weibo {
         DebugUtils.log("Comment: " + comment);
         mClient.post(context, WeiboApiUrl.COMMENTS_CREATE, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -340,17 +341,17 @@ public class Weibo {
         params.put("screen_name", userName);
         mClient.post(context, WeiboApiUrl.FRIENDSHIPS_CREATE, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -360,17 +361,17 @@ public class Weibo {
         params.put("screen_name", userName);
         mClient.post(context, WeiboApiUrl.FRIENDSHIPS_DESTROY, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -382,22 +383,22 @@ public class Weibo {
         DebugUtils.log("SinceId: " + sinceId);
         mClient.get(context, WeiboApiUrl.STATUS_USER_TIMELINE, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response);
                 try {
-                    responseHandler.onSuccess(response.getJSONArray("statuses"));
+                    responseHandler.onSuccess(statusCode, headers, response.getJSONArray("statuses"));
                 } catch (JSONException e) {
-                    responseHandler.onFailure(e, "获取Timeline失败");
+                    responseHandler.onFailure(statusCode, headers, "获取Timeline失败", e);
                     e.printStackTrace();
                 }
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -411,7 +412,7 @@ public class Weibo {
         params.put("uid", String.valueOf(uid));
         mClient.get(context, WeiboApiUrl.FRIENDSHIPS_FRIENDS, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response);
                 try {
                     JSONArray jsonArray = response.getJSONArray("users");
@@ -423,12 +424,12 @@ public class Weibo {
                     if((cursor = response.getInt("next_cursor")) != 0){
                         getFriends(context, uid, cursor, this);
                     }else{
-                        responseHandler.onSuccess(result);
+                        responseHandler.onSuccess(statusCode, headers, result);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
         });
     }
@@ -449,22 +450,22 @@ public class Weibo {
         DebugUtils.log("MaxId: " + maxId);
         mClient.get(context, WeiboApiUrl.STATUS_USER_TIMELINE, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response);
                 try {
-                    responseHandler.onSuccess(response.getJSONArray("statuses"));
+                    responseHandler.onSuccess(statusCode, headers, response.getJSONArray("statuses"));
                 } catch (JSONException e) {
-                    responseHandler.onFailure(e, "获取Timeline失败");
+                    responseHandler.onFailure(statusCode, headers, "获取Timeline失败", e);
                     e.printStackTrace();
                 }
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse);
-                responseHandler.onFailure(e, errorResponse);
-                super.onFailure(e, errorResponse);
+                responseHandler.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -476,16 +477,16 @@ public class Weibo {
         params.put("count", "20");
         mClient.get(context, WeiboApiUrl.REPOSTS_SHOW, params, new JsonHttpResponseHandler(){
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 DebugUtils.log(response.toString());
-                responseHandler.onSuccess(response);
-                super.onSuccess(response);
+                responseHandler.onSuccess(statusCode, headers, response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 DebugUtils.log(errorResponse.toString());
-                super.onFailure(e, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -507,9 +508,9 @@ public class Weibo {
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
-                responseHandler.onFailure(errorResponse.toString(), e);
-                super.onFailure(e, errorResponse);
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                responseHandler.onFailure(statusCode, headers, errorResponse.toString(), throwable);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }

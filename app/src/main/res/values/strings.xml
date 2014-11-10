@@ -18,13 +18,4 @@
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
 
-    <string-array name="actionbar_dropdown_entry">
-        <item>全部</item>
-        <item>好友</item>
-        <item>原创</item>
-        <item>图片</item>
-        <item>视频</item>
-        <item>音乐</item>
-    </string-array>
-
 </resources>

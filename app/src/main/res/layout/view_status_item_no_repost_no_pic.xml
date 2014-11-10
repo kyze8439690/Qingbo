@@ -13,29 +13,16 @@
 
     <me.yugy.qingbo.view.image.HeadIconImageView
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/status_listitem_head"
+        android:id="@+id/head"
         app:corner_radius="50dp"
         style="@style/RoundHeadIconStyle"
-        />
-
-    <me.yugy.qingbo.view.text.RelativeTimeTextView
-        android:id="@+id/status_listitem_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#CCC"
-        android:textSize="12sp"
-        android:layout_toRightOf="@id/status_listitem_head"
-        android:layout_marginLeft="10dp"
-        android:layout_marginBottom="5dp"
-        android:layout_alignBottom="@id/status_listitem_head"
-        android:text="@string/just_now"
         />
 
     <me.yugy.qingbo.view.text.LinkTextView
         android:id="@+id/status_listitem_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/status_listitem_head"
+        android:layout_below="@id/head"
         android:layout_marginRight="14dp"
         android:layout_marginTop="10dp"
         android:text="text"
@@ -48,40 +35,17 @@
         />
 
     <TextView
-        android:id="@+id/status_listitem_topic"
-        style="@style/TopicButtonStyle"
-        />
-
-    <TextView
         android:id="@+id/status_listitem_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="15sp"
-        android:layout_toRightOf="@id/status_listitem_head"
-        android:layout_toLeftOf="@id/status_listitem_topic"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="5dp"
+        android:layout_toRightOf="@id/head"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
         android:singleLine="true"
         android:ellipsize="end"
         android:text="name"
-        />
-
-    <TextView
-        android:id="@+id/status_listitem_comment_count"
-        style="@style/ActionButtonStyle"
-        android:layout_below="@id/status_listitem_location"
-        android:layout_marginTop="16dp"
-        android:layout_marginRight="14dp"
-        android:drawableLeft="@drawable/timeline_listitem_comment_icon"
-        />
-
-    <TextView
-        android:id="@+id/status_listitem_repost_count"
-        style="@style/ActionButtonStyle"
-        android:layout_toRightOf="@id/status_listitem_comment_count"
-        android:layout_alignTop="@id/status_listitem_comment_count"
-        android:drawableLeft="@drawable/timeline_listitem_repost_icon"
         />
 
 </RelativeLayout>

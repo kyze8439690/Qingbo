@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 
+import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,8 +51,9 @@ public class CreateCommentTasker {
     public void execute(){
         mProgressDialog.show();
         Weibo.createComment(mContext, mComment, mStatusId, new JsonHttpResponseHandler(){
+
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
                     Comment comment = new Comment();
                     comment.parse(response);
@@ -63,11 +65,11 @@ public class CreateCommentTasker {
                 }
                 mProgressDialog.dismiss();
                 mOnCommentListener.onSuccess();
-                super.onSuccess(response);
+                super.onSuccess(statusCode, headers, response);
             }
 
             @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 try {
                     if(errorResponse.getInt("error_code") == 20019){
                         MessageUtils.toast(mContext, "评论内容重复");
@@ -78,7 +80,7 @@ public class CreateCommentTasker {
                     e1.printStackTrace();
                 }
                 mProgressDialog.dismiss();
-                super.onFailure(e, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }

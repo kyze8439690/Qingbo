@@ -45,8 +45,6 @@ public class StatusesDataHelper extends BaseDataHelper implements BaseStatusesDa
         values.put(StatusDBInfo.TEXT, status.text.toString());
         values.put(StatusDBInfo.UID, status.user.uid);
 
-        values.put(StatusDBInfo.TOPICS, ArrayUtils.convertArrayToString(status.topics));
-
         values.put(StatusDBInfo.TIME, status.time);
         values.put(StatusDBInfo.COMMENT_COUNT, status.commentCount);
         values.put(StatusDBInfo.REPOST_COUNT, status.repostCount);
